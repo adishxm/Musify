@@ -50,6 +50,7 @@ import com.musify.browser.ui.theme.TextSecondary
 @Composable
 fun LandingScreen(
     modifier: Modifier = Modifier,
+    onOpenBrowser: () -> Unit = {},
     onLaunchSpike: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
@@ -117,7 +118,7 @@ fun LandingScreen(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Phase 00",
+                        text = "Phase 02",
                         style = MaterialTheme.typography.labelSmall,
                         color = AccentCyan
                     )
@@ -146,12 +147,12 @@ fun LandingScreen(
                     )
                     Column {
                         Text(
-                            text = "Foundation & Workspace Ready",
+                            text = "Single-Tab Browser Active",
                             style = MaterialTheme.typography.titleMedium,
                             color = TextPrimary
                         )
                         Text(
-                            text = "Kotlin DSL, Jetpack Compose, and test suites initialized cleanly.",
+                            text = "Safe URL/search routing, strict TLS cancel, anti-spoofing origin display, and GeckoView engine active.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextSecondary
                         )
@@ -159,21 +160,42 @@ fun LandingScreen(
                 }
             }
 
-            // Launch Spike CTA
-            Button(
-                onClick = onLaunchSpike,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
-                shape = RoundedCornerShape(14.dp)
+            // Primary & Secondary CTAs
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    text = "⚡ Launch Engine Feasibility Spike",
-                    color = BackgroundDark,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
+                Button(
+                    onClick = onOpenBrowser,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text(
+                        text = "🌐 Open Browser",
+                        color = BackgroundDark,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
+
+                Button(
+                    onClick = onLaunchSpike,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text(
+                        text = "⚡ Engine Spike",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                }
             }
 
             // Scope & Commitments Card
@@ -237,8 +259,8 @@ fun LandingScreen(
                     )
 
                     PhaseRow("Phase 00", "Repository & Project Setup", isComplete = true)
-                    PhaseRow("Phase 01", "GeckoView Feasibility Spike", isCurrent = true)
-                    PhaseRow("Phase 02", "Single-Tab Browser Shell", isUpcoming = true)
+                    PhaseRow("Phase 01", "GeckoView Feasibility Spike", isComplete = true)
+                    PhaseRow("Phase 02", "Single-Tab Browser Shell", isCurrent = true)
                     PhaseRow("Phase 03", "Tabs & Lifecycle Recovery", isUpcoming = true)
                     PhaseRow("Phase 04", "Bookmarks & Disposable Sessions", isUpcoming = true)
                     PhaseRow("Phase 05", "Shields & Content Blocking", isUpcoming = true)

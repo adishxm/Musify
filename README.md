@@ -11,6 +11,8 @@ Musify is an independent, native Android browser designed to deliver transparent
 ### Core Architectural Guarantees & Scope
 - **General-Purpose Browsing:** Engineered for arbitrary web navigation, forms, media, and web applications without single-site special casing or hacks.
 - **Independent Design & Identity:** Distinct UI, code, icons, assets, and product language.
+- **Multi-Tab Architecture & Memory Protection:** Up to 20 concurrent tabs capped deterministically to prevent out-of-memory crashes; engine sessions are lazy-allocated and destroyed upon tab closure to free native memory.
+- **Process & Session Recovery:** Automatic, zero-leak session recovery that persists strictly minimal tab metadata (UUID, URL, Title, Timestamps) while completely excluding DOM contents, form entries, cookies, or secrets.
 - **Zero Telemetry or Credential Harvesting:** Zero behavioral analytics, ad tracking, or cloud profile synchronization. All browsing data remains strictly on-device.
 - **Strict TLS Security:** Enforced certificate validation with zero silent overrides or unsafe blanket SSL proceed options; cleartext traffic disabled globally via Android Network Security Config.
 - **Verified Origin Display & Anti-Spoofing:** Omnibar displays the full, verified origin (scheme, host, port) and decodes IDN homoglyphs into ASCII Punycode (`xn--...`) to mitigate visual spoofing.
@@ -42,8 +44,8 @@ Project development follows the phased, evidence-based roadmap structured in the
 | **Phase 00** | Repository, project foundation & Jetpack Compose setup | **Completed (PASS)** | [.brain/.report/PHASE-00-REPORT.md](.brain/.report/PHASE-00-REPORT.md) |
 | **Phase 01** | Browser engine feasibility spike (GeckoView Stable & WebView) | **Completed (PASS)** | [.brain/.report/PHASE-01-REPORT.md](.brain/.report/PHASE-01-REPORT.md) |
 | **Phase 02** | Single-tab browser shell, safe URL parser & navigation controls | **Completed (PASS)** | [.brain/.report/PHASE-02-REPORT.md](.brain/.report/PHASE-02-REPORT.md) |
-| **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **In Progress** | [.brain/.plan/PHASE-03.md](.brain/.plan/PHASE-03.md) |
-| **Phase 04** | History, bookmarks & disposable private sessions | Queued | [.brain/.plan/PHASE-04.md](.brain/.plan/PHASE-04.md) |
+| **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **Completed (PASS)** | [.brain/.report/PHASE-03-REPORT.md](.brain/.report/PHASE-03-REPORT.md) |
+| **Phase 04** | History, bookmarks & disposable private sessions | Up Next | [.brain/.plan/PHASE-04.md](.brain/.plan/PHASE-04.md) |
 | **Phase 05** | Privacy shields & content blocking controls | Queued | [.brain/.plan/PHASE-05.md](.brain/.plan/PHASE-05.md) |
 | **Phase 06** | Filter-list pipeline & licensing compliance gate | Queued | [.brain/.plan/PHASE-06.md](.brain/.plan/PHASE-06.md) |
 | **Phase 07** | Browser essentials (downloads, site permissions) | Queued | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
@@ -60,7 +62,7 @@ Project development follows the phased, evidence-based roadmap structured in the
 
 ### Build Commands
 ```bash
-# Run all unit tests
+# Run all unit tests (27 tests across Phases 00-03)
 ./gradlew testDebugUnitTest
 
 # Assemble debug APK

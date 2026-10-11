@@ -144,4 +144,124 @@ class Phase02SingleTabTest {
         assertFalse(insecureCertState.isBypassAllowed)
         assertNotNull(insecureCertState.tlsError)
     }
+
+    @Test
+    fun testViewModelNavigationControls() {
+        val testScope = CoroutineScope(Dispatchers.Unconfined)
+        val viewModel = SingleTabViewModel(coroutineScope = testScope)
+
+        // Test Fixture loader
+        viewModel.loadTestFixture()
+        assertNull(viewModel.tabState.value.errorState)
+
+        // Reload & Stop controls
+        viewModel.reload()
+        assertNull(viewModel.tabState.value.errorState)
+        viewModel.stop()
+
+        // Shield toggling
+        assertTrue(viewModel.tabState.value.shieldState.isProtectionEnabled)
+        viewModel.toggleShields(false)
+        assertFalse(viewModel.adapter.shieldState.value.isProtectionEnabled)
+        viewModel.toggleShields(true)
+        assertTrue(viewModel.adapter.shieldState.value.isProtectionEnabled)
+    }
+
+    @Test
+    fun testRendererLossAndRecoveryCycle() {
+        val testScope = CoroutineScope(Dispatchers.Unconfined)
+        val viewModel = SingleTabViewModel(coroutineScope = testScope)
+
+        // Simulate crash event
+        viewModel.adapter.simulateRendererLoss()
+        val error = viewModel.tabState.value.errorState
+        assertNotNull(error)
+        assertEquals("Render Process Lost", error!!.title)
+        assertTrue(error.canRetry)
+
+        // Recover tab
+        viewModel.recoverSession()
+        assertNull(viewModel.tabState.value.errorState)
+        assertTrue(viewModel.tabState.value.processState.isHealthy)
+        assertEquals(1, viewModel.tabState.value.processState.recoveryCount)
+    }
+
+    @Test
+    fun testOfflineAndNetworkErrorHandling() {
+        val testScope = CoroutineScope(Dispatchers.Unconfined)
+        val viewModel = SingleTabViewModel(coroutineScope = testScope)
+
+        viewModel.handleNetworkError(
+            failingUrl = "https://example-offline.org",
+            message = "Host unreachable. Please check network connection."
+        )
+
+        val error = viewModel.tabState.value.errorState
+        assertNotNull(error)
+        assertEquals("Network Connection Error", error!!.title)
+        assertEquals("https://example-offline.org", error.failingUrl)
+        assertTrue(error.canRetry)
+
+        viewModel.dismissError()
+        assertNull(viewModel.tabState.value.errorState)
+    }
+
+    @Test
+    fun testExternalIntentSanitization() {
+        // Valid web navigation from external intent
+        val safeHttps = UrlParser.parse("https://github.com/adishxm/Musify")
+        assertTrue(safeHttps is ParsedNavigation.AllowedUrl)
+        assertEquals("https://github.com/adishxm/Musify", (safeHttps as ParsedNavigation.AllowedUrl).url)
+
+        val safeHttp = UrlParser.parse("http://info.cern.ch")
+        assertTrue(safeHttp is ParsedNavigation.AllowedUrl)
+
+        // Attack payloads via external intent MUST be rejected
+        val intentPayload = UrlParser.parse("intent://example.com/#Intent;scheme=file;end")
+        assertTrue(intentPayload is ParsedNavigation.Rejected)
+
+        val scriptPayload = UrlParser.parse("javascript:alert(document.domain)")
+        assertTrue(scriptPayload is ParsedNavigation.Rejected)
+
+        val filePayload = UrlParser.parse("file:///android_asset/secrets.json")
+        assertTrue(filePayload is ParsedNavigation.Rejected)
+    }
+
+    @Test
+    fun testReleaseNetworkSecurityConfigStrictness() {
+        // Enforce that release network security config trusts ONLY system CAs and forbids cleartext
+        val releaseConfigFile = java.io.File("src/main/res/xml/network_security_config.xml").takeIf { it.exists() }
+            ?: java.io.File("app/src/main/res/xml/network_security_config.xml")
+
+        assertTrue("Release network_security_config.xml must exist", releaseConfigFile.exists())
+        val releaseContent = releaseConfigFile.readText()
+
+        assertTrue(
+            "Release config must disallow cleartext traffic",
+            releaseContent.contains("cleartextTrafficPermitted=\"false\"")
+        )
+        assertTrue(
+            "Release config must trust system certificates",
+            releaseContent.contains("<certificates src=\"system\" />") || releaseContent.contains("<certificates src=\"system\"/>")
+        )
+        assertFalse(
+            "Release config must never trust user certificates",
+            releaseContent.contains("<certificates src=\"user\"")
+        )
+        assertFalse(
+            "Release config must never contain debug-overrides",
+            releaseContent.contains("<debug-overrides>")
+        )
+
+        // Debug config contains debug overrides
+        val debugConfigFile = java.io.File("src/debug/res/xml/network_security_config.xml").takeIf { it.exists() }
+            ?: java.io.File("app/src/debug/res/xml/network_security_config.xml")
+
+        assertTrue("Debug network_security_config.xml must exist", debugConfigFile.exists())
+        val debugContent = debugConfigFile.readText()
+        assertTrue(
+            "Debug config must contain debug-overrides for test fixtures",
+            debugContent.contains("<debug-overrides>")
+        )
+    }
 }

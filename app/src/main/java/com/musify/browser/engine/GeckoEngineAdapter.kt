@@ -29,27 +29,35 @@ class GeckoEngineAdapter : EngineAdapter {
     private val _processState = MutableStateFlow(EngineProcessState())
     override val processState: StateFlow<EngineProcessState> = _processState.asStateFlow()
 
-    private var geckoRuntime: GeckoRuntime? = null
     private var geckoSession: GeckoSession? = null
     private var geckoView: GeckoView? = null
     private var isInitialized = false
 
-    @Synchronized
-    private fun ensureRuntime(context: Context): GeckoRuntime {
-        if (geckoRuntime == null) {
-            val settings = GeckoRuntimeSettings.Builder()
-                .contentBlocking(
-                    ContentBlocking.Settings.Builder()
-                        .antiTracking(ContentBlocking.AntiTracking.STRICT)
-                        .enhancedTrackingProtectionLevel(ContentBlocking.EtpLevel.STRICT)
-                        .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
-                        .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_FIRST_PARTY)
-                        .build()
-                )
-                .build()
-            geckoRuntime = GeckoRuntime.create(context.applicationContext, settings)
+    companion object {
+        @Volatile
+        private var sharedRuntime: GeckoRuntime? = null
+
+        @Synchronized
+        fun getSharedRuntime(context: Context): GeckoRuntime {
+            if (sharedRuntime == null) {
+                val settings = GeckoRuntimeSettings.Builder()
+                    .contentBlocking(
+                        ContentBlocking.Settings.Builder()
+                            .antiTracking(ContentBlocking.AntiTracking.STRICT)
+                            .enhancedTrackingProtectionLevel(ContentBlocking.EtpLevel.STRICT)
+                            .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
+                            .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_FIRST_PARTY)
+                            .build()
+                    )
+                    .build()
+                sharedRuntime = GeckoRuntime.create(context.applicationContext, settings)
+            }
+            return sharedRuntime!!
         }
-        return geckoRuntime!!
+    }
+
+    private fun ensureRuntime(context: Context): GeckoRuntime {
+        return getSharedRuntime(context)
     }
 
     private fun initSession(context: Context) {
@@ -237,7 +245,7 @@ class GeckoEngineAdapter : EngineAdapter {
     override fun setProtectionEnabled(enabled: Boolean) {
         _shieldState.value = _shieldState.value.copy(isProtectionEnabled = enabled)
         val antiTracking = if (enabled) ContentBlocking.AntiTracking.STRICT else ContentBlocking.AntiTracking.DEFAULT
-        geckoRuntime?.settings?.contentBlocking?.setAntiTracking(antiTracking)
+        sharedRuntime?.settings?.contentBlocking?.setAntiTracking(antiTracking)
     }
 
     override fun simulateRendererLoss() {

@@ -1,11 +1,16 @@
 package com.musify.browser.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -122,8 +127,8 @@ fun SingleTabBrowserScreen(
                             .background(BackgroundDark)
                             .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .androidx.compose.ui.semantics.semantics {
-                                androidx.compose.ui.semantics.contentDescription = originDesc
+                            .semantics {
+                                contentDescription = originDesc
                             },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -181,9 +186,9 @@ fun SingleTabBrowserScreen(
                                 .border(1.dp, if (tabState.shieldState.isProtectionEnabled) StatusGreen else CardBorder, RoundedCornerShape(12.dp))
                                 .clickable { showShieldSheet = !showShieldSheet }
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .androidx.compose.ui.semantics.semantics {
-                                    androidx.compose.ui.semantics.contentDescription = "Privacy Shield: ${tabState.shieldState.blockedCount} requests blocked"
-                                    androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                .semantics {
+                                    contentDescription = "Privacy Shield: ${tabState.shieldState.blockedCount} requests blocked"
+                                    role = Role.Button
                                 }
                         ) {
                             Text(
@@ -201,9 +206,9 @@ fun SingleTabBrowserScreen(
                                     .background(SurfaceLightDark)
                                     .clickable(onClick = onOpenRoadmap)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .androidx.compose.ui.semantics.semantics {
-                                        androidx.compose.ui.semantics.contentDescription = "View Project Roadmap"
-                                        androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                    .semantics {
+                                        contentDescription = "View Project Roadmap"
+                                        role = Role.Button
                                     }
                             ) {
                                 Text(
@@ -221,9 +226,9 @@ fun SingleTabBrowserScreen(
                                     .background(SurfaceLightDark)
                                     .clickable(onClick = onOpenSpikeDebug)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .androidx.compose.ui.semantics.semantics {
-                                        androidx.compose.ui.semantics.contentDescription = "Launch Engine Feasibility Spike"
-                                        androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                    .semantics {
+                                        contentDescription = "Launch Engine Feasibility Spike"
+                                        role = Role.Button
                                     }
                             ) {
                                 Text(
@@ -273,8 +278,8 @@ fun SingleTabBrowserScreen(
                                     addressInput = if (tabState.currentUrl == "about:blank") "" else tabState.currentUrl
                                 }
                             }
-                            .androidx.compose.ui.semantics.semantics {
-                                androidx.compose.ui.semantics.contentDescription = "Address and search bar"
+                            .semantics {
+                                contentDescription = "Address and search bar"
                             },
                         placeholder = {
                             Text("Search DuckDuckGo or type URL...", color = TextMuted, fontSize = 13.sp)
@@ -551,15 +556,16 @@ private fun BrowserButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val buttonDesc = contentDescription
     Box(
         modifier = Modifier
             .size(38.dp)
             .clip(CircleShape)
             .background(if (enabled) SurfaceLightDark else BackgroundDark)
             .clickable(enabled = enabled, onClick = onClick)
-            .androidx.compose.ui.semantics.semantics {
-                this.contentDescription = contentDescription
-                this.role = androidx.compose.ui.semantics.Role.Button
+            .semantics {
+                this.contentDescription = buttonDesc
+                role = Role.Button
             },
         contentAlignment = Alignment.Center
     ) {
@@ -584,9 +590,9 @@ private fun QuickChip(
             .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .androidx.compose.ui.semantics.semantics {
-                this.contentDescription = "Quick target: $label"
-                this.role = androidx.compose.ui.semantics.Role.Button
+            .semantics {
+                contentDescription = "Quick target: $label"
+                role = Role.Button
             }
     ) {
         Text(
