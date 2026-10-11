@@ -1,7 +1,7 @@
 package com.musify.browser.browser
 
-import android.net.Uri
 import java.net.IDN
+import java.net.URI
 import java.net.URLEncoder
 import java.util.Locale
 import java.util.regex.Pattern
@@ -68,12 +68,12 @@ object UrlParser {
         // Check if explicitly http or https
         if (trimmed.startsWith("http://", ignoreCase = true) || trimmed.startsWith("https://", ignoreCase = true)) {
             return try {
-                val uri = Uri.parse(trimmed)
+                val uri = URI(trimmed)
                 val host = uri.host ?: ""
                 if (host.isBlank()) {
                     ParsedNavigation.Rejected(trimmed, "Malformed URL missing valid host")
                 } else {
-                    buildAllowedUrl(uri)
+                    buildAllowedUrl(uri, trimmed)
                 }
             } catch (e: Exception) {
                 ParsedNavigation.Rejected(trimmed, "Malformed URL: ${e.message}")
@@ -83,7 +83,12 @@ object UrlParser {
         // Does it look like a search query (contains spaces or starts with search operator)?
         if (trimmed.contains(" ") || !trimmed.contains(".")) {
             if (trimmed.equals("localhost", ignoreCase = true) || trimmed.startsWith("localhost:", ignoreCase = true)) {
-                return buildAllowedUrl(Uri.parse("http://$trimmed"))
+                return try {
+                    val uri = URI("http://$trimmed")
+                    buildAllowedUrl(uri, "http://$trimmed")
+                } catch (_: Exception) {
+                    buildSearch(trimmed)
+                }
             }
             return buildSearch(trimmed)
         }
@@ -93,8 +98,8 @@ object UrlParser {
             return try {
                 // HTTPS-First upgrade by default
                 val targetUrl = "https://$trimmed"
-                val uri = Uri.parse(targetUrl)
-                buildAllowedUrl(uri)
+                val uri = URI(targetUrl)
+                buildAllowedUrl(uri, targetUrl)
             } catch (_: Exception) {
                 buildSearch(trimmed)
             }
@@ -104,7 +109,7 @@ object UrlParser {
         return buildSearch(trimmed)
     }
 
-    private fun buildAllowedUrl(uri: Uri): ParsedNavigation {
+    private fun buildAllowedUrl(uri: URI, rawFullUrl: String): ParsedNavigation {
         val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: "https"
         val rawHost = uri.host ?: ""
         val port = if (uri.port != -1 && uri.port != 80 && uri.port != 443) ":${uri.port}" else ""
@@ -115,13 +120,12 @@ object UrlParser {
         } catch (_: Exception) {
             rawHost
         }
-        val isPunycode = asciiHost.startsWith("xn--") || asciiHost.contains(".xn--")
+        val isPunycode = asciiHost.startsWith("xn--", ignoreCase = true) || asciiHost.contains(".xn--", ignoreCase = true)
 
         val origin = "$scheme://$asciiHost$port"
-        val fullUrl = uri.toString()
 
         return ParsedNavigation.AllowedUrl(
-            url = fullUrl,
+            url = rawFullUrl,
             origin = origin,
             host = asciiHost,
             isHttps = scheme == "https",

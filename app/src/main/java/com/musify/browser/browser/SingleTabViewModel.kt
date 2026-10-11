@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.musify.browser.engine.EngineAdapter
 import com.musify.browser.engine.GeckoEngineAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,8 +14,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class SingleTabViewModel(
-    val adapter: EngineAdapter = GeckoEngineAdapter()
+    val adapter: EngineAdapter = GeckoEngineAdapter(),
+    coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
+
+    private val scope: CoroutineScope = coroutineScope ?: runCatching { viewModelScope }.getOrElse {
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    }
 
     private val _tabState = MutableStateFlow(BrowserTabState())
     val tabState: StateFlow<BrowserTabState> = _tabState.asStateFlow()
@@ -38,7 +46,7 @@ class SingleTabViewModel(
                 canGoBack = nav.canGoBack,
                 canGoForward = nav.canGoForward
             )
-        }.launchIn(viewModelScope)
+        }.launchIn(scope)
 
         // Observe security changes
         adapter.securityState.onEach { sec ->
@@ -56,12 +64,12 @@ class SingleTabViewModel(
                     _tabState.value.errorState?.takeIf { !it.isTlsError }
                 }
             )
-        }.launchIn(viewModelScope)
+        }.launchIn(scope)
 
         // Observe shield counters
         adapter.shieldState.onEach { shield ->
             _tabState.value = _tabState.value.copy(shieldState = shield)
-        }.launchIn(viewModelScope)
+        }.launchIn(scope)
 
         // Observe process health
         adapter.processState.onEach { proc ->
@@ -78,7 +86,7 @@ class SingleTabViewModel(
                     _tabState.value.errorState?.takeIf { it.title != "Render Process Lost" }
                 }
             )
-        }.launchIn(viewModelScope)
+        }.launchIn(scope)
     }
 
     fun navigate(rawInput: String) {
