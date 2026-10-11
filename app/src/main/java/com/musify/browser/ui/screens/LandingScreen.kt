@@ -17,6 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +49,8 @@ import com.musify.browser.ui.theme.TextSecondary
 
 @Composable
 fun LandingScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLaunchSpike: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -154,6 +157,23 @@ fun LandingScreen(
                         )
                     }
                 }
+            }
+
+            // Launch Spike CTA
+            Button(
+                onClick = onLaunchSpike,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = "⚡ Launch Engine Feasibility Spike",
+                    color = BackgroundDark,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
             }
 
             // Scope & Commitments Card

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musify Engine Verification Fixture</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        h2 { margin-top: 0; font-size: 18px; color: #06b6d4; }
+        input[type="text"] {
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: calc(100% - 26px);
+            margin-bottom: 8px;
+        }
+        button, .btn {
+            background: #06b6d4;
+            color: #0f172a;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            background: #334155;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Musify Engine Feasibility Spike</h1>
+    <p>Local verification fixture exercising web platform primitives, forms, media, downloads, and privacy blocking.</p>
+
+    <div class="card">
+        <h2>1. Form Submission &amp; JavaScript Interaction</h2>
+        <form id="spikeForm" onsubmit="handleFormSubmit(event)">
+            <input type="text" id="testInput" value="Privacy Browser Test" placeholder="Enter text..." />
+            <button type="submit">Submit via JavaScript</button>
+        </form>
+        <div id="formResult" class="status">Awaiting submission...</div>
+    </div>
+
+    <div class="card">
+        <h2>2. Media Playback (Web Audio API Synthesizer)</h2>
+        <button onclick="playTone()">Play Synthetic Audio Tone</button>
+        <div id="audioStatus" class="status">Audio idle</div>
+    </div>
+
+    <div class="card">
+        <h2>3. File Download Trigger</h2>
+        <a class="btn" download="musify_test_artifact.txt" href="data:text/plain;charset=utf-8,Musify%20Privacy%20Browser%20Test%20Download%20Verified">
+            Trigger Sample Download
+        </a>
+        <div class="status">Data URI download payload ready</div>
+    </div>
+
+    <div class="card">
+        <h2>4. Third-Party Tracker Blocking Test</h2>
+        <p>Attempts to load a simulated tracking beacon from <code>google-analytics.com</code>.</p>
+        <button onclick="triggerTrackingRequest()">Send Tracking Request</button>
+        <div id="trackerStatus" class="status">No request sent yet</div>
+    </div>
+
+    <script>
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const val = document.getElementById('testInput').value;
+            document.getElementById('formResult').innerText = "Form submitted successfully. Payload: " + val;
+        }
+
+        function playTone() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) {
+                    document.getElementById('audioStatus').innerText = "Web Audio not supported";
+                    return;
+                }
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+                document.getElementById('audioStatus').innerText = "Played 440Hz tone successfully";
+            } catch (err) {
+                document.getElementById('audioStatus').innerText = "Audio error: " + err.message;
+            }
+        }
+
+        function triggerTrackingRequest() {
+            document.getElementById('trackerStatus').innerText = "Sending request to google-analytics.com...";
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('trackerStatus').innerText = "Request was NOT blocked (allowed by engine).";
+            };
+            img.onerror = function() {
+                document.getElementById('trackerStatus').innerText = "Request blocked by engine content blocking!";
+            };
+            img.src = "https://google-analytics.com/collect?v=1&tid=UA-000000-1&cid=555&t=pageview";
+        }
+    </script>
+</body>
+</html>
