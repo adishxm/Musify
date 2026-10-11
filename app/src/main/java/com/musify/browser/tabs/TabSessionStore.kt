@@ -24,19 +24,27 @@ data class TabMetadata(
 object TabSessionSerializer {
 
     fun serialize(state: TabsState): String {
+        // Strict Privacy Invariant: Private browsing tabs are never written to disk
+        val tabsToPersist = state.tabs.filterNot { it.isPrivate }
+        val targetSelectedId = if (tabsToPersist.any { it.id == state.selectedTabId }) {
+            state.selectedTabId
+        } else {
+            tabsToPersist.firstOrNull()?.id
+        }
+
         val sb = StringBuilder()
         sb.append("{\n")
         sb.append("  \"version\": 1,\n")
-        sb.append("  \"selectedTabId\": ").append(state.selectedTabId?.let { "\"$it\"" } ?: "null").append(",\n")
+        sb.append("  \"selectedTabId\": ").append(targetSelectedId?.let { "\"$it\"" } ?: "null").append(",\n")
         sb.append("  \"tabs\": [\n")
-        state.tabs.forEachIndexed { index, tab ->
+        tabsToPersist.forEachIndexed { index, tab ->
             sb.append("    {\n")
             sb.append("      \"id\": \"").append(escapeJson(tab.id)).append("\",\n")
             sb.append("      \"url\": \"").append(escapeJson(tab.url)).append("\",\n")
             sb.append("      \"title\": \"").append(escapeJson(tab.title)).append("\",\n")
             sb.append("      \"createdAt\": ").append(tab.createdAt).append(",\n")
             sb.append("      \"lastActiveAt\": ").append(tab.lastActiveAt).append("\n")
-            sb.append("    }").append(if (index < state.tabs.size - 1) "," else "").append("\n")
+            sb.append("    }").append(if (index < tabsToPersist.size - 1) "," else "").append("\n")
         }
         sb.append("  ]\n")
         sb.append("}")

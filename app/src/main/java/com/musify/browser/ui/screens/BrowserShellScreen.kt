@@ -24,6 +24,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,10 +53,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.musify.browser.browser.UrlParser
 import com.musify.browser.engine.EngineView
 import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.theme.AccentCyan
+import com.musify.browser.ui.theme.AccentPurple
 import com.musify.browser.ui.theme.BackgroundDark
 import com.musify.browser.ui.theme.CardBorder
 import com.musify.browser.ui.theme.StatusGreen
@@ -67,12 +70,15 @@ import com.musify.browser.ui.theme.TextSecondary
 
 /**
  * BrowserShellScreen hosts the multi-tab navigation chrome, Omnibar,
- * active engine renderer, and tab switcher integration.
+ * active engine renderer, private browsing indicators, bookmark toggling, and overflow menu.
  */
 @Composable
 fun BrowserShellScreen(
     viewModel: TabsViewModel,
     modifier: Modifier = Modifier,
+    onOpenBookmarks: () -> Unit,
+    onOpenHistory: () -> Unit,
+    onOpenDataControl: () -> Unit,
     onOpenSpikeDebug: (() -> Unit)? = null,
     onOpenRoadmap: (() -> Unit)? = null
 ) {
@@ -84,14 +90,17 @@ fun BrowserShellScreen(
     var addressInput by remember { mutableStateOf("") }
     var isAddressBarFocused by remember { mutableStateOf(false) }
     var showShieldDetails by remember { mutableStateOf(false) }
+    var isBookmarked by remember { mutableStateOf(false) }
+    var bookmarkTrigger by remember { mutableIntStateOf(0) }
     val focusManager = LocalFocusManager.current
 
-    // Synchronize address bar with active tab url when not focused
+    // Synchronize address bar and bookmark star state when active tab updates
     if (!isAddressBarFocused && activeTab != null) {
         val displayUrl = if (activeTab.url == "about:blank") "" else activeTab.url
-        if (addressInput != displayUrl && !displayUrl.isEmpty()) {
+        if (addressInput != displayUrl && displayUrl.isNotEmpty()) {
             addressInput = displayUrl
         }
+        isBookmarked = viewModel.isCurrentTabBookmarked()
     }
 
     // Intercept hardware back button: back in web page, or close switcher
@@ -122,6 +131,7 @@ fun BrowserShellScreen(
                 maxTabs = tabsState.maxTabs,
                 addressInput = addressInput,
                 isAddressBarFocused = isAddressBarFocused,
+                isBookmarked = isBookmarked,
                 onAddressChange = { addressInput = it },
                 onFocusChange = { isAddressBarFocused = it },
                 onSubmit = {
@@ -130,9 +140,16 @@ fun BrowserShellScreen(
                         focusManager.clearFocus()
                     }
                 },
+                onToggleBookmark = {
+                    isBookmarked = viewModel.toggleBookmarkCurrentTab()
+                },
                 onOpenTabSwitcher = { showTabSwitcher = true },
                 onNewTab = {
-                    val created = viewModel.createNewTab(url = "about:blank", selectImmediately = true)
+                    val created = viewModel.createNewTab(
+                        url = "about:blank",
+                        isPrivate = activeTab?.isPrivate == true,
+                        selectImmediately = true
+                    )
                     if (created) addressInput = ""
                 },
                 onGoBack = { viewModel.goBack() },
@@ -141,6 +158,13 @@ fun BrowserShellScreen(
                     if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
                 },
                 onToggleShield = { showShieldDetails = !showShieldDetails },
+                onOpenBookmarks = onOpenBookmarks,
+                onOpenHistory = onOpenHistory,
+                onOpenDataControl = onOpenDataControl,
+                onNewPrivateTab = {
+                    viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
+                    addressInput = ""
+                },
                 onOpenRoadmap = onOpenRoadmap,
                 onOpenSpikeDebug = onOpenSpikeDebug,
                 onNavigate = { target ->
@@ -149,14 +173,14 @@ fun BrowserShellScreen(
                 }
             )
 
-            // Progress Bar
+            // Loading Progress Bar
             if (activeTab?.isLoading == true) {
                 LinearProgressIndicator(
                     progress = { (activeTab.progress / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(3.dp),
-                    color = AccentCyan,
+                    color = if (activeTab.isPrivate) AccentPurple else AccentCyan,
                     trackColor = BackgroundDark
                 )
             }
@@ -184,6 +208,7 @@ fun BrowserShellScreen(
                 // Blank Tab Home Screen
                 if (activeTab?.url == "about:blank" && !activeTab.isLoading) {
                     MusifyHomeScreen(
+                        isPrivate = activeTab.isPrivate,
                         onNavigate = { target ->
                             viewModel.navigateActiveTab(target)
                         }
@@ -208,19 +233,29 @@ private fun SurfaceDarkHeader(
     maxTabs: Int,
     addressInput: String,
     isAddressBarFocused: Boolean,
+    isBookmarked: Boolean,
     onAddressChange: (String) -> Unit,
     onFocusChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
+    onToggleBookmark: () -> Unit,
     onOpenTabSwitcher: () -> Unit,
     onNewTab: () -> Unit,
     onGoBack: () -> Unit,
     onGoForward: () -> Unit,
     onReloadOrStop: () -> Unit,
     onToggleShield: () -> Unit,
+    onOpenBookmarks: () -> Unit,
+    onOpenHistory: () -> Unit,
+    onOpenDataControl: () -> Unit,
+    onNewPrivateTab: () -> Unit,
     onOpenRoadmap: (() -> Unit)?,
     onOpenSpikeDebug: (() -> Unit)?,
     onNavigate: (String) -> Unit
 ) {
+    var showOverflowMenu by remember { mutableStateOf(false) }
+    val isPrivate = activeTab?.isPrivate == true
+    val activeAccent = if (isPrivate) AccentPurple else AccentCyan
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
@@ -228,17 +263,38 @@ private fun SurfaceDarkHeader(
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            // Top Row: Origin Security Status + Shields + Tab Switcher Badge
+            // Top Row: Origin Security Status + Private Badge + Shields + Tab Switcher Badge + Menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Verified Origin Badge
+                // Origin & Security Status
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
+                    if (isPrivate) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AccentPurple.copy(alpha = 0.2f))
+                                .border(1.dp, AccentPurple, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .semantics {
+                                    contentDescription = "Private browsing mode active"
+                                }
+                        ) {
+                            Text(
+                                text = "🕶 Private",
+                                color = AccentPurple,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
                     Text(
                         text = if (activeTab?.isSecure == true) "🔒" else "⚠",
                         fontSize = 12.sp,
@@ -284,7 +340,7 @@ private fun SurfaceDarkHeader(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .background(SurfaceLightDark)
-                        .border(1.dp, AccentCyan, RoundedCornerShape(10.dp))
+                        .border(1.dp, activeAccent, RoundedCornerShape(10.dp))
                         .clickable(onClick = onOpenTabSwitcher)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                         .semantics {
@@ -294,7 +350,7 @@ private fun SurfaceDarkHeader(
                 ) {
                     Text(
                         text = "$tabCount",
-                        color = AccentCyan,
+                        color = activeAccent,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
                     )
@@ -302,31 +358,79 @@ private fun SurfaceDarkHeader(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // New Tab Quick '+' Button
+                // Overflow Menu Button '⋮'
                 Box(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(if (tabCount < maxTabs) AccentCyan else SurfaceLightDark)
-                        .clickable(enabled = tabCount < maxTabs, onClick = onNewTab)
+                        .background(SurfaceLightDark)
+                        .clickable { showOverflowMenu = true }
                         .semantics {
-                            contentDescription = "Open new tab"
+                            contentDescription = "Browser menu options"
                             role = androidx.compose.ui.semantics.Role.Button
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "+",
-                        color = if (tabCount < maxTabs) BackgroundDark else TextSecondary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    Text("⋮", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                    DropdownMenu(
+                        expanded = showOverflowMenu,
+                        onDismissRequest = { showOverflowMenu = false },
+                        modifier = Modifier.background(SurfaceDark)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("★ Bookmarks", color = TextPrimary) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onOpenBookmarks()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🕒 History", color = TextPrimary) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onOpenHistory()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🛡 Data & Privacy Controls", color = TextPrimary) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onOpenDataControl()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🕶 + New Private Tab", color = AccentPurple) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onNewPrivateTab()
+                            }
+                        )
+                        if (onOpenRoadmap != null) {
+                            DropdownMenuItem(
+                                text = { Text("🗺 Roadmap & Architecture", color = AccentCyan) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenRoadmap()
+                                }
+                            )
+                        }
+                        if (onOpenSpikeDebug != null) {
+                            DropdownMenuItem(
+                                text = { Text("🧪 GeckoView Spike Console", color = TextSecondary) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenSpikeDebug()
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Navigation Row: Back, Forward, Address Input, Reload/Stop
+            // Navigation Row: Back, Forward, Address Input + Bookmark Star, Reload/Stop
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -359,9 +463,31 @@ private fun SurfaceDarkHeader(
                             contentDescription = "Address and search input field"
                         },
                     placeholder = {
-                        Text("Search DuckDuckGo or enter URL...", color = TextMuted, fontSize = 13.sp)
+                        Text(
+                            text = if (isPrivate) "Search privately or enter URL..." else "Search DuckDuckGo or enter URL...",
+                            color = TextMuted,
+                            fontSize = 13.sp
+                        )
                     },
                     singleLine = true,
+                    trailingIcon = {
+                        // Bookmark Star Button
+                        if (activeTab != null && activeTab.url.isNotBlank() && activeTab.url != "about:blank") {
+                            Text(
+                                text = if (isBookmarked) "★" else "☆",
+                                color = if (isBookmarked) Color(0xFFFBBF24) else TextMuted,
+                                fontSize = 16.sp,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .clickable(onClick = onToggleBookmark)
+                                    .padding(6.dp)
+                                    .semantics {
+                                        contentDescription = if (isBookmarked) "Remove bookmark" else "Add bookmark"
+                                        role = androidx.compose.ui.semantics.Role.Button
+                                    }
+                            )
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
                         imeAction = ImeAction.Go
@@ -370,7 +496,7 @@ private fun SurfaceDarkHeader(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = BackgroundDark,
                         unfocusedContainerColor = BackgroundDark,
-                        focusedBorderColor = AccentCyan,
+                        focusedBorderColor = activeAccent,
                         unfocusedBorderColor = CardBorder,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary
@@ -395,10 +521,10 @@ private fun SurfaceDarkHeader(
                         .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    QuickChip("🧪 Fixture") { onNavigate("file:///android_asset/test_fixture.html") }
-                    QuickChip("🔒 Wikipedia") { onNavigate("https://en.wikipedia.org") }
-                    QuickChip("🦊 Mozilla") { onNavigate("https://www.mozilla.org") }
-                    QuickChip("🛑 BadSSL") { onNavigate("https://expired.badssl.com") }
+                    QuickChip("🧪 Fixture", activeAccent) { onNavigate("file:///android_asset/test_fixture.html") }
+                    QuickChip("🔒 Wikipedia", activeAccent) { onNavigate("https://en.wikipedia.org") }
+                    QuickChip("🦊 Mozilla", activeAccent) { onNavigate("https://www.mozilla.org") }
+                    QuickChip("🛑 BadSSL", activeAccent) { onNavigate("https://expired.badssl.com") }
                 }
             }
         }
@@ -434,7 +560,7 @@ private fun NavCircleButton(
 }
 
 @Composable
-private fun QuickChip(label: String, onClick: () -> Unit) {
+private fun QuickChip(label: String, accentColor: Color = AccentCyan, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -447,7 +573,7 @@ private fun QuickChip(label: String, onClick: () -> Unit) {
                 this.role = androidx.compose.ui.semantics.Role.Button
             }
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = AccentCyan)
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = accentColor)
     }
 }
 
@@ -481,7 +607,7 @@ private fun ShieldDetailsDropdown(onClose: () -> Unit) {
 }
 
 @Composable
-private fun MusifyHomeScreen(onNavigate: (String) -> Unit) {
+private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -490,24 +616,30 @@ private fun MusifyHomeScreen(onNavigate: (String) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "🛡", fontSize = 48.sp)
+            Text(text = if (isPrivate) "🕶" else "🛡", fontSize = 48.sp)
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Musify Browser", color = TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (isPrivate) "Musify Private Tab" else "Musify Browser",
+                color = TextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                "Zero Telemetry • Multi-Tab Isolation • Strict TLS",
+                text = if (isPrivate)
+                    "RAM-Only Ephemeral Mode • No History • Session Disposed on Close"
+                else
+                    "Zero Telemetry • Multi-Tab Isolation • Strict TLS",
                 color = TextSecondary,
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = { onNavigate("https://duckduckgo.com") },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("🦆 DuckDuckGo Search", color = BackgroundDark, fontWeight = FontWeight.Bold)
-                }
+            Button(
+                onClick = { onNavigate("https://duckduckgo.com") },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isPrivate) AccentPurple else AccentCyan),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("🦆 DuckDuckGo Search", color = BackgroundDark, fontWeight = FontWeight.Bold)
             }
         }
     }

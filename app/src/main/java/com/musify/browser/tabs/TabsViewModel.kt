@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.musify.browser.browser.ParsedNavigation
 import com.musify.browser.browser.UrlParser
 import com.musify.browser.engine.EngineAdapter
+import com.musify.browser.storage.BookmarkRepository
+import com.musify.browser.storage.HistoryRepository
+import com.musify.browser.storage.TimeRange
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,12 +19,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 /**
- * TabsViewModel manages multi-tab state, tab-to-engine session mappings,
- * session persistence for process recovery, and active tab navigation.
+ * TabsViewModel coordinates multi-tab lifecycle, ephemeral private sessions,
+ * history & bookmark persistence, and active tab navigation.
  */
 class TabsViewModel(
     val pool: TabEnginePool = TabEnginePool(),
     val store: TabSessionStore? = null,
+    val historyRepository: HistoryRepository? = null,
+    val bookmarkRepository: BookmarkRepository? = null,
     coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
 
@@ -49,7 +54,7 @@ class TabsViewModel(
             // Initial default tab
             _tabsState.value = TabsReducer.reduce(
                 _tabsState.value,
-                TabAction.CreateTab(url = "about:blank", title = "New Tab", selectImmediately = true)
+                TabAction.CreateTab(url = "about:blank", title = "New Tab", isPrivate = false, selectImmediately = true)
             )
         }
 
@@ -61,8 +66,8 @@ class TabsViewModel(
     }
 
     fun getActiveEngineAdapter(): EngineAdapter? {
-        val selectedId = _tabsState.value.selectedTabId ?: return null
-        return pool.getOrCreateAdapter(selectedId)
+        val selectedTab = _tabsState.value.selectedTab ?: return null
+        return pool.getOrCreateAdapter(selectedTab.id, isPrivate = selectedTab.isPrivate)
     }
 
     fun selectTab(tabId: String) {
@@ -74,7 +79,11 @@ class TabsViewModel(
         persistSession()
     }
 
-    fun createNewTab(url: String? = null, selectImmediately: Boolean = true): Boolean {
+    fun createNewTab(
+        url: String? = null,
+        isPrivate: Boolean = false,
+        selectImmediately: Boolean = true
+    ): Boolean {
         if (_tabsState.value.isAtMaxCapacity) {
             return false // Capped at max tabs
         }
@@ -82,7 +91,11 @@ class TabsViewModel(
         val previousSelected = _tabsState.value.selectedTabId
         _tabsState.value = TabsReducer.reduce(
             _tabsState.value,
-            TabAction.CreateTab(url = url, selectImmediately = selectImmediately)
+            TabAction.CreateTab(
+                url = url,
+                isPrivate = isPrivate,
+                selectImmediately = selectImmediately
+            )
         )
 
         val newSelected = _tabsState.value.selectedTabId
@@ -117,6 +130,14 @@ class TabsViewModel(
         persistSession()
     }
 
+    fun closeAllPrivateTabs() {
+        val privateIds = _tabsState.value.privateTabs.map { it.id }.toSet()
+        pool.releasePrivateAdapters(privateIds)
+        _tabsState.value = TabsReducer.reduce(_tabsState.value, TabAction.CloseAllPrivateTabs)
+        bindActiveTabEngine()
+        persistSession()
+    }
+
     fun navigateActiveTab(rawInput: String) {
         val activeTab = _tabsState.value.selectedTab ?: return
         val adapter = getActiveEngineAdapter() ?: return
@@ -129,7 +150,7 @@ class TabsViewModel(
                 adapter.loadUrl(result.searchUrl)
             }
             is ParsedNavigation.Rejected -> {
-                // Keep engine on current page, notify error
+                // Keep engine on current page, record error state
                 _tabsState.value = TabsReducer.reduce(
                     _tabsState.value,
                     TabAction.UpdateTabNavigation(
@@ -146,6 +167,41 @@ class TabsViewModel(
         }
 
         persistSession()
+    }
+
+    fun isCurrentTabBookmarked(): Boolean {
+        val url = _tabsState.value.selectedTab?.url ?: return false
+        return bookmarkRepository?.isBookmarked(url) == true
+    }
+
+    fun toggleBookmarkCurrentTab(): Boolean {
+        val tab = _tabsState.value.selectedTab ?: return false
+        if (tab.url.isBlank() || tab.url == "about:blank") return false
+        val repo = bookmarkRepository ?: return false
+        return if (repo.isBookmarked(tab.url)) {
+            repo.removeBookmark(tab.url)
+            false
+        } else {
+            repo.addBookmark(tab.url, tab.title)
+            true
+        }
+    }
+
+    fun clearBrowsingData(
+        clearHistory: Boolean = true,
+        clearBookmarks: Boolean = false,
+        clearTabs: Boolean = false,
+        timeRange: TimeRange = TimeRange.ALL_TIME
+    ) {
+        if (clearHistory) {
+            historyRepository?.deleteByTimeRange(timeRange)
+        }
+        if (clearBookmarks) {
+            bookmarkRepository?.clearAll()
+        }
+        if (clearTabs) {
+            closeAllTabs()
+        }
     }
 
     fun goBack(): Boolean {
@@ -175,13 +231,17 @@ class TabsViewModel(
 
     private fun bindActiveTabEngine() {
         activeObserverJob?.cancel()
-        val activeId = _tabsState.value.selectedTabId ?: return
-        val adapter = pool.getOrCreateAdapter(activeId)
+        val activeTab = _tabsState.value.selectedTab ?: return
+        val adapter = pool.getOrCreateAdapter(activeTab.id, isPrivate = activeTab.isPrivate)
 
-        activeObserverJob = scope.launchInTabScope(adapter, activeId)
+        activeObserverJob = scope.launchInTabScope(adapter, activeTab.id, activeTab.isPrivate)
     }
 
-    private fun CoroutineScope.launchInTabScope(adapter: EngineAdapter, activeId: String): Job {
+    private fun CoroutineScope.launchInTabScope(
+        adapter: EngineAdapter,
+        activeId: String,
+        isPrivate: Boolean
+    ): Job {
         val parentJob = Job()
         val combinedScope = CoroutineScope(coroutineContext + parentJob)
 
@@ -192,18 +252,26 @@ class TabsViewModel(
             } else {
                 nav.url
             }
+
+            val title = if (effectiveUrl.startsWith("http")) effectiveUrl else currentTab?.title
+
             _tabsState.value = TabsReducer.reduce(
                 _tabsState.value,
                 TabAction.UpdateTabNavigation(
                     tabId = activeId,
                     url = effectiveUrl,
-                    title = if (effectiveUrl.startsWith("http")) effectiveUrl else currentTab?.title,
+                    title = title,
                     canGoBack = nav.canGoBack,
                     canGoForward = nav.canGoForward,
                     isLoading = nav.isLoading,
                     progress = nav.progress
                 )
             )
+
+            // Strict Privacy Rule: NEVER record private browsing history
+            if (!isPrivate && !nav.isLoading && effectiveUrl.startsWith("http")) {
+                historyRepository?.addVisit(effectiveUrl, title ?: effectiveUrl)
+            }
         }.launchIn(combinedScope)
 
         adapter.securityState.onEach { sec ->

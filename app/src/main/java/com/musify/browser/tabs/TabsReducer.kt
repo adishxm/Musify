@@ -9,6 +9,7 @@ import java.util.UUID
  * - Deterministic selected-tab index mapping on tab closure.
  * - Strict capping at [TabsState.maxTabs] (default 20) to prevent native memory exhaustion.
  * - Safe fallback to a clean tab when all tabs are closed.
+ * - Private profile isolation: Private tabs are strictly ephemeral and never restored.
  * - 100% JVM testable with zero Android runtime dependencies.
  */
 object TabsReducer {
@@ -21,7 +22,9 @@ object TabsReducer {
                     state
                 } else {
                     val initialUrl = action.url ?: "about:blank"
-                    val initialTitle = action.title ?: if (initialUrl == "about:blank") "New Tab" else initialUrl
+                    val initialTitle = action.title ?: if (initialUrl == "about:blank") {
+                        if (action.isPrivate) "Private Tab" else "New Tab"
+                    } else initialUrl
                     val initialOrigin = if (initialUrl == "about:blank") "about:blank" else initialUrl
 
                     val newTab = TabSession(
@@ -35,6 +38,7 @@ object TabsReducer {
                         canGoForward = false,
                         isSecure = true,
                         isRendererCrashed = false,
+                        isPrivate = action.isPrivate,
                         createdAt = System.currentTimeMillis(),
                         lastActiveAt = System.currentTimeMillis()
                     )
@@ -83,7 +87,8 @@ object TabsReducer {
                         id = UUID.randomUUID().toString(),
                         url = "about:blank",
                         title = "New Tab",
-                        origin = "about:blank"
+                        origin = "about:blank",
+                        isPrivate = false
                     )
                     state.copy(
                         tabs = listOf(freshTab),
@@ -114,12 +119,41 @@ object TabsReducer {
                     id = UUID.randomUUID().toString(),
                     url = "about:blank",
                     title = "New Tab",
-                    origin = "about:blank"
+                    origin = "about:blank",
+                    isPrivate = false
                 )
                 state.copy(
                     tabs = listOf(freshTab),
                     selectedTabId = freshTab.id
                 )
+            }
+
+            is TabAction.CloseAllPrivateTabs -> {
+                val normalRemaining = state.tabs.filterNot { it.isPrivate }
+                if (normalRemaining.isEmpty()) {
+                    val freshTab = TabSession(
+                        id = UUID.randomUUID().toString(),
+                        url = "about:blank",
+                        title = "New Tab",
+                        origin = "about:blank",
+                        isPrivate = false
+                    )
+                    state.copy(
+                        tabs = listOf(freshTab),
+                        selectedTabId = freshTab.id
+                    )
+                } else {
+                    val wasSelectedPrivate = state.selectedTab?.isPrivate == true
+                    val newSelectedId = if (wasSelectedPrivate) {
+                        normalRemaining.first().id
+                    } else {
+                        state.selectedTabId
+                    }
+                    state.copy(
+                        tabs = normalRemaining,
+                        selectedTabId = newSelectedId
+                    )
+                }
             }
 
             is TabAction.UpdateTabNavigation -> {
@@ -168,13 +202,15 @@ object TabsReducer {
             }
 
             is TabAction.RestoreTabs -> {
-                if (action.tabs.isEmpty()) {
-                    val freshTab = TabSession()
+                // Strictly exclude any private tabs from restoration
+                val safeRestored = action.tabs.filterNot { it.isPrivate }
+                if (safeRestored.isEmpty()) {
+                    val freshTab = TabSession(isPrivate = false)
                     return state.copy(tabs = listOf(freshTab), selectedTabId = freshTab.id)
                 }
 
                 // Strictly cap restored tabs to maxTabs to prevent memory spikes on restore
-                val safeTabs = action.tabs.take(state.maxTabs)
+                val safeTabs = safeRestored.take(state.maxTabs)
                 val targetSelectedId = if (safeTabs.any { it.id == action.selectedId }) {
                     action.selectedId
                 } else {

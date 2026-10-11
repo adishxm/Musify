@@ -14,7 +14,7 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 
-class GeckoEngineAdapter : EngineAdapter {
+class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     override val engineType: EngineType = EngineType.GECKO_VIEW
 
     private val _navigationState = MutableStateFlow(EngineNavigationState())
@@ -63,7 +63,7 @@ class GeckoEngineAdapter : EngineAdapter {
     private fun initSession(context: Context) {
         val runtime = ensureRuntime(context)
         val sessionSettings = GeckoSessionSettings.Builder()
-            .usePrivateMode(false)
+            .usePrivateMode(isPrivate)
             .build()
         val session = GeckoSession(sessionSettings)
 

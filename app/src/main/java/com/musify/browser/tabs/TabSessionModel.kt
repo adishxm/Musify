@@ -16,6 +16,7 @@ data class TabSession(
     val canGoForward: Boolean = false,
     val isSecure: Boolean = true,
     val isRendererCrashed: Boolean = false,
+    val isPrivate: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val lastActiveAt: Long = System.currentTimeMillis()
 )
@@ -38,6 +39,18 @@ data class TabsState(
 
     val isAtMaxCapacity: Boolean
         get() = tabs.size >= maxTabs
+
+    val normalTabs: List<TabSession>
+        get() = tabs.filter { !it.isPrivate }
+
+    val privateTabs: List<TabSession>
+        get() = tabs.filter { it.isPrivate }
+
+    val hasPrivateTabs: Boolean
+        get() = tabs.any { it.isPrivate }
+
+    val isCurrentTabPrivate: Boolean
+        get() = selectedTab?.isPrivate == true
 }
 
 /**
@@ -47,6 +60,7 @@ sealed interface TabAction {
     data class CreateTab(
         val url: String? = null,
         val title: String? = null,
+        val isPrivate: Boolean = false,
         val selectImmediately: Boolean = true
     ) : TabAction
 
@@ -59,6 +73,8 @@ sealed interface TabAction {
     ) : TabAction
 
     data object CloseAllTabs : TabAction
+
+    data object CloseAllPrivateTabs : TabAction
 
     data class UpdateTabNavigation(
         val tabId: String,
