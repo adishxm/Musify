@@ -1,0 +1,14 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+*/build
+*.apk
+*.aab
+*.ap_
+captures/
+.externalNativeBuild
+.cxx
+Musify_Browser_brain.zip

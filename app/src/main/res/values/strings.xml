@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Musify</string>
+    <string name="landing_title">Musify Browser</string>
+    <string name="landing_subtitle">Native Android Privacy Browser</string>
+    <string name="scope_heading">Product Scope &amp; Safety Commitments</string>
+    <string name="scope_item_arbitrary_sites">General-purpose browsing across arbitrary websites</string>
+    <string name="scope_item_no_single_site">Independent engine architecture with zero single-site overrides</string>
+    <string name="scope_item_no_credentials">Zero telemetry, credential harvesting, or personal data collection</string>
+    <string name="scope_item_no_tls_bypass">Strict TLS integrity — no silent or blanket SSL bypass</string>
+    <string name="phase_status">Phase 00: Architecture Foundation &amp; Environment Verified</string>
+</resources>
