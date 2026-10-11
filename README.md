@@ -20,6 +20,7 @@ Musify is an independent, native Android browser designed to deliver transparent
 - **Reversible Per-Origin Exceptions:** Scoped exception management without global toggle side-effects and zero hardcoded rules for production domains.
 - **Conservative HTTPS-First Behavior:** Automatic upgrade to HTTPS with explicit insecure connection warning dialog before loading unencrypted HTTP websites.
 - **Filter-List Pipeline & Licensing Gate:** Memory-bounded offline rule compiler (ABP network rules, exceptions, subdomains), staged atomic activations, last-known-good rollbacks, and transparent in-app licensing/provenance screens with zero false parity claims.
+- **Browser Essentials & Sandboxed Storage:** User-confirmed off-thread downloads in sandboxed app-specific storage with `FileProvider` mediation, executable threat badges, exact-origin deny-by-default site permissions, fail-closed external scheme protection, and in-page search.
 
 ---
 
@@ -51,8 +52,8 @@ Project development follows the phased, evidence-based roadmap structured in the
 | **Phase 04** | History, bookmarks & disposable private sessions | **Completed (PASS)** | [.brain/.report/PHASE-04-REPORT.md](.brain/.report/PHASE-04-REPORT.md) |
 | **Phase 05** | Privacy shields & content blocking controls | **Completed (PASS)** | [.brain/.report/PHASE-05-REPORT.md](.brain/.report/PHASE-05-REPORT.md) |
 | **Phase 06** | Filter-list pipeline & licensing compliance gate | **Completed (PASS)** | [.brain/.report/PHASE-06-REPORT.md](.brain/.report/PHASE-06-REPORT.md) |
-| **Phase 07** | Browser essentials (downloads, site permissions) | Up Next | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
-| **Phase 08** | Hardening (security audit, a11y, memory profiling) | Queued | [.brain/.plan/PHASE-08.md](.brain/.plan/PHASE-08.md) |
+| **Phase 07** | Browser essentials (downloads, site permissions & safety) | **Completed (PASS)** | [.brain/.report/PHASE-07-REPORT.md](.brain/.report/PHASE-07-REPORT.md) |
+| **Phase 08** | Hardening (security audit, a11y, memory profiling) | Up Next | [.brain/.plan/PHASE-08.md](.brain/.plan/PHASE-08.md) |
 | **Phase 09** | Beta distribution & release readiness gate | Queued | [.brain/.plan/PHASE-09.md](.brain/.plan/PHASE-09.md) |
 
 ---

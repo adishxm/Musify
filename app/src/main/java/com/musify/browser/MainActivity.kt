@@ -15,12 +15,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import com.musify.browser.downloads.LocalDownloadRepository
+import com.musify.browser.downloads.MusifyDownloadManager
+import com.musify.browser.permissions.LocalSitePermissionRepository
 import com.musify.browser.storage.LocalBookmarkRepository
 import com.musify.browser.storage.LocalHistoryRepository
 import com.musify.browser.tabs.FileTabSessionStore
 import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.screens.BrowserShellScreen
 import com.musify.browser.ui.screens.DataControlScreen
+import com.musify.browser.ui.screens.DownloadsScreen
 import com.musify.browser.ui.screens.EngineSpikeScreen
 import com.musify.browser.filterlist.FilterEngine
 import com.musify.browser.filterlist.FilterListRegistry
@@ -29,6 +34,7 @@ import com.musify.browser.filterlist.FilterListUpdater
 import com.musify.browser.ui.screens.FilterListScreen
 import com.musify.browser.ui.screens.HistoryBookmarksScreen
 import com.musify.browser.ui.screens.LandingScreen
+import com.musify.browser.ui.screens.SitePermissionsScreen
 import com.musify.browser.ui.theme.MusifyTheme
 import java.io.File
 
@@ -37,6 +43,8 @@ enum class ScreenState {
     HISTORY_BOOKMARKS,
     DATA_CONTROL,
     FILTER_LISTS,
+    DOWNLOADS,
+    SITE_PERMISSIONS,
     LANDING,
     SPIKE
 }
@@ -66,6 +74,13 @@ class MainActivity : ComponentActivity() {
         val filterEngine = FilterEngine(filterStorage)
         val filterUpdater = FilterListUpdater(filterStorage)
 
+        val downloadsFile = File(filesDir, "musify_downloads.json")
+        val downloadRepository = LocalDownloadRepository(downloadsFile)
+        val downloadManager = MusifyDownloadManager(this, downloadRepository, lifecycleScope)
+
+        val sitePermissionsFile = File(filesDir, "musify_site_permissions.json")
+        val sitePermissionRepository = LocalSitePermissionRepository(sitePermissionsFile)
+
         setContent {
             MusifyTheme {
                 var currentScreen by remember { mutableStateOf(ScreenState.BROWSER) }
@@ -76,7 +91,9 @@ class MainActivity : ComponentActivity() {
                         store = sessionStore,
                         historyRepository = historyRepository,
                         bookmarkRepository = bookmarkRepository,
-                        shieldExceptionRepository = shieldExceptionRepository
+                        shieldExceptionRepository = shieldExceptionRepository,
+                        downloadManager = downloadManager,
+                        sitePermissionRepository = sitePermissionRepository
                     )
                 }
                 activeTabsViewModel = tabsViewModel
@@ -109,6 +126,12 @@ class MainActivity : ComponentActivity() {
                                 onOpenFilterLists = {
                                     currentScreen = ScreenState.FILTER_LISTS
                                 },
+                                onOpenDownloads = {
+                                    currentScreen = ScreenState.DOWNLOADS
+                                },
+                                onOpenSitePermissions = {
+                                    currentScreen = ScreenState.SITE_PERMISSIONS
+                                },
                                 onOpenSpikeDebug = { currentScreen = ScreenState.SPIKE },
                                 onOpenRoadmap = { currentScreen = ScreenState.LANDING }
                             )
@@ -140,6 +163,22 @@ class MainActivity : ComponentActivity() {
                             FilterListScreen(
                                 filterEngine = filterEngine,
                                 filterUpdater = filterUpdater,
+                                modifier = Modifier.padding(innerPadding),
+                                onClose = { currentScreen = ScreenState.BROWSER }
+                            )
+                        }
+                        ScreenState.DOWNLOADS -> {
+                            BackHandler { currentScreen = ScreenState.BROWSER }
+                            DownloadsScreen(
+                                downloadManager = downloadManager,
+                                modifier = Modifier.padding(innerPadding),
+                                onClose = { currentScreen = ScreenState.BROWSER }
+                            )
+                        }
+                        ScreenState.SITE_PERMISSIONS -> {
+                            BackHandler { currentScreen = ScreenState.BROWSER }
+                            SitePermissionsScreen(
+                                repository = sitePermissionRepository,
                                 modifier = Modifier.padding(innerPadding),
                                 onClose = { currentScreen = ScreenState.BROWSER }
                             )

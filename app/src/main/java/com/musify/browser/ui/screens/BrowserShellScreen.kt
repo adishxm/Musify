@@ -1,5 +1,7 @@
 package com.musify.browser.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -54,7 +56,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.musify.browser.downloads.DownloadPromptRequest
 import com.musify.browser.engine.EngineView
+import com.musify.browser.permissions.SitePermissionPromptRequest
+import com.musify.browser.safety.FindInPageState
+import com.musify.browser.safety.SchemeDecision
 import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.theme.AccentCyan
 import com.musify.browser.ui.theme.AccentPurple
@@ -81,6 +87,8 @@ fun BrowserShellScreen(
     onOpenHistory: () -> Unit,
     onOpenDataControl: () -> Unit,
     onOpenFilterLists: (() -> Unit)? = null,
+    onOpenDownloads: (() -> Unit)? = null,
+    onOpenSitePermissions: (() -> Unit)? = null,
     onOpenSpikeDebug: (() -> Unit)? = null,
     onOpenRoadmap: (() -> Unit)? = null
 ) {
@@ -89,6 +97,11 @@ fun BrowserShellScreen(
     val activeAdapter = viewModel.getActiveEngineAdapter()
     val activeShieldState by viewModel.activeShieldState.collectAsState()
     val httpFallbackPrompt by viewModel.httpFallbackPrompt.collectAsState()
+    val downloadPrompt by viewModel.pendingDownloadPrompt.collectAsState()
+    val sitePermissionPrompt by viewModel.pendingSitePermissionPrompt.collectAsState()
+    val externalSchemePrompt by viewModel.pendingExternalSchemePrompt.collectAsState()
+    val findState by viewModel.findInPageManager.state.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var showTabSwitcher by remember { mutableStateOf(false) }
     var addressInput by remember { mutableStateOf("") }
@@ -107,9 +120,11 @@ fun BrowserShellScreen(
     }
 
     // Intercept hardware back button: close shield sheet, back in web page, or close switcher
-    BackHandler(enabled = showShieldSheet || showTabSwitcher || (activeTab?.canGoBack == true)) {
+    BackHandler(enabled = showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
         if (showShieldSheet) {
             showShieldSheet = false
+        } else if (findState.isActive) {
+            viewModel.findInPageManager.close()
         } else if (showTabSwitcher) {
             showTabSwitcher = false
         } else if (activeTab?.canGoBack == true) {
@@ -169,6 +184,22 @@ fun BrowserShellScreen(
                 onOpenHistory = onOpenHistory,
                 onOpenDataControl = onOpenDataControl,
                 onOpenFilterLists = onOpenFilterLists,
+                onOpenDownloads = onOpenDownloads,
+                onOpenSitePermissions = onOpenSitePermissions,
+                onFindInPage = { viewModel.findInPageManager.startFind() },
+                onSharePage = {
+                    val urlToShare = activeTab?.url
+                    if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
+                        try {
+                            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                putExtra(Intent.EXTRA_TEXT, urlToShare)
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, "Share Page"))
+                        } catch (_: Exception) {
+                        }
+                    }
+                },
                 onNewPrivateTab = {
                     viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
                     addressInput = ""
@@ -180,6 +211,17 @@ fun BrowserShellScreen(
                     focusManager.clearFocus()
                 }
             )
+
+            // Find In Page Active Search Bar
+            AnimatedVisibility(visible = findState.isActive) {
+                FindInPageBar(
+                    state = findState,
+                    onQueryChange = { viewModel.findInPageManager.updateQuery(it) },
+                    onNext = { viewModel.findInPageManager.nextMatch() },
+                    onPrevious = { viewModel.findInPageManager.previousMatch() },
+                    onClose = { viewModel.findInPageManager.close() }
+                )
+            }
 
             // Loading Progress Bar
             if (activeTab?.isLoading == true) {
@@ -288,6 +330,217 @@ fun BrowserShellScreen(
             containerColor = SurfaceDark
         )
     }
+
+    // User-Confirmed Sandboxed Download Dialog
+    if (downloadPrompt != null) {
+        val req = downloadPrompt!!
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissDownloadPrompt() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("📥", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    Text(
+                        text = "Download File",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = req.suggestedFileName,
+                        color = AccentCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Origin: ${req.origin}",
+                        color = TextSecondary,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Estimated Size: ${if (req.contentLength > 0) "${req.contentLength / 1024} KB" else "Unknown"}",
+                        color = TextSecondary,
+                        fontSize = 12.sp
+                    )
+                    if (req.isExecutableWarning) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = StatusRed.copy(alpha = 0.15f)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, StatusRed),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text(
+                                    text = "⚠ Executable File Warning",
+                                    color = StatusRed,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "This file type can execute code on your device. Musify will not automatically run or install this file.",
+                                    color = TextPrimary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = "Download will be stored safely in Musify's private sandboxed downloads directory.",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmDownload(req) },
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Download", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { viewModel.dismissDownloadPrompt() },
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cancel", color = TextPrimary)
+                }
+            },
+            containerColor = SurfaceDark
+        )
+    }
+
+    // Deny-by-Default Web Origin Site Permission Dialog
+    if (sitePermissionPrompt != null) {
+        val perm = sitePermissionPrompt!!
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissSitePermission() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("📍", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    Text(
+                        text = "Site Permission Prompt",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = perm.origin,
+                        color = AccentCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "This website is requesting permission to access your ${perm.type.label}.",
+                        color = TextPrimary,
+                        fontSize = 13.sp
+                    )
+                    Text(
+                        text = "Musify enforces deny-by-default for all origins. You can review or revoke this permission at any time.",
+                        color = TextSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.grantSitePermission(perm) },
+                    colors = ButtonDefaults.buttonColors(containerColor = StatusGreen),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Allow", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { viewModel.denySitePermission(perm) },
+                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Deny", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = SurfaceDark
+        )
+    }
+
+    // Fail-Closed External Scheme Confirmation Dialog
+    if (externalSchemePrompt != null) {
+        val scheme = externalSchemePrompt!!
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissExternalScheme() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("↗", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    Text(
+                        text = "Open External App?",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "External Scheme: ${scheme.scheme}",
+                        color = AccentCyan,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = scheme.uri,
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "Musify protects your privacy by preventing websites from launching apps on your device without your explicit consent.",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.dismissExternalScheme()
+                        try {
+                            val launchIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scheme.uri)).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(launchIntent)
+                        } catch (_: Exception) {
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Open App", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { viewModel.dismissExternalScheme() },
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cancel", color = TextPrimary)
+                }
+            },
+            containerColor = SurfaceDark
+        )
+    }
 }
 
 @Composable
@@ -314,6 +567,10 @@ private fun SurfaceDarkHeader(
     onOpenHistory: () -> Unit,
     onOpenDataControl: () -> Unit,
     onOpenFilterLists: (() -> Unit)? = null,
+    onOpenDownloads: (() -> Unit)? = null,
+    onOpenSitePermissions: (() -> Unit)? = null,
+    onFindInPage: () -> Unit,
+    onSharePage: () -> Unit,
     onNewPrivateTab: () -> Unit,
     onOpenRoadmap: (() -> Unit)?,
     onOpenSpikeDebug: (() -> Unit)?,
@@ -462,6 +719,38 @@ private fun SurfaceDarkHeader(
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenHistory()
+                            }
+                        )
+                        if (onOpenDownloads != null) {
+                            DropdownMenuItem(
+                                text = { Text("📥 Downloads", color = TextPrimary) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenDownloads()
+                                }
+                            )
+                        }
+                        if (onOpenSitePermissions != null) {
+                            DropdownMenuItem(
+                                text = { Text("📍 Site Permissions", color = TextPrimary) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenSitePermissions()
+                                }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text("🔍 Find in Page", color = TextPrimary) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onFindInPage()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🔗 Share Page", color = TextPrimary) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onSharePage()
                             }
                         )
                         DropdownMenuItem(
@@ -727,3 +1016,78 @@ private fun RendererCrashOverlay(onRecover: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun FindInPageBar(
+    state: FindInPageState,
+    onQueryChange: (String) -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onClose: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("🔍", fontSize = 14.sp)
+            OutlinedTextField(
+                value = state.query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Find in page...", color = TextMuted, fontSize = 12.sp) },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = BackgroundDark,
+                    unfocusedContainerColor = BackgroundDark,
+                    focusedBorderColor = AccentCyan,
+                    unfocusedBorderColor = CardBorder,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            if (state.displayMatchText.isNotBlank()) {
+                Text(
+                    text = state.displayMatchText,
+                    color = TextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            NavCircleButton(
+                symbol = "▲",
+                contentDescription = "Previous match",
+                enabled = state.totalMatches > 0,
+                onClick = onPrevious
+            )
+
+            NavCircleButton(
+                symbol = "▼",
+                contentDescription = "Next match",
+                enabled = state.totalMatches > 0,
+                onClick = onNext
+            )
+
+            NavCircleButton(
+                symbol = "✕",
+                contentDescription = "Close find in page",
+                enabled = true,
+                onClick = onClose
+            )
+        }
+    }
+}
+
