@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.musify.browser.browser.ParsedNavigation
 import com.musify.browser.browser.UrlParser
 import com.musify.browser.engine.EngineAdapter
+import com.musify.browser.engine.EngineShieldState
+import com.musify.browser.shield.ShieldExceptionRepository
 import com.musify.browser.storage.BookmarkRepository
 import com.musify.browser.storage.HistoryRepository
 import com.musify.browser.storage.TimeRange
@@ -19,14 +21,23 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 /**
+ * State representing a prompt for explicit HTTP fallback confirmation.
+ */
+data class HttpFallbackPrompt(
+    val targetUrl: String,
+    val host: String
+)
+
+/**
  * TabsViewModel coordinates multi-tab lifecycle, ephemeral private sessions,
- * history & bookmark persistence, and active tab navigation.
+ * history & bookmark persistence, shield exceptions, and active tab navigation.
  */
 class TabsViewModel(
     val pool: TabEnginePool = TabEnginePool(),
     val store: TabSessionStore? = null,
     val historyRepository: HistoryRepository? = null,
     val bookmarkRepository: BookmarkRepository? = null,
+    val shieldExceptionRepository: ShieldExceptionRepository? = null,
     coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
 
@@ -36,6 +47,14 @@ class TabsViewModel(
 
     private val _tabsState = MutableStateFlow(TabsState())
     val tabsState: StateFlow<TabsState> = _tabsState.asStateFlow()
+
+    private val _activeShieldState = MutableStateFlow(EngineShieldState())
+    val activeShieldState: StateFlow<EngineShieldState> = _activeShieldState.asStateFlow()
+
+    private val _httpFallbackPrompt = MutableStateFlow<HttpFallbackPrompt?>(null)
+    val httpFallbackPrompt: StateFlow<HttpFallbackPrompt?> = _httpFallbackPrompt.asStateFlow()
+
+    private val allowedHttpOrigins = mutableSetOf("localhost", "127.0.0.1")
 
     private var activeObserverJob: Job? = null
 
@@ -144,6 +163,11 @@ class TabsViewModel(
 
         when (val result = UrlParser.parse(rawInput)) {
             is ParsedNavigation.AllowedUrl -> {
+                // Conservative HTTPS-first check: if unencrypted HTTP, prompt explicit fallback
+                if (!result.isHttps && !allowedHttpOrigins.contains(result.host.lowercase())) {
+                    _httpFallbackPrompt.value = HttpFallbackPrompt(result.url, result.host)
+                    return
+                }
                 adapter.loadUrl(result.url)
             }
             is ParsedNavigation.Search -> {
@@ -167,6 +191,38 @@ class TabsViewModel(
         }
 
         persistSession()
+    }
+
+    fun confirmHttpFallback() {
+        val prompt = _httpFallbackPrompt.value ?: return
+        allowedHttpOrigins.add(prompt.host.lowercase())
+        _httpFallbackPrompt.value = null
+        getActiveEngineAdapter()?.loadUrl(prompt.targetUrl)
+        persistSession()
+    }
+
+    fun dismissHttpFallback() {
+        _httpFallbackPrompt.value = null
+    }
+
+    fun isShieldEnabledForCurrentTab(): Boolean {
+        val tab = _tabsState.value.selectedTab ?: return true
+        val origin = tab.origin
+        if (origin.isBlank() || origin == "unknown" || origin == "musify://home") return true
+        return shieldExceptionRepository?.isShieldDisabled(origin) != true
+    }
+
+    fun toggleShieldForCurrentOrigin(): Boolean {
+        val tab = _tabsState.value.selectedTab ?: return true
+        val origin = tab.origin
+        if (origin.isBlank() || origin == "unknown" || origin == "musify://home") return true
+        val repo = shieldExceptionRepository ?: return true
+        val wasDisabled = repo.isShieldDisabled(origin)
+        val nowDisabled = !wasDisabled
+        repo.setShieldDisabled(origin, nowDisabled)
+        getActiveEngineAdapter()?.setOriginException(nowDisabled)
+        getActiveEngineAdapter()?.reload()
+        return !nowDisabled
     }
 
     fun isCurrentTabBookmarked(): Boolean {
@@ -234,6 +290,10 @@ class TabsViewModel(
         val activeTab = _tabsState.value.selectedTab ?: return
         val adapter = pool.getOrCreateAdapter(activeTab.id, isPrivate = activeTab.isPrivate)
 
+        // Sync shield exception for this origin
+        val isException = shieldExceptionRepository?.isShieldDisabled(activeTab.origin) == true
+        adapter.setOriginException(isException)
+
         activeObserverJob = scope.launchInTabScope(adapter, activeTab.id, activeTab.isPrivate)
     }
 
@@ -275,14 +335,23 @@ class TabsViewModel(
         }.launchIn(combinedScope)
 
         adapter.securityState.onEach { sec ->
+            val origin = sec.host ?: _tabsState.value.selectedTab?.origin ?: "unknown"
             _tabsState.value = TabsReducer.reduce(
                 _tabsState.value,
                 TabAction.UpdateTabSecurity(
                     tabId = activeId,
                     isSecure = sec.isSecure,
-                    origin = sec.host ?: _tabsState.value.selectedTab?.origin ?: "unknown"
+                    origin = origin
                 )
             )
+
+            // Update shield exception state when origin changes
+            val isException = shieldExceptionRepository?.isShieldDisabled(origin) == true
+            adapter.setOriginException(isException)
+        }.launchIn(combinedScope)
+
+        adapter.shieldState.onEach { shield ->
+            _activeShieldState.value = shield
         }.launchIn(combinedScope)
 
         adapter.processState.onEach { proc ->

@@ -105,6 +105,7 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     progress = 10,
                     url = url
                 )
+                resetPageShieldCount()
             }
 
             override fun onPageStop(session: GeckoSession, success: Boolean) {
@@ -150,21 +151,44 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
         session.contentBlockingDelegate = object : ContentBlocking.Delegate {
             override fun onContentBlocked(session: GeckoSession, event: ContentBlocking.BlockEvent) {
-                if (_shieldState.value.isProtectionEnabled) {
+                if (_shieldState.value.isProtectionEnabled && !_shieldState.value.isOriginException) {
                     val count = _shieldState.value.blockedCount + 1
+                    var ads = _shieldState.value.blockedAds
+                    var social = _shieldState.value.blockedSocial
+                    var crypto = _shieldState.value.blockedCryptominers
+                    var finger = _shieldState.value.blockedFingerprinters
+
                     val category = when (event.antiTrackingCategory) {
-                        ContentBlocking.AntiTracking.AD -> "Advertising Tracker"
-                        ContentBlocking.AntiTracking.ANALYTIC -> "Analytics Tracker"
-                        ContentBlocking.AntiTracking.SOCIAL -> "Social Media Tracker"
-                        ContentBlocking.AntiTracking.CONTENT -> "Third-Party Tracking Content"
-                        ContentBlocking.AntiTracking.CRYPTOMINING -> "Cryptomining Script"
-                        ContentBlocking.AntiTracking.FINGERPRINTING -> "Fingerprinting Canvas/Font"
-                        else -> "Blocked Tracking Request"
+                        ContentBlocking.AntiTracking.AD,
+                        ContentBlocking.AntiTracking.ANALYTIC -> {
+                            ads++
+                            "Advertising & Analytics Tracker"
+                        }
+                        ContentBlocking.AntiTracking.SOCIAL -> {
+                            social++
+                            "Cross-Site Social Tracker"
+                        }
+                        ContentBlocking.AntiTracking.CRYPTOMINING -> {
+                            crypto++
+                            "Cryptomining Script"
+                        }
+                        ContentBlocking.AntiTracking.FINGERPRINTING -> {
+                            finger++
+                            "Browser Fingerprinter"
+                        }
+                        else -> {
+                            ads++
+                            "Blocked Tracking Content"
+                        }
                     }
                     _shieldState.value = _shieldState.value.copy(
                         blockedCount = count,
                         lastBlockedUrl = event.uri,
-                        lastBlockCategory = category
+                        lastBlockCategory = category,
+                        blockedAds = ads,
+                        blockedSocial = social,
+                        blockedCryptominers = crypto,
+                        blockedFingerprinters = finger
                     )
                 }
             }
@@ -246,6 +270,22 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         _shieldState.value = _shieldState.value.copy(isProtectionEnabled = enabled)
         val antiTracking = if (enabled) ContentBlocking.AntiTracking.STRICT else ContentBlocking.AntiTracking.DEFAULT
         sharedRuntime?.settings?.contentBlocking?.setAntiTracking(antiTracking)
+    }
+
+    override fun setOriginException(isException: Boolean) {
+        _shieldState.value = _shieldState.value.copy(isOriginException = isException)
+    }
+
+    override fun resetPageShieldCount() {
+        _shieldState.value = _shieldState.value.copy(
+            blockedCount = 0,
+            lastBlockedUrl = null,
+            lastBlockCategory = null,
+            blockedAds = 0,
+            blockedSocial = 0,
+            blockedCryptominers = 0,
+            blockedFingerprinters = 0
+        )
     }
 
     override fun simulateRendererLoss() {

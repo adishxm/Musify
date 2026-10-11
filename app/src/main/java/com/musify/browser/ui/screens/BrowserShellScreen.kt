@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -70,7 +71,7 @@ import com.musify.browser.ui.theme.TextSecondary
 
 /**
  * BrowserShellScreen hosts the multi-tab navigation chrome, Omnibar,
- * active engine renderer, private browsing indicators, bookmark toggling, and overflow menu.
+ * active engine renderer, private browsing indicators, privacy shield sheet, and overflow menu.
  */
 @Composable
 fun BrowserShellScreen(
@@ -85,13 +86,14 @@ fun BrowserShellScreen(
     val tabsState by viewModel.tabsState.collectAsState()
     val activeTab = tabsState.selectedTab
     val activeAdapter = viewModel.getActiveEngineAdapter()
+    val activeShieldState by viewModel.activeShieldState.collectAsState()
+    val httpFallbackPrompt by viewModel.httpFallbackPrompt.collectAsState()
 
     var showTabSwitcher by remember { mutableStateOf(false) }
     var addressInput by remember { mutableStateOf("") }
     var isAddressBarFocused by remember { mutableStateOf(false) }
-    var showShieldDetails by remember { mutableStateOf(false) }
+    var showShieldSheet by remember { mutableStateOf(false) }
     var isBookmarked by remember { mutableStateOf(false) }
-    var bookmarkTrigger by remember { mutableIntStateOf(0) }
     val focusManager = LocalFocusManager.current
 
     // Synchronize address bar and bookmark star state when active tab updates
@@ -103,9 +105,11 @@ fun BrowserShellScreen(
         isBookmarked = viewModel.isCurrentTabBookmarked()
     }
 
-    // Intercept hardware back button: back in web page, or close switcher
-    BackHandler(enabled = showTabSwitcher || (activeTab?.canGoBack == true)) {
-        if (showTabSwitcher) {
+    // Intercept hardware back button: close shield sheet, back in web page, or close switcher
+    BackHandler(enabled = showShieldSheet || showTabSwitcher || (activeTab?.canGoBack == true)) {
+        if (showShieldSheet) {
+            showShieldSheet = false
+        } else if (showTabSwitcher) {
             showTabSwitcher = false
         } else if (activeTab?.canGoBack == true) {
             viewModel.goBack()
@@ -132,6 +136,8 @@ fun BrowserShellScreen(
                 addressInput = addressInput,
                 isAddressBarFocused = isAddressBarFocused,
                 isBookmarked = isBookmarked,
+                shieldBlockedCount = activeShieldState.blockedCount,
+                isShieldEnabled = viewModel.isShieldEnabledForCurrentTab(),
                 onAddressChange = { addressInput = it },
                 onFocusChange = { isAddressBarFocused = it },
                 onSubmit = {
@@ -157,7 +163,7 @@ fun BrowserShellScreen(
                 onReloadOrStop = {
                     if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
                 },
-                onToggleShield = { showShieldDetails = !showShieldDetails },
+                onToggleShield = { showShieldSheet = !showShieldSheet },
                 onOpenBookmarks = onOpenBookmarks,
                 onOpenHistory = onOpenHistory,
                 onOpenDataControl = onOpenDataControl,
@@ -186,8 +192,11 @@ fun BrowserShellScreen(
             }
 
             // Shield Details Sheet (Collapsible)
-            AnimatedVisibility(visible = showShieldDetails) {
-                ShieldDetailsDropdown(onClose = { showShieldDetails = false })
+            AnimatedVisibility(visible = showShieldSheet) {
+                PrivacyShieldSheet(
+                    viewModel = viewModel,
+                    onClose = { showShieldSheet = false }
+                )
             }
 
             // Main Web Engine Canvas or Crash State
@@ -224,6 +233,59 @@ fun BrowserShellScreen(
             }
         }
     }
+
+    // Conservative HTTPS-First Explicit HTTP Fallback Dialog
+    if (httpFallbackPrompt != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissHttpFallback() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("⚠", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    Text(
+                        text = "Insecure Connection Warning",
+                        color = StatusOrange,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "The address '${httpFallbackPrompt?.host}' does not use HTTPS encryption.",
+                        color = TextPrimary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Information sent over unencrypted HTTP (such as passwords, login tokens, or form data) can be inspected or intercepted by anyone on your network.\n\nDo you wish to proceed to this unencrypted site?",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmHttpFallback() },
+                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Proceed Insecurely", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { viewModel.dismissHttpFallback() },
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cancel", color = TextPrimary)
+                }
+            },
+            containerColor = SurfaceDark
+        )
+    }
 }
 
 @Composable
@@ -234,6 +296,8 @@ private fun SurfaceDarkHeader(
     addressInput: String,
     isAddressBarFocused: Boolean,
     isBookmarked: Boolean,
+    shieldBlockedCount: Int,
+    isShieldEnabled: Boolean,
     onAddressChange: (String) -> Unit,
     onFocusChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
@@ -313,23 +377,28 @@ private fun SurfaceDarkHeader(
                     )
                 }
 
-                // Shields Button
+                // Shields Button with Blocked Count Badge
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(SurfaceLightDark)
+                        .background(if (!isShieldEnabled) StatusOrange.copy(alpha = 0.15f) else SurfaceLightDark)
+                        .border(
+                            1.dp,
+                            if (!isShieldEnabled) StatusOrange else StatusGreen.copy(alpha = 0.5f),
+                            RoundedCornerShape(10.dp)
+                        )
                         .clickable(onClick = onToggleShield)
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                         .semantics {
-                            contentDescription = "Shield protections active"
+                            contentDescription = if (isShieldEnabled) "Privacy shields active, $shieldBlockedCount blocked" else "Privacy shields disabled"
                             role = androidx.compose.ui.semantics.Role.Button
                         }
                 ) {
                     Text(
-                        text = "🛡 Shields",
-                        color = StatusGreen,
+                        text = if (!isShieldEnabled) "🛡 Off" else if (shieldBlockedCount > 0) "🛡 $shieldBlockedCount" else "🛡 Shields",
+                        color = if (!isShieldEnabled) StatusOrange else StatusGreen,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -574,35 +643,6 @@ private fun QuickChip(label: String, accentColor: Color = AccentCyan, onClick: (
             }
     ) {
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = accentColor)
-    }
-}
-
-@Composable
-private fun ShieldDetailsDropdown(onClose: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, StatusGreen.copy(alpha = 0.5f))
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("🛡 Privacy Shields Active", color = StatusGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text("✕", color = TextSecondary, modifier = Modifier.clickable(onClick = onClose))
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                "Cross-site tracking cookies blocked\nCryptominers and fingerprinters blocked\nStrict TLS verification enforced",
-                color = TextSecondary,
-                fontSize = 12.sp
-            )
-        }
     }
 }
 

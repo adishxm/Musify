@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
         val bookmarksFile = File(filesDir, "musify_bookmarks.json")
         val bookmarkRepository = LocalBookmarkRepository(bookmarksFile)
 
+        val shieldExceptionsFile = File(filesDir, "musify_shield_exceptions.txt")
+        val shieldExceptionRepository = com.musify.browser.shield.LocalShieldExceptionRepository(shieldExceptionsFile)
+
         setContent {
             MusifyTheme {
                 var currentScreen by remember { mutableStateOf(ScreenState.BROWSER) }
@@ -61,7 +64,8 @@ class MainActivity : ComponentActivity() {
                     TabsViewModel(
                         store = sessionStore,
                         historyRepository = historyRepository,
-                        bookmarkRepository = bookmarkRepository
+                        bookmarkRepository = bookmarkRepository,
+                        shieldExceptionRepository = shieldExceptionRepository
                     )
                 }
                 activeTabsViewModel = tabsViewModel

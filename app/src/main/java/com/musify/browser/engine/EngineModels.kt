@@ -26,7 +26,12 @@ data class EngineShieldState(
     val blockedCount: Int = 0,
     val lastBlockedUrl: String? = null,
     val lastBlockCategory: String? = null,
-    val isProtectionEnabled: Boolean = true
+    val isProtectionEnabled: Boolean = true,
+    val isOriginException: Boolean = false,
+    val blockedAds: Int = 0,
+    val blockedSocial: Int = 0,
+    val blockedCryptominers: Int = 0,
+    val blockedFingerprinters: Int = 0
 )
 
 data class EngineProcessState(

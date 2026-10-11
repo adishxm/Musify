@@ -16,10 +16,9 @@ Musify is an independent, native Android browser designed to deliver transparent
 - **Zero Telemetry or Credential Harvesting:** Zero behavioral analytics, ad tracking, or cloud profile synchronization. All browsing data remains strictly on-device.
 - **Strict TLS Security:** Enforced certificate validation with zero silent overrides or unsafe blanket SSL proceed options; cleartext traffic disabled globally via Android Network Security Config.
 - **Verified Origin Display & Anti-Spoofing:** Omnibar displays the full, verified origin (scheme, host, port) and decodes IDN homoglyphs into ASCII Punycode (`xn--...`) to mitigate visual spoofing.
-- **Documented Request Protection:** Transparent shield counters labeled *"requests blocked by this app"*, per-site exception controls, and disposable private browsing sessions.
-- **Local History & Bookmarks Lifecycle:** Thread-safe JSON storage supporting multi-visit counters, query search, individual deletion, and granular time-range clearing (`1 Hour`, `24 Hours`, `7 Days`, `All Time`).
-- **Disposable Private Browsing:** Ephemeral GeckoView sessions with distinct amethyst visual indicators; private tab sessions and navigations are strictly excluded from history recording and disk persistence, with immediate memory disposal on tab closure.
-- **Transparent Privacy Boundaries:** Honest user disclosure emphasizing zero telemetry while clarifying that private mode does not grant anonymity against network operators or web servers.
+- **Privacy Shields & Content Blocking:** Engine-native GeckoView strict protection against advertising trackers, social trackers, cryptominers, and browser fingerprinters.
+- **Reversible Per-Origin Exceptions:** Scoped exception management without global toggle side-effects and zero hardcoded rules for production domains.
+- **Conservative HTTPS-First Behavior:** Automatic upgrade to HTTPS with explicit insecure connection warning dialog before loading unencrypted HTTP websites.
 
 ---
 
@@ -49,8 +48,8 @@ Project development follows the phased, evidence-based roadmap structured in the
 | **Phase 02** | Single-tab browser shell, safe URL parser & navigation controls | **Completed (PASS)** | [.brain/.report/PHASE-02-REPORT.md](.brain/.report/PHASE-02-REPORT.md) |
 | **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **Completed (PASS)** | [.brain/.report/PHASE-03-REPORT.md](.brain/.report/PHASE-03-REPORT.md) |
 | **Phase 04** | History, bookmarks & disposable private sessions | **Completed (PASS)** | [.brain/.report/PHASE-04-REPORT.md](.brain/.report/PHASE-04-REPORT.md) |
-| **Phase 05** | Privacy shields & content blocking controls | Up Next | [.brain/.plan/PHASE-05.md](.brain/.plan/PHASE-05.md) |
-| **Phase 06** | Filter-list pipeline & licensing compliance gate | Queued | [.brain/.plan/PHASE-06.md](.brain/.plan/PHASE-06.md) |
+| **Phase 05** | Privacy shields & content blocking controls | **Completed (PASS)** | [.brain/.report/PHASE-05-REPORT.md](.brain/.report/PHASE-05-REPORT.md) |
+| **Phase 06** | Filter-list pipeline & licensing compliance gate | Up Next | [.brain/.plan/PHASE-06.md](.brain/.plan/PHASE-06.md) |
 | **Phase 07** | Browser essentials (downloads, site permissions) | Queued | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
 | **Phase 08** | Hardening (security audit, a11y, memory profiling) | Queued | [.brain/.plan/PHASE-08.md](.brain/.plan/PHASE-08.md) |
 | **Phase 09** | Beta distribution & release readiness gate | Queued | [.brain/.plan/PHASE-09.md](.brain/.plan/PHASE-09.md) |
@@ -65,7 +64,7 @@ Project development follows the phased, evidence-based roadmap structured in the
 
 ### Build Commands
 ```bash
-# Run all unit tests (36 tests across Phases 00-04)
+# Run all unit tests (44 tests across Phases 00-05)
 ./gradlew testDebugUnitTest
 
 # Assemble debug APK

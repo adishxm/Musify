@@ -24,6 +24,8 @@ interface EngineAdapter {
     fun stop()
     fun recoverRenderer()
     fun setProtectionEnabled(enabled: Boolean)
+    fun setOriginException(isException: Boolean) {}
+    fun resetPageShieldCount() {}
     fun simulateRendererLoss()
     fun destroy()
 }
