@@ -1,0 +1,46 @@
+! Title: Peter Lowe's Ad and Tracking Server List (Bundled Seed)
+! Description: Host-level blocklist of advertising, tracking, and telemetry servers
+! Homepage: https://pgl.yoyo.org/adservers/
+! Maintainer: Peter Lowe (pgl@yoyo.org)
+! License: Permissive / Attribution. Redistribution allowed with attribution.
+! Version: 2026.10.12-seed
+! Last-Modified: 12 Oct 2026 00:00:00 UTC
+!
+! Network blocking rules
+||101com.com^
+||101order.com^
+||123adserver.com^
+||180searchassistant.com^
+||247realmedia.com^
+||2o7.net^
+||33across.com^
+||ad-delivery.net^
+||ad.doubleclick.net^
+||adservice.google.com^
+||ads.twitter.com^
+||analytics.yahoo.com^
+||bad-tracker.net^
+||pixel.facebook.com^
+||telemetry.malware-sample.org^
+||tracker.example.com^
+||tracking-pixel.com^
+||unwanted-ads.org^
+!
+! Path and query rule samples
+/adbanner/*
+/tracking-beacon.js
+|http://evil-tracker.com/collect.gif|
+!
+! Exception rules
+@@||allowed-exception.example.com^
+@@||adservice.google.com/healthcheck$domain=google.com
+!
+! Cosmetic and element hiding rules (cataloged as unsupported by network engine)
+##.ad-banner-top
+##div[class*="promoted-tweet"]
+###sponsored-post-container
+#?#div.native-ad-wrapper
+!
+! Scriptlet injection rules (cataloged as unsupported by network engine)
+example.com#+js(set, adsDisabled, true)
+test.org#+js(noeval)

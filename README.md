@@ -19,6 +19,7 @@ Musify is an independent, native Android browser designed to deliver transparent
 - **Privacy Shields & Content Blocking:** Engine-native GeckoView strict protection against advertising trackers, social trackers, cryptominers, and browser fingerprinters.
 - **Reversible Per-Origin Exceptions:** Scoped exception management without global toggle side-effects and zero hardcoded rules for production domains.
 - **Conservative HTTPS-First Behavior:** Automatic upgrade to HTTPS with explicit insecure connection warning dialog before loading unencrypted HTTP websites.
+- **Filter-List Pipeline & Licensing Gate:** Memory-bounded offline rule compiler (ABP network rules, exceptions, subdomains), staged atomic activations, last-known-good rollbacks, and transparent in-app licensing/provenance screens with zero false parity claims.
 
 ---
 
@@ -49,8 +50,8 @@ Project development follows the phased, evidence-based roadmap structured in the
 | **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **Completed (PASS)** | [.brain/.report/PHASE-03-REPORT.md](.brain/.report/PHASE-03-REPORT.md) |
 | **Phase 04** | History, bookmarks & disposable private sessions | **Completed (PASS)** | [.brain/.report/PHASE-04-REPORT.md](.brain/.report/PHASE-04-REPORT.md) |
 | **Phase 05** | Privacy shields & content blocking controls | **Completed (PASS)** | [.brain/.report/PHASE-05-REPORT.md](.brain/.report/PHASE-05-REPORT.md) |
-| **Phase 06** | Filter-list pipeline & licensing compliance gate | Up Next | [.brain/.plan/PHASE-06.md](.brain/.plan/PHASE-06.md) |
-| **Phase 07** | Browser essentials (downloads, site permissions) | Queued | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
+| **Phase 06** | Filter-list pipeline & licensing compliance gate | **Completed (PASS)** | [.brain/.report/PHASE-06-REPORT.md](.brain/.report/PHASE-06-REPORT.md) |
+| **Phase 07** | Browser essentials (downloads, site permissions) | Up Next | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
 | **Phase 08** | Hardening (security audit, a11y, memory profiling) | Queued | [.brain/.plan/PHASE-08.md](.brain/.plan/PHASE-08.md) |
 | **Phase 09** | Beta distribution & release readiness gate | Queued | [.brain/.plan/PHASE-09.md](.brain/.plan/PHASE-09.md) |
 
@@ -64,7 +65,7 @@ Project development follows the phased, evidence-based roadmap structured in the
 
 ### Build Commands
 ```bash
-# Run all unit tests (44 tests across Phases 00-05)
+# Run all unit tests (54 tests across Phases 00-06)
 ./gradlew testDebugUnitTest
 
 # Assemble debug APK

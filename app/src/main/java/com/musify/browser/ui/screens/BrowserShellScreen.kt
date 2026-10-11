@@ -80,6 +80,7 @@ fun BrowserShellScreen(
     onOpenBookmarks: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenDataControl: () -> Unit,
+    onOpenFilterLists: (() -> Unit)? = null,
     onOpenSpikeDebug: (() -> Unit)? = null,
     onOpenRoadmap: (() -> Unit)? = null
 ) {
@@ -167,6 +168,7 @@ fun BrowserShellScreen(
                 onOpenBookmarks = onOpenBookmarks,
                 onOpenHistory = onOpenHistory,
                 onOpenDataControl = onOpenDataControl,
+                onOpenFilterLists = onOpenFilterLists,
                 onNewPrivateTab = {
                     viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
                     addressInput = ""
@@ -311,6 +313,7 @@ private fun SurfaceDarkHeader(
     onOpenBookmarks: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenDataControl: () -> Unit,
+    onOpenFilterLists: (() -> Unit)? = null,
     onNewPrivateTab: () -> Unit,
     onOpenRoadmap: (() -> Unit)?,
     onOpenSpikeDebug: (() -> Unit)?,
@@ -468,6 +471,15 @@ private fun SurfaceDarkHeader(
                                 onOpenDataControl()
                             }
                         )
+                        if (onOpenFilterLists != null) {
+                            DropdownMenuItem(
+                                text = { Text("🛡 Filter Lists & Licenses", color = TextPrimary) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenFilterLists()
+                                }
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("🕶 + New Private Tab", color = AccentPurple) },
                             onClick = {

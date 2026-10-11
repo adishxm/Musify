@@ -22,6 +22,11 @@ import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.screens.BrowserShellScreen
 import com.musify.browser.ui.screens.DataControlScreen
 import com.musify.browser.ui.screens.EngineSpikeScreen
+import com.musify.browser.filterlist.FilterEngine
+import com.musify.browser.filterlist.FilterListRegistry
+import com.musify.browser.filterlist.FilterListStorage
+import com.musify.browser.filterlist.FilterListUpdater
+import com.musify.browser.ui.screens.FilterListScreen
 import com.musify.browser.ui.screens.HistoryBookmarksScreen
 import com.musify.browser.ui.screens.LandingScreen
 import com.musify.browser.ui.theme.MusifyTheme
@@ -31,6 +36,7 @@ enum class ScreenState {
     BROWSER,
     HISTORY_BOOKMARKS,
     DATA_CONTROL,
+    FILTER_LISTS,
     LANDING,
     SPIKE
 }
@@ -55,6 +61,11 @@ class MainActivity : ComponentActivity() {
         val shieldExceptionsFile = File(filesDir, "musify_shield_exceptions.txt")
         val shieldExceptionRepository = com.musify.browser.shield.LocalShieldExceptionRepository(shieldExceptionsFile)
 
+        val filtersDir = File(filesDir, "filters")
+        val filterStorage = FilterListStorage(filtersDir)
+        val filterEngine = FilterEngine(filterStorage)
+        val filterUpdater = FilterListUpdater(filterStorage)
+
         setContent {
             MusifyTheme {
                 var currentScreen by remember { mutableStateOf(ScreenState.BROWSER) }
@@ -69,6 +80,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 activeTabsViewModel = tabsViewModel
+
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    FilterListRegistry.initializeBundledSeed(applicationContext, filterStorage, filterEngine)
+                }
 
                 androidx.compose.runtime.LaunchedEffect(intent) {
                     handleExternalIntent(intent, tabsViewModel)
@@ -90,6 +105,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenDataControl = {
                                     currentScreen = ScreenState.DATA_CONTROL
+                                },
+                                onOpenFilterLists = {
+                                    currentScreen = ScreenState.FILTER_LISTS
                                 },
                                 onOpenSpikeDebug = { currentScreen = ScreenState.SPIKE },
                                 onOpenRoadmap = { currentScreen = ScreenState.LANDING }
@@ -113,6 +131,15 @@ class MainActivity : ComponentActivity() {
                             BackHandler { currentScreen = ScreenState.BROWSER }
                             DataControlScreen(
                                 viewModel = tabsViewModel,
+                                modifier = Modifier.padding(innerPadding),
+                                onClose = { currentScreen = ScreenState.BROWSER }
+                            )
+                        }
+                        ScreenState.FILTER_LISTS -> {
+                            BackHandler { currentScreen = ScreenState.BROWSER }
+                            FilterListScreen(
+                                filterEngine = filterEngine,
+                                filterUpdater = filterUpdater,
                                 modifier = Modifier.padding(innerPadding),
                                 onClose = { currentScreen = ScreenState.BROWSER }
                             )
