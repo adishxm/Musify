@@ -20,6 +20,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
+import com.musify.browser.downloads.DownloadPromptRequest
+import com.musify.browser.downloads.MusifyDownloadManager
+import com.musify.browser.permissions.SitePermissionDecision
+import com.musify.browser.permissions.SitePermissionPromptRequest
+import com.musify.browser.permissions.SitePermissionRepository
+import com.musify.browser.permissions.SitePermissionType
+import com.musify.browser.safety.ExternalSchemeHandler
+import com.musify.browser.safety.FindInPageManager
+import com.musify.browser.safety.SchemeDecision
+
 /**
  * State representing a prompt for explicit HTTP fallback confirmation.
  */
@@ -30,7 +40,8 @@ data class HttpFallbackPrompt(
 
 /**
  * TabsViewModel coordinates multi-tab lifecycle, ephemeral private sessions,
- * history & bookmark persistence, shield exceptions, and active tab navigation.
+ * history & bookmark persistence, shield exceptions, active tab navigation,
+ * downloads, site permissions, and safe external schemes.
  */
 class TabsViewModel(
     val pool: TabEnginePool = TabEnginePool(),
@@ -38,6 +49,8 @@ class TabsViewModel(
     val historyRepository: HistoryRepository? = null,
     val bookmarkRepository: BookmarkRepository? = null,
     val shieldExceptionRepository: ShieldExceptionRepository? = null,
+    val downloadManager: MusifyDownloadManager? = null,
+    val sitePermissionRepository: SitePermissionRepository? = null,
     coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
 
@@ -53,6 +66,16 @@ class TabsViewModel(
 
     private val _httpFallbackPrompt = MutableStateFlow<HttpFallbackPrompt?>(null)
     val httpFallbackPrompt: StateFlow<HttpFallbackPrompt?> = _httpFallbackPrompt.asStateFlow()
+
+    private val _pendingExternalSchemePrompt = MutableStateFlow<SchemeDecision.PromptExternal?>(null)
+    val pendingExternalSchemePrompt: StateFlow<SchemeDecision.PromptExternal?> = _pendingExternalSchemePrompt.asStateFlow()
+
+    private val _pendingSitePermissionPrompt = MutableStateFlow<SitePermissionPromptRequest?>(null)
+    val pendingSitePermissionPrompt: StateFlow<SitePermissionPromptRequest?> = _pendingSitePermissionPrompt.asStateFlow()
+
+    val pendingDownloadPrompt: StateFlow<DownloadPromptRequest?> = downloadManager?.pendingPrompt ?: MutableStateFlow(null).asStateFlow()
+
+    val findInPageManager = FindInPageManager()
 
     private val allowedHttpOrigins = mutableSetOf("localhost", "127.0.0.1")
 
@@ -161,6 +184,31 @@ class TabsViewModel(
         val activeTab = _tabsState.value.selectedTab ?: return
         val adapter = getActiveEngineAdapter() ?: return
 
+        when (val schemeDecision = ExternalSchemeHandler.evaluate(rawInput)) {
+            is SchemeDecision.Blocked -> {
+                _tabsState.value = TabsReducer.reduce(
+                    _tabsState.value,
+                    TabAction.UpdateTabNavigation(
+                        tabId = activeTab.id,
+                        url = activeTab.url,
+                        title = "Blocked Scheme: ${schemeDecision.reason}",
+                        canGoBack = activeTab.canGoBack,
+                        canGoForward = activeTab.canGoForward,
+                        isLoading = false,
+                        progress = 0
+                    )
+                )
+                return
+            }
+            is SchemeDecision.PromptExternal -> {
+                _pendingExternalSchemePrompt.value = schemeDecision
+                return
+            }
+            is SchemeDecision.InternalWeb -> {
+                // Continue with URL parsing
+            }
+        }
+
         when (val result = UrlParser.parse(rawInput)) {
             is ParsedNavigation.AllowedUrl -> {
                 // Conservative HTTPS-first check: if unencrypted HTTP, prompt explicit fallback
@@ -191,6 +239,43 @@ class TabsViewModel(
         }
 
         persistSession()
+    }
+
+    fun dismissExternalScheme() {
+        _pendingExternalSchemePrompt.value = null
+    }
+
+    fun requestSitePermission(origin: String, type: SitePermissionType) {
+        val currentDecision = sitePermissionRepository?.getDecision(origin, type) ?: SitePermissionDecision.PROMPT
+        if (currentDecision == SitePermissionDecision.PROMPT) {
+            _pendingSitePermissionPrompt.value = SitePermissionPromptRequest(
+                id = java.util.UUID.randomUUID().toString(),
+                origin = origin,
+                type = type
+            )
+        }
+    }
+
+    fun grantSitePermission(request: SitePermissionPromptRequest) {
+        sitePermissionRepository?.setDecision(request.origin, request.type, SitePermissionDecision.GRANTED)
+        _pendingSitePermissionPrompt.value = null
+    }
+
+    fun denySitePermission(request: SitePermissionPromptRequest) {
+        sitePermissionRepository?.setDecision(request.origin, request.type, SitePermissionDecision.DENIED)
+        _pendingSitePermissionPrompt.value = null
+    }
+
+    fun dismissSitePermission() {
+        _pendingSitePermissionPrompt.value = null
+    }
+
+    fun confirmDownload(request: DownloadPromptRequest, customFileName: String? = null) {
+        downloadManager?.confirmDownload(request, customFileName)
+    }
+
+    fun dismissDownloadPrompt() {
+        downloadManager?.dismissPrompt()
     }
 
     fun confirmHttpFallback() {
