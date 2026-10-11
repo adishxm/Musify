@@ -12,7 +12,8 @@ Musify is an independent, native Android browser designed to deliver transparent
 - **General-Purpose Browsing:** Engineered for arbitrary web navigation, forms, media, and web applications without single-site special casing or hacks.
 - **Independent Design & Identity:** Distinct UI, code, icons, assets, and product language.
 - **Zero Telemetry or Credential Harvesting:** Zero behavioral analytics, ad tracking, or cloud profile synchronization. All browsing data remains strictly on-device.
-- **Strict TLS Security:** Enforced certificate validation with zero silent overrides or unsafe blanket SSL proceed options.
+- **Strict TLS Security:** Enforced certificate validation with zero silent overrides or unsafe blanket SSL proceed options; cleartext traffic disabled globally via Android Network Security Config.
+- **Verified Origin Display & Anti-Spoofing:** Omnibar displays the full, verified origin (scheme, host, port) and decodes IDN homoglyphs into ASCII Punycode (`xn--...`) to mitigate visual spoofing.
 - **Documented Request Protection:** Transparent shield counters labeled *"requests blocked by this app"*, per-site exception controls, and disposable private browsing sessions.
 
 ---
@@ -26,7 +27,9 @@ Musify is an independent, native Android browser designed to deliver transparent
 - **Target SDK:** 35 (Android 15)
 - **Minimum SDK:** 26 (Android 8.0)
 - **JVM Target:** Java 17 / 21
-- **Engine Roadmap:** GeckoView Stable production candidate (with isolated WebView comparison/fallback adapter)
+- **Engine Architecture:** Decoupled `EngineAdapter` interface with:
+  - **GeckoView Stable** (`135.0.20250130195129`) as primary production candidate
+  - **AndroidX WebKit WebView** (`1.12.1`) as bounded prototype/fallback adapter
 
 ---
 
@@ -34,18 +37,18 @@ Musify is an independent, native Android browser designed to deliver transparent
 
 Project development follows the phased, evidence-based roadmap structured in the `.brain/` directory:
 
-| Phase | Description | Status |
-|---|---|---|
-| **Phase 00** | Repository, project foundation & Jetpack Compose setup | **Completed** |
-| **Phase 01** | Browser engine feasibility spike (GeckoView Stable) | Up Next |
-| **Phase 02** | Single-tab browser shell & navigation controls | Queued |
-| **Phase 03** | Multi-tab state machine & process recovery | Queued |
-| **Phase 04** | History, bookmarks & disposable private sessions | Queued |
-| **Phase 05** | Privacy shields & content blocking controls | Queued |
-| **Phase 06** | Filter-list pipeline & licensing compliance gate | Queued |
-| **Phase 07** | Browser essentials (downloads, site permissions) | Queued |
-| **Phase 08** | Hardening (security audit, a11y, memory profiling) | Queued |
-| **Phase 09** | Beta distribution & release readiness gate | Queued |
+| Phase | Description | Status | Evidence / Report |
+|---|---|---|---|
+| **Phase 00** | Repository, project foundation & Jetpack Compose setup | **Completed (PASS)** | [.brain/.report/PHASE-00-REPORT.md](.brain/.report/PHASE-00-REPORT.md) |
+| **Phase 01** | Browser engine feasibility spike (GeckoView Stable & WebView) | **Completed (PASS)** | [.brain/.report/PHASE-01-REPORT.md](.brain/.report/PHASE-01-REPORT.md) |
+| **Phase 02** | Single-tab browser shell, safe URL parser & navigation controls | **Completed (PASS)** | [.brain/.report/PHASE-02-REPORT.md](.brain/.report/PHASE-02-REPORT.md) |
+| **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **In Progress** | [.brain/.plan/PHASE-03.md](.brain/.plan/PHASE-03.md) |
+| **Phase 04** | History, bookmarks & disposable private sessions | Queued | [.brain/.plan/PHASE-04.md](.brain/.plan/PHASE-04.md) |
+| **Phase 05** | Privacy shields & content blocking controls | Queued | [.brain/.plan/PHASE-05.md](.brain/.plan/PHASE-05.md) |
+| **Phase 06** | Filter-list pipeline & licensing compliance gate | Queued | [.brain/.plan/PHASE-06.md](.brain/.plan/PHASE-06.md) |
+| **Phase 07** | Browser essentials (downloads, site permissions) | Queued | [.brain/.plan/PHASE-07.md](.brain/.plan/PHASE-07.md) |
+| **Phase 08** | Hardening (security audit, a11y, memory profiling) | Queued | [.brain/.plan/PHASE-08.md](.brain/.plan/PHASE-08.md) |
+| **Phase 09** | Beta distribution & release readiness gate | Queued | [.brain/.plan/PHASE-09.md](.brain/.plan/PHASE-09.md) |
 
 ---
 
@@ -53,11 +56,11 @@ Project development follows the phased, evidence-based roadmap structured in the
 
 ### Prerequisites
 - Android Studio Ladybug / Meerkat or Android SDK (API 35 platforms, build-tools 35.0.0+)
-- JDK 17 or JDK 21 (configured via `JAVA_HOME`)
+- JDK 17 or JDK 21 (Microsoft OpenJDK 21 LTS configured via `JAVA_HOME`)
 
 ### Build Commands
 ```bash
-# Run unit tests
+# Run all unit tests
 ./gradlew testDebugUnitTest
 
 # Assemble debug APK

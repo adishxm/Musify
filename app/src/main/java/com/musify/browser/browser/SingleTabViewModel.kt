@@ -137,6 +137,25 @@ class SingleTabViewModel(
         _tabState.value = _tabState.value.copy(errorState = null)
     }
 
+    fun loadTestFixture() {
+        _tabState.value = _tabState.value.copy(errorState = null)
+        adapter.loadUrl("file:///android_asset/test_fixture.html")
+    }
+
+    fun handleNetworkError(
+        failingUrl: String = _tabState.value.currentUrl,
+        message: String = "Unable to connect to the host. Please check your network connection."
+    ) {
+        _tabState.value = _tabState.value.copy(
+            errorState = BrowserErrorState(
+                title = "Network Connection Error",
+                message = message,
+                failingUrl = failingUrl,
+                canRetry = true
+            )
+        )
+    }
+
     override fun onCleared() {
         super.onCleared()
         adapter.destroy()

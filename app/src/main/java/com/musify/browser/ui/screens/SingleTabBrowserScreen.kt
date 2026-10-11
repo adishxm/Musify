@@ -70,7 +70,8 @@ import com.musify.browser.ui.theme.TextSecondary
 fun SingleTabBrowserScreen(
     viewModel: SingleTabViewModel,
     modifier: Modifier = Modifier,
-    onOpenSpikeDebug: (() -> Unit)? = null
+    onOpenSpikeDebug: (() -> Unit)? = null,
+    onOpenRoadmap: (() -> Unit)? = null
 ) {
     val tabState by viewModel.tabState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -78,6 +79,11 @@ fun SingleTabBrowserScreen(
     var isAddressBarFocused by remember { mutableStateOf(false) }
     var addressInput by remember { mutableStateOf("") }
     var showShieldSheet by remember { mutableStateOf(false) }
+
+    // Intercept hardware / gesture back navigation if page has history
+    androidx.activity.compose.BackHandler(enabled = tabState.canGoBack) {
+        viewModel.goBack()
+    }
 
     Column(
         modifier = modifier
@@ -91,7 +97,7 @@ fun SingleTabBrowserScreen(
             colors = CardDefaults.cardColors(containerColor = SurfaceDark)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
-                // Top Row: Origin & Security Display + Shield Badge
+                // Top Row: Origin & Security Display + Shield Badge + Debug/Roadmap Actions
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -99,18 +105,29 @@ fun SingleTabBrowserScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val isHttps = tabState.isHttps
+                    val hasTlsError = tabState.securityState.tlsError != null
+                    val originDesc = if (hasTlsError) {
+                        "Security Alert: Untrusted certificate on ${tabState.host}"
+                    } else if (isHttps) {
+                        "Secure HTTPS connection to ${tabState.host}"
+                    } else {
+                        "Insecure connection to ${tabState.host}"
+                    }
+
                     // Verified Origin Pill (Anti-Spoofing display)
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(BackgroundDark)
                             .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .androidx.compose.ui.semantics.semantics {
+                                androidx.compose.ui.semantics.contentDescription = originDesc
+                            },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        val isHttps = tabState.isHttps
-                        val hasTlsError = tabState.securityState.tlsError != null
                         val lockColor = when {
                             hasTlsError -> Color(0xFFEF4444)
                             isHttps -> StatusGreen
@@ -151,7 +168,7 @@ fun SingleTabBrowserScreen(
                         }
                     }
 
-                    // Shields Button & Debug Button
+                    // Shields Button, Spike & Roadmap Actions
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -164,6 +181,10 @@ fun SingleTabBrowserScreen(
                                 .border(1.dp, if (tabState.shieldState.isProtectionEnabled) StatusGreen else CardBorder, RoundedCornerShape(12.dp))
                                 .clickable { showShieldSheet = !showShieldSheet }
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .androidx.compose.ui.semantics.semantics {
+                                    androidx.compose.ui.semantics.contentDescription = "Privacy Shield: ${tabState.shieldState.blockedCount} requests blocked"
+                                    androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                }
                         ) {
                             Text(
                                 text = "🛡 ${tabState.shieldState.blockedCount}",
@@ -173,6 +194,26 @@ fun SingleTabBrowserScreen(
                             )
                         }
 
+                        if (onOpenRoadmap != null) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(SurfaceLightDark)
+                                    .clickable(onClick = onOpenRoadmap)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .androidx.compose.ui.semantics.semantics {
+                                        androidx.compose.ui.semantics.contentDescription = "View Project Roadmap"
+                                        androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                    }
+                            ) {
+                                Text(
+                                    text = "Plan",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
                         if (onOpenSpikeDebug != null) {
                             Box(
                                 modifier = Modifier
@@ -180,6 +221,10 @@ fun SingleTabBrowserScreen(
                                     .background(SurfaceLightDark)
                                     .clickable(onClick = onOpenSpikeDebug)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .androidx.compose.ui.semantics.semantics {
+                                        androidx.compose.ui.semantics.contentDescription = "Launch Engine Feasibility Spike"
+                                        androidx.compose.ui.semantics.role = androidx.compose.ui.semantics.Role.Button
+                                    }
                             ) {
                                 Text(
                                     text = "Spike",
@@ -202,6 +247,7 @@ fun SingleTabBrowserScreen(
                     // Back
                     BrowserButton(
                         text = "◀",
+                        contentDescription = "Navigate back",
                         enabled = tabState.canGoBack,
                         onClick = { viewModel.goBack() }
                     )
@@ -209,6 +255,7 @@ fun SingleTabBrowserScreen(
                     // Forward
                     BrowserButton(
                         text = "▶",
+                        contentDescription = "Navigate forward",
                         enabled = tabState.canGoForward,
                         onClick = { viewModel.goForward() }
                     )
@@ -225,6 +272,9 @@ fun SingleTabBrowserScreen(
                                 if (focusState.isFocused) {
                                     addressInput = if (tabState.currentUrl == "about:blank") "" else tabState.currentUrl
                                 }
+                            }
+                            .androidx.compose.ui.semantics.semantics {
+                                androidx.compose.ui.semantics.contentDescription = "Address and search bar"
                             },
                         placeholder = {
                             Text("Search DuckDuckGo or type URL...", color = TextMuted, fontSize = 13.sp)
@@ -253,11 +303,39 @@ fun SingleTabBrowserScreen(
                     // Reload / Stop
                     BrowserButton(
                         text = if (tabState.isLoading) "✕" else "↻",
+                        contentDescription = if (tabState.isLoading) "Stop loading page" else "Reload page",
                         enabled = true,
                         onClick = {
                             if (tabState.isLoading) viewModel.stop() else viewModel.reload()
                         }
                     )
+                }
+
+                // Quick Navigation Test Chips (Shown when blank tab or address bar focused)
+                AnimatedVisibility(visible = isAddressBarFocused || tabState.currentUrl == "about:blank") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        QuickChip(label = "🧪 Fixture") {
+                            viewModel.loadTestFixture()
+                            focusManager.clearFocus()
+                        }
+                        QuickChip(label = "🔒 Wikipedia") {
+                            viewModel.navigate("https://en.wikipedia.org")
+                            focusManager.clearFocus()
+                        }
+                        QuickChip(label = "🦊 Mozilla") {
+                            viewModel.navigate("https://www.mozilla.org")
+                            focusManager.clearFocus()
+                        }
+                        QuickChip(label = "🛑 BadSSL Expired") {
+                            viewModel.navigate("https://expired.badssl.com")
+                            focusManager.clearFocus()
+                        }
+                    }
                 }
 
                 // Shield Details Popdown
@@ -469,6 +547,7 @@ private fun BrowserErrorOverlay(
 @Composable
 private fun BrowserButton(
     text: String,
+    contentDescription: String,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
@@ -477,7 +556,11 @@ private fun BrowserButton(
             .size(38.dp)
             .clip(CircleShape)
             .background(if (enabled) SurfaceLightDark else BackgroundDark)
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick)
+            .androidx.compose.ui.semantics.semantics {
+                this.contentDescription = contentDescription
+                this.role = androidx.compose.ui.semantics.Role.Button
+            },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -485,6 +568,31 @@ private fun BrowserButton(
             color = if (enabled) TextPrimary else TextMuted,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun QuickChip(
+    label: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(BackgroundDark)
+            .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .androidx.compose.ui.semantics.semantics {
+                this.contentDescription = "Quick target: $label"
+                this.role = androidx.compose.ui.semantics.Role.Button
+            }
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = AccentCyan
         )
     }
 }
