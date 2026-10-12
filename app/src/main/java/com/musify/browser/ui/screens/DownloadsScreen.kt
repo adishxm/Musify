@@ -86,7 +86,7 @@ fun DownloadsScreen(
                 IconButton(
                     onClick = onClose,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(SurfaceDark)
                 ) {

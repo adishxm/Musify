@@ -24,10 +24,11 @@ import java.util.concurrent.ConcurrentHashMap
  * cancellation, and mediated file opening via FileProvider.
  */
 class MusifyDownloadManager(
-    private val context: Context,
+    private val context: Context? = null,
     val repository: DownloadRepository,
     private val scope: CoroutineScope,
-    private val downloadDir: File = File(context.filesDir, "downloads")
+    private val downloadDir: File = context?.filesDir?.let { File(it, "downloads") }
+        ?: File(System.getProperty("java.io.tmpdir"), "musify_downloads")
 ) {
     private val activeJobs = ConcurrentHashMap<String, Job>()
     private val _pendingPrompt = MutableStateFlow<DownloadPromptRequest?>(null)
@@ -116,8 +117,9 @@ class MusifyDownloadManager(
         if (!file.exists()) return null
 
         return try {
-            val authority = "${context.packageName}.fileprovider"
-            val contentUri = FileProvider.getUriForFile(context, authority, file)
+            val ctx = context ?: return null
+            val authority = "${ctx.packageName}.fileprovider"
+            val contentUri = FileProvider.getUriForFile(ctx, authority, file)
             Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(contentUri, item.mimeType)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -137,8 +139,9 @@ class MusifyDownloadManager(
         if (!file.exists()) return null
 
         return try {
-            val authority = "${context.packageName}.fileprovider"
-            val contentUri = FileProvider.getUriForFile(context, authority, file)
+            val ctx = context ?: return null
+            val authority = "${ctx.packageName}.fileprovider"
+            val contentUri = FileProvider.getUriForFile(ctx, authority, file)
             Intent(Intent.ACTION_SEND).apply {
                 type = item.mimeType
                 putExtra(Intent.EXTRA_STREAM, contentUri)

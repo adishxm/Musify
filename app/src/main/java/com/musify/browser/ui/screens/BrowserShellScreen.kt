@@ -910,7 +910,7 @@ private fun NavCircleButton(
 ) {
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(40.dp)
             .clip(CircleShape)
             .background(if (enabled) SurfaceLightDark else BackgroundDark)
             .clickable(enabled = enabled, onClick = onClick)
@@ -924,7 +924,7 @@ private fun NavCircleButton(
             text = symbol,
             color = if (enabled) TextPrimary else TextSecondary.copy(alpha = 0.4f),
             fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
+            fontSize = 15.sp
         )
     }
 }

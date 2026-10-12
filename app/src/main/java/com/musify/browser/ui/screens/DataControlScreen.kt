@@ -75,6 +75,8 @@ fun DataControlScreen(
     var clearHistory by remember { mutableStateOf(true) }
     var clearBookmarks by remember { mutableStateOf(false) }
     var clearTabs by remember { mutableStateOf(false) }
+    var clearDownloads by remember { mutableStateOf(false) }
+    var clearSitePermissions by remember { mutableStateOf(false) }
     var selectedTimeRange by remember { mutableStateOf(TimeRange.ALL_TIME) }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var actionFeedbackMessage by remember { mutableStateOf<String?>(null) }
@@ -230,11 +232,25 @@ fun DataControlScreen(
                         onCheckedChange = { clearTabs = it }
                     )
 
+                    DataOptionCheckbox(
+                        label = "Downloads History",
+                        subtitle = "Removes downloaded files record (keeps downloaded files)",
+                        checked = clearDownloads,
+                        onCheckedChange = { clearDownloads = it }
+                    )
+
+                    DataOptionCheckbox(
+                        label = "Site Permissions",
+                        subtitle = "Revokes camera, mic, location & notification grants",
+                        checked = clearSitePermissions,
+                        onCheckedChange = { clearSitePermissions = it }
+                    )
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = { showConfirmDialog = true },
-                        enabled = clearHistory || clearBookmarks || clearTabs,
+                        enabled = clearHistory || clearBookmarks || clearTabs || clearDownloads || clearSitePermissions,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = StatusRed,
                             disabledContainerColor = SurfaceLightDark
@@ -326,6 +342,8 @@ fun DataControlScreen(
                             clearHistory = clearHistory,
                             clearBookmarks = clearBookmarks,
                             clearTabs = clearTabs,
+                            clearDownloads = clearDownloads,
+                            clearSitePermissions = clearSitePermissions,
                             timeRange = selectedTimeRange
                         )
                         actionFeedbackMessage = "Selected browsing data successfully cleared."

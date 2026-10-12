@@ -332,6 +332,8 @@ class TabsViewModel(
         clearHistory: Boolean = true,
         clearBookmarks: Boolean = false,
         clearTabs: Boolean = false,
+        clearDownloads: Boolean = false,
+        clearSitePermissions: Boolean = false,
         timeRange: TimeRange = TimeRange.ALL_TIME
     ) {
         if (clearHistory) {
@@ -342,6 +344,12 @@ class TabsViewModel(
         }
         if (clearTabs) {
             closeAllTabs()
+        }
+        if (clearDownloads) {
+            downloadManager?.repository?.clearAll()
+        }
+        if (clearSitePermissions) {
+            sitePermissionRepository?.clearAll()
         }
     }
 
