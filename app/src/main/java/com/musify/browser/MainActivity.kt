@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.musify.browser.downloads.LocalDownloadRepository
 import com.musify.browser.downloads.MusifyDownloadManager
 import com.musify.browser.permissions.LocalSitePermissionRepository
+import com.musify.browser.storage.LocalAppPreferencesRepository
 import com.musify.browser.storage.LocalBookmarkRepository
 import com.musify.browser.storage.LocalHistoryRepository
 import com.musify.browser.tabs.FileTabSessionStore
@@ -34,6 +35,8 @@ import com.musify.browser.filterlist.FilterListUpdater
 import com.musify.browser.ui.screens.FilterListScreen
 import com.musify.browser.ui.screens.HistoryBookmarksScreen
 import com.musify.browser.ui.screens.LandingScreen
+import com.musify.browser.ui.screens.OnboardingDialog
+import com.musify.browser.ui.screens.ReleaseInfoScreen
 import com.musify.browser.ui.screens.SitePermissionsScreen
 import com.musify.browser.ui.theme.MusifyTheme
 import java.io.File
@@ -45,6 +48,7 @@ enum class ScreenState {
     FILTER_LISTS,
     DOWNLOADS,
     SITE_PERMISSIONS,
+    RELEASE_INFO,
     LANDING,
     SPIKE
 }
@@ -81,10 +85,14 @@ class MainActivity : ComponentActivity() {
         val sitePermissionsFile = File(filesDir, "musify_site_permissions.json")
         val sitePermissionRepository = LocalSitePermissionRepository(sitePermissionsFile)
 
+        val preferencesFile = File(filesDir, "musify_preferences.json")
+        val preferencesRepository = LocalAppPreferencesRepository(preferencesFile)
+
         setContent {
             MusifyTheme {
                 var currentScreen by remember { mutableStateOf(ScreenState.BROWSER) }
                 var historyBookmarksTab by remember { mutableIntStateOf(0) }
+                var showOnboarding by remember { mutableStateOf(!preferencesRepository.hasCompletedOnboarding()) }
 
                 val tabsViewModel = remember {
                     TabsViewModel(
@@ -131,6 +139,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenSitePermissions = {
                                     currentScreen = ScreenState.SITE_PERMISSIONS
+                                },
+                                onOpenReleaseInfo = {
+                                    currentScreen = ScreenState.RELEASE_INFO
                                 },
                                 onOpenSpikeDebug = { currentScreen = ScreenState.SPIKE },
                                 onOpenRoadmap = { currentScreen = ScreenState.LANDING }
@@ -183,6 +194,13 @@ class MainActivity : ComponentActivity() {
                                 onClose = { currentScreen = ScreenState.BROWSER }
                             )
                         }
+                        ScreenState.RELEASE_INFO -> {
+                            BackHandler { currentScreen = ScreenState.BROWSER }
+                            ReleaseInfoScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                onClose = { currentScreen = ScreenState.BROWSER }
+                            )
+                        }
                         ScreenState.LANDING -> {
                             BackHandler { currentScreen = ScreenState.BROWSER }
                             LandingScreen(
@@ -196,6 +214,19 @@ class MainActivity : ComponentActivity() {
                             EngineSpikeScreen(modifier = Modifier.padding(innerPadding))
                         }
                     }
+                }
+
+                if (showOnboarding) {
+                    OnboardingDialog(
+                        onDismiss = {
+                            showOnboarding = false
+                            preferencesRepository.setCompletedOnboarding(true)
+                        },
+                        onComplete = {
+                            showOnboarding = false
+                            preferencesRepository.setCompletedOnboarding(true)
+                        }
+                    )
                 }
             }
         }

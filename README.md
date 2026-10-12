@@ -54,7 +54,7 @@ Project development follows the phased, evidence-based roadmap structured in the
 | **Phase 06** | Filter-list pipeline & licensing compliance gate | **Completed (PASS)** | [.brain/.report/PHASE-06-REPORT.md](.brain/.report/PHASE-06-REPORT.md) |
 | **Phase 07** | Browser essentials (downloads, site permissions & safety) | **Completed (PASS)** | [.brain/.report/PHASE-07-REPORT.md](.brain/.report/PHASE-07-REPORT.md) |
 | **Phase 08** | Hardening (security audit, a11y, memory profiling) | **Completed (PASS)** | [.brain/.report/PHASE-08-REPORT.md](.brain/.report/PHASE-08-REPORT.md) |
-| **Phase 09** | Beta distribution & release readiness gate | Up Next | [.brain/.plan/PHASE-09.md](.brain/.plan/PHASE-09.md) |
+| **Phase 09** | Beta distribution & release readiness gate | **Completed (PASS)** | [.brain/.report/PHASE-09-REPORT.md](.brain/.report/PHASE-09-REPORT.md) |
 
 ---
 
@@ -66,11 +66,14 @@ Project development follows the phased, evidence-based roadmap structured in the
 
 ### Build Commands
 ```bash
-# Run all unit tests (81 tests across Phases 00-08)
+# Run all unit tests (88 tests across Phases 00-09)
 ./gradlew testDebugUnitTest
 
 # Assemble debug APK
 ./gradlew assembleDebug
+
+# Assemble release APK
+./gradlew assembleRelease
 
 # Install on connected device or emulator
 ./gradlew installDebug

@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "0.1.0-alpha"
+        versionName = "0.9.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -24,6 +24,18 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val keyStoreFile = project.findProperty("RELEASE_STORE_FILE") as String?
+            if (keyStoreFile != null && file(keyStoreFile).exists()) {
+                storeFile = file(keyStoreFile)
+                storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as String? ?: ""
+                keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String? ?: ""
+                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String? ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -31,6 +43,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseConfig = signingConfigs.getByName("release")
+            if (releaseConfig.storeFile != null) {
+                signingConfig = releaseConfig
+            }
         }
         debug {
             applicationIdSuffix = ".debug"

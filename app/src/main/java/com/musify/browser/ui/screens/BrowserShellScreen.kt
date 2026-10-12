@@ -90,7 +90,8 @@ fun BrowserShellScreen(
     onOpenDownloads: (() -> Unit)? = null,
     onOpenSitePermissions: (() -> Unit)? = null,
     onOpenSpikeDebug: (() -> Unit)? = null,
-    onOpenRoadmap: (() -> Unit)? = null
+    onOpenRoadmap: (() -> Unit)? = null,
+    onOpenReleaseInfo: (() -> Unit)? = null
 ) {
     val tabsState by viewModel.tabsState.collectAsState()
     val activeTab = tabsState.selectedTab
@@ -206,6 +207,7 @@ fun BrowserShellScreen(
                 },
                 onOpenRoadmap = onOpenRoadmap,
                 onOpenSpikeDebug = onOpenSpikeDebug,
+                onOpenReleaseInfo = onOpenReleaseInfo,
                 onNavigate = { target ->
                     viewModel.navigateActiveTab(target)
                     focusManager.clearFocus()
@@ -574,6 +576,7 @@ private fun SurfaceDarkHeader(
     onNewPrivateTab: () -> Unit,
     onOpenRoadmap: (() -> Unit)?,
     onOpenSpikeDebug: (() -> Unit)?,
+    onOpenReleaseInfo: (() -> Unit)? = null,
     onNavigate: (String) -> Unit
 ) {
     var showOverflowMenu by remember { mutableStateOf(false) }
@@ -782,6 +785,15 @@ private fun SurfaceDarkHeader(
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenRoadmap()
+                                }
+                            )
+                        }
+                        if (onOpenReleaseInfo != null) {
+                            DropdownMenuItem(
+                                text = { Text("ℹ About & Privacy Policy", color = AccentCyan) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenReleaseInfo()
                                 }
                             )
                         }

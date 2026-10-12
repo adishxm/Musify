@@ -12,3 +12,6 @@ captures/
 .externalNativeBuild
 .cxx
 Musify_Browser_brain.zip
+*.keystore
+*.jks
+signing.properties
