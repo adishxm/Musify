@@ -91,7 +91,8 @@ fun BrowserShellScreen(
     onOpenSitePermissions: (() -> Unit)? = null,
     onOpenSpikeDebug: (() -> Unit)? = null,
     onOpenRoadmap: (() -> Unit)? = null,
-    onOpenReleaseInfo: (() -> Unit)? = null
+    onOpenReleaseInfo: (() -> Unit)? = null,
+    onOpenWelcome: (() -> Unit)? = null
 ) {
     val tabsState by viewModel.tabsState.collectAsState()
     val activeTab = tabsState.selectedTab
@@ -208,6 +209,7 @@ fun BrowserShellScreen(
                 onOpenRoadmap = onOpenRoadmap,
                 onOpenSpikeDebug = onOpenSpikeDebug,
                 onOpenReleaseInfo = onOpenReleaseInfo,
+                onOpenWelcome = onOpenWelcome,
                 onNavigate = { target ->
                     viewModel.navigateActiveTab(target)
                     focusManager.clearFocus()
@@ -577,6 +579,7 @@ private fun SurfaceDarkHeader(
     onOpenRoadmap: (() -> Unit)?,
     onOpenSpikeDebug: (() -> Unit)?,
     onOpenReleaseInfo: (() -> Unit)? = null,
+    onOpenWelcome: (() -> Unit)? = null,
     onNavigate: (String) -> Unit
 ) {
     var showOverflowMenu by remember { mutableStateOf(false) }
@@ -794,6 +797,15 @@ private fun SurfaceDarkHeader(
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenReleaseInfo()
+                                }
+                            )
+                        }
+                        if (onOpenWelcome != null) {
+                            DropdownMenuItem(
+                                text = { Text("⚡ Welcome Matrix", color = StatusOrange) },
+                                onClick = {
+                                    showOverflowMenu = false
+                                    onOpenWelcome()
                                 }
                             )
                         }
