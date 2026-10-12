@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.musify.browser.engine.EngineAdapter
 import com.musify.browser.engine.GeckoEngineAdapter
+import com.musify.browser.engine.WebViewAdapter
+import com.musify.browser.tabs.TabEnginePool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,7 +16,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class SingleTabViewModel(
-    val adapter: EngineAdapter = GeckoEngineAdapter(),
+    val adapter: EngineAdapter = if (TabEnginePool.isGeckoAvailable()) GeckoEngineAdapter() else WebViewAdapter(),
     coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
 

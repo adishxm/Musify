@@ -31,7 +31,7 @@ import java.io.ByteArrayInputStream
  * - Forbids native JavaScript bridges.
  * - Handles renderer process death gracefully without crash loops.
  */
-class WebViewAdapter : EngineAdapter {
+class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     override val engineType: EngineType = EngineType.WEB_VIEW
 
     private val _navigationState = MutableStateFlow(EngineNavigationState())

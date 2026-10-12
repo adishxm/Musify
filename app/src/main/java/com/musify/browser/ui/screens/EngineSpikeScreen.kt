@@ -65,12 +65,13 @@ import com.musify.browser.ui.theme.TextSecondary
 fun EngineSpikeScreen(
     modifier: Modifier = Modifier
 ) {
-    var selectedEngineType by remember { mutableStateOf(EngineType.GECKO_VIEW) }
+    val isGecko = remember { com.musify.browser.tabs.TabEnginePool.isGeckoAvailable() }
+    var selectedEngineType by remember { mutableStateOf(if (isGecko) EngineType.GECKO_VIEW else EngineType.WEB_VIEW) }
 
-    val geckoAdapter = remember { GeckoEngineAdapter() }
+    val geckoAdapter = remember { if (isGecko) GeckoEngineAdapter() else null }
     val webViewAdapter = remember { WebViewAdapter() }
 
-    val currentAdapter: EngineAdapter = if (selectedEngineType == EngineType.GECKO_VIEW) {
+    val currentAdapter: EngineAdapter = if (selectedEngineType == EngineType.GECKO_VIEW && geckoAdapter != null) {
         geckoAdapter
     } else {
         webViewAdapter
@@ -78,7 +79,7 @@ fun EngineSpikeScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            geckoAdapter.destroy()
+            geckoAdapter?.destroy()
             webViewAdapter.destroy()
         }
     }

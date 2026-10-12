@@ -19,8 +19,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val targetAbi = project.findProperty("TARGET_ABI") as String?
         ndk {
-            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
+            if (targetAbi != null && targetAbi.isNotBlank()) {
+                abiFilters.add(targetAbi)
+            } else {
+                abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
+            }
         }
     }
 
@@ -72,6 +77,15 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            if (project.hasProperty("BUILD_LITE")) {
+                excludes += listOf("lib/**", "assets/omni.ja")
+            }
+        }
+        jniLibs {
+            useLegacyPackaging = true
+            if (project.hasProperty("BUILD_LITE")) {
+                excludes += listOf("**/*")
+            }
         }
     }
 }

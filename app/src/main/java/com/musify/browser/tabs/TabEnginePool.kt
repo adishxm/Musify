@@ -2,6 +2,7 @@ package com.musify.browser.tabs
 
 import com.musify.browser.engine.EngineAdapter
 import com.musify.browser.engine.GeckoEngineAdapter
+import com.musify.browser.engine.WebViewAdapter
 
 /**
  * Factory abstraction for creating EngineAdapter instances with profile awareness.
@@ -21,9 +22,35 @@ fun interface EngineAdapterFactory {
  * - Caps memory footprint by evicting released adapters.
  */
 class TabEnginePool(
-    private val factory: EngineAdapterFactory = EngineAdapterFactory { isPrivate -> GeckoEngineAdapter(isPrivate) }
+    private val factory: EngineAdapterFactory = EngineAdapterFactory { isPrivate ->
+        if (isGeckoAvailable()) {
+            GeckoEngineAdapter(isPrivate)
+        } else {
+            WebViewAdapter(isPrivate)
+        }
+    }
 ) {
     constructor(simpleFactory: () -> EngineAdapter) : this(EngineAdapterFactory { _ -> simpleFactory() })
+
+    companion object {
+        @Volatile
+        private var geckoAvailable: Boolean? = null
+
+        fun isGeckoAvailable(): Boolean {
+            if (geckoAvailable != null) return geckoAvailable!!
+            geckoAvailable = try {
+                System.loadLibrary("xul")
+                true
+            } catch (_: Throwable) {
+                false
+            }
+            return geckoAvailable!!
+        }
+
+        fun setGeckoAvailableForTesting(available: Boolean?) {
+            geckoAvailable = available
+        }
+    }
 
     private val adapters = mutableMapOf<String, EngineAdapter>()
 
