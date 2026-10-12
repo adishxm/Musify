@@ -25,6 +25,12 @@
 ||tracker.example.com^
 ||tracking-pixel.com^
 ||unwanted-ads.org^
+||s0.2mdn.net^
+||s.youtube.com^
+||googleads.g.doubleclick.net^
+||pagead2.googlesyndication.com^
+||ad.youtube.com^
+||ads.youtube.com^
 !
 ! Path and query rule samples
 /adbanner/*

@@ -59,7 +59,16 @@ class WebViewAdapter : EngineAdapter {
         "scorecardresearch.com",
         "adnxs.com",
         "criteo.com",
-        "hotjar.com"
+        "hotjar.com",
+        "googleads.g.doubleclick.net",
+        "pagead2.googlesyndication.com",
+        "adservice.google.com",
+        "youtube.com/pagead",
+        "youtube.com/api/stats/ads",
+        "youtube.com/get_midroll_info",
+        "youtube.com/ptracking",
+        "s0.2mdn.net",
+        "s.youtube.com"
     )
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -110,6 +119,10 @@ class WebViewAdapter : EngineAdapter {
                         canGoBack = view?.canGoBack() ?: false,
                         canGoForward = view?.canGoForward() ?: false
                     )
+
+                    if (url?.contains("youtube.com", ignoreCase = true) == true && _shieldState.value.isProtectionEnabled) {
+                        injectYouTubeAdBlockerScript(view)
+                    }
                 }
 
                 override fun onReceivedSslError(
@@ -262,6 +275,41 @@ class WebViewAdapter : EngineAdapter {
             hasCrashed = true,
             crashReason = "Simulated WebView renderer loss for recovery verification"
         )
+    }
+
+    private fun injectYouTubeAdBlockerScript(view: WebView?) {
+        val js = """
+            (function() {
+                if (window.__musifyAdBlockerInjected) return;
+                window.__musifyAdBlockerInjected = true;
+                
+                function cleanYouTubeAds() {
+                    var selectors = [
+                        '.video-ads', '.ytp-ad-module', '.ytp-ad-overlay-container',
+                        'ytm-promoted-sparkles-web-renderer', 'ytm-companion-ad-renderer',
+                        '.ad-container', '.ad-div', 'ytm-statement-banner-renderer',
+                        'ytm-banner-promo-renderer', '.ytp-ad-action-interstitial',
+                        'ytm-promoted-video-renderer'
+                    ];
+                    selectors.forEach(function(sel) {
+                        var els = document.querySelectorAll(sel);
+                        els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
+                    });
+                    
+                    var skipBtns = document.querySelectorAll('.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, .ytp-ad-skip-button-slot');
+                    skipBtns.forEach(function(btn) { btn.click(); });
+
+                    var video = document.querySelector('video');
+                    var adShowing = document.querySelector('.ad-interrupting, .html5-ad-product');
+                    if (video && adShowing && video.duration > 0) {
+                        video.currentTime = video.duration;
+                    }
+                }
+                
+                setInterval(cleanYouTubeAds, 500);
+            })();
+        """.trimIndent()
+        view?.evaluateJavascript(js, null)
     }
 
     override fun destroy() {
