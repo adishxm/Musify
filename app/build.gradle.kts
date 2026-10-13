@@ -131,3 +131,34 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+tasks.matching { it.name.contains("merge") && it.name.contains("Assets") }.configureEach {
+    doLast {
+        if (project.hasProperty("BUILD_LITE")) {
+            val buildDir = project.layout.buildDirectory.asFile.get()
+            val assetsDir = File(buildDir, "intermediates/assets")
+            if (assetsDir.exists()) {
+                assetsDir.walkTopDown().filter { it.name == "omni.ja" }.forEach { file ->
+                    val len = file.length()
+                    file.delete()
+                    logger.lifecycle("BUILD_LITE: Stripped $file ($len bytes)")
+                }
+            }
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("package") && it.name.endsWith("Release") }.configureEach {
+    doFirst {
+        if (project.hasProperty("BUILD_LITE")) {
+            val buildDir = project.layout.buildDirectory.asFile.get()
+            val assetsDir = File(buildDir, "intermediates/assets")
+            if (assetsDir.exists()) {
+                assetsDir.walkTopDown().filter { it.name == "omni.ja" }.forEach { file ->
+                    file.delete()
+                    logger.lifecycle("BUILD_LITE: Pre-package cleaned $file")
+                }
+            }
+        }
+    }
+}

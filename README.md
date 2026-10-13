@@ -48,11 +48,16 @@ Most mobile browsers phone home. Musify doesn't. It's an independent, general-pu
 
 ## ⬇️ Download
 
-| APK | Architecture | Direct Download |
-|---|---|---|
-| **[Musify.apk](Musify.apk)** | Universal (ARM64, ARMv7, x86_64) | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify.apk) |
-| **[Musify-ARM64.apk](Musify-ARM64.apk)** | Modern 64-bit phones (recommended) | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify-ARM64.apk) |
-| **[Musify-Lite.apk](Musify-Lite.apk)** | Low-storage & older devices | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify-Lite.apk) |
+| APK | Architecture / Engine | File Size | Direct Download |
+|---|---|---|---|
+| **[Musify.apk](Musify.apk)** | Universal GeckoView Engine (ARM64, ARMv7, x86_64) | **~153 MB** | [⬇️ Download Universal APK](https://github.com/adishxm/Musify/raw/main/Musify.apk) |
+| **[Musify-ARM64.apk](Musify-ARM64.apk)** | Optimized 64-bit GeckoView Engine (arm64-v8a) | **~84 MB** | [⬇️ Download ARM64 APK](https://github.com/adishxm/Musify/raw/main/Musify-ARM64.apk) |
+| **[Musify-Lite.apk](Musify-Lite.apk)** | **Ultra-Lightweight Edition (18× Smaller!)** · System WebView Engine | **~8.4 MB** | [⬇️ Download Lite APK](https://github.com/adishxm/Musify/raw/main/Musify-Lite.apk) |
+
+> 💡 **Which build should I choose?**
+> - **Musify-Lite.apk (~8.4 MB)**: **10× to 30× smaller in size**. Strips heavy native binaries and omni bundles, running on the native Android system WebView with full ad/tracker Shields protection, instant install, and minimal storage/RAM usage.
+> - **Musify-ARM64.apk (~84 MB)**: Best for all modern 64-bit Android smartphones running the dedicated GeckoView privacy engine.
+> - **Musify.apk (~153 MB)**: Universal full build compatible with all devices and emulator architectures.
 
 Requires **Android 8.0 (API 26)** or later. Sideload, allow the install, done — no account needed.
 
