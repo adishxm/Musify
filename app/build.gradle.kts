@@ -33,13 +33,24 @@ android {
 
     signingConfigs {
         create("release") {
-            val keyStoreFile = project.findProperty("RELEASE_STORE_FILE") as String?
-            if (keyStoreFile != null && file(keyStoreFile).exists()) {
-                storeFile = file(keyStoreFile)
-                storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as String? ?: ""
-                keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String? ?: ""
-                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String? ?: ""
+            val keyStorePath = project.findProperty("RELEASE_STORE_FILE") as String? ?: "musify.keystore"
+            val keyStoreObj = file(keyStorePath)
+            if (keyStoreObj.exists()) {
+                storeFile = keyStoreObj
+                storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as String? ?: "musify123"
+                keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String? ?: "musify"
+                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String? ?: "musify123"
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = false
             }
+        }
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = false
         }
     }
 
@@ -51,7 +62,7 @@ android {
                 "proguard-rules.pro"
             )
             val releaseConfig = signingConfigs.getByName("release")
-            if (releaseConfig.storeFile != null) {
+            if (releaseConfig.storeFile != null && releaseConfig.storeFile!!.exists()) {
                 signingConfig = releaseConfig
             } else {
                 signingConfig = signingConfigs.getByName("debug")

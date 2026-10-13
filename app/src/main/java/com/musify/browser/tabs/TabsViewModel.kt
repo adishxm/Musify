@@ -242,6 +242,15 @@ class TabsViewModel(
                     return
                 }
                 val origin = "${if (result.isHttps) "https" else "http"}://${result.host}"
+                val targetMode = siteContentModeRepository?.getContentMode(origin) ?: activeTab.contentMode
+                if (targetMode != activeTab.contentMode) {
+                    _tabsState.value = TabsReducer.reduce(
+                        _tabsState.value,
+                        TabAction.UpdateContentMode(activeTab.id, targetMode)
+                    )
+                    _activeContentMode.value = targetMode
+                    adapter.setContentMode(targetMode)
+                }
                 _tabsState.value = TabsReducer.reduce(
                     _tabsState.value,
                     TabAction.UpdateTabNavigation(
@@ -589,6 +598,19 @@ class TabsViewModel(
                     progress = nav.progress
                 )
             )
+
+            // Sync preferred content mode for origin (e.g. Spotify Desktop)
+            if (origin.isNotBlank() && origin != "about:blank" && origin != "musify://home") {
+                val preferredMode = siteContentModeRepository?.getContentMode(origin)
+                if (preferredMode != null && currentTab != null && currentTab.contentMode != preferredMode) {
+                    _tabsState.value = TabsReducer.reduce(
+                        _tabsState.value,
+                        TabAction.UpdateContentMode(activeId, preferredMode)
+                    )
+                    _activeContentMode.value = preferredMode
+                    adapter.setContentMode(preferredMode)
+                }
+            }
 
             // Strict Privacy Rule: NEVER record private browsing history
             if (!isPrivate && !nav.isLoading && effectiveUrl.startsWith("http")) {

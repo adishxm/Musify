@@ -89,6 +89,22 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         "s.youtube.com"
     )
 
+    private val spotifyAdKeywords = listOf(
+        "audio-fa.scdn.co",
+        "heads-fa.scdn.co",
+        "video-fa.scdn.co",
+        "adeventtracker.spotify.com",
+        "adstudio.spotify.com",
+        "ads.spotify.com",
+        "/ad-logic/",
+        "/ads/",
+        "/v1/ads",
+        "/desktop-interstitial/",
+        "spclient.wg.spotify.com/ad-logic",
+        "spclient.wg.spotify.com/ads",
+        "spclient.wg.spotify.com/v1/ads"
+    )
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun createView(context: Context): View {
         val view = WebView(context).apply {
@@ -146,6 +162,16 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     if (url?.contains("youtube.com", ignoreCase = true) == true && _shieldState.value.isProtectionEnabled) {
                         injectYouTubeAdBlockerScript(view)
                     }
+                    if (url?.contains("spotify.com", ignoreCase = true) == true && _shieldState.value.isProtectionEnabled) {
+                        injectSpotifyAdBlockerScript(view)
+                    }
+                }
+
+                override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                    super.doUpdateVisitedHistory(view, url, isReload)
+                    if (url?.contains("spotify.com", ignoreCase = true) == true && _shieldState.value.isProtectionEnabled) {
+                        injectSpotifyAdBlockerScript(view)
+                    }
                 }
 
                 override fun onReceivedSslError(
@@ -181,6 +207,26 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
                     val requestUrl = request?.url?.toString().orEmpty()
                     val host = request?.url?.host.orEmpty()
+
+                    // Intercept Spotify Audio & Visual Ad networks (checked BEFORE isFirstParty bypass)
+                    val isSpotifyAd = spotifyAdKeywords.any { kw ->
+                        requestUrl.contains(kw, ignoreCase = true) || host.contains(kw, ignoreCase = true)
+                    }
+                    if (isSpotifyAd) {
+                        _shieldState.value = _shieldState.value.copy(
+                            blockedCount = _shieldState.value.blockedCount + 1,
+                            lastBlockedUrl = requestUrl,
+                            lastBlockCategory = "Spotify Advertisement"
+                        )
+                        return WebResourceResponse(
+                            "text/plain",
+                            "UTF-8",
+                            204,
+                            "No Content",
+                            mapOf("Content-Type" to "text/plain"),
+                            ByteArrayInputStream(ByteArray(0))
+                        )
+                    }
 
                     // Preserve first-party, top-level main frame, and essential application resources
                     val currentHost = try { Uri.parse(_navigationState.value.url).host.orEmpty() } catch (_: Exception) { "" }
@@ -359,6 +405,107 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 }
                 
                 setInterval(cleanYouTubeAds, 500);
+            })();
+        """.trimIndent()
+        view?.evaluateJavascript(js, null)
+    }
+
+    private fun injectSpotifyAdBlockerScript(view: WebView?) {
+        val js = """
+            (function() {
+                if (window.__musifySpotifyBlockerInjected) return;
+                window.__musifySpotifyBlockerInjected = true;
+
+                function isSpotifyAdActive() {
+                    if (document.querySelector('[aria-label="Advertisement"], [data-testid="ad-companion-banner"], [data-testid="ad-iframe"]')) return true;
+                    var nowPlaying = document.querySelector('[data-testid="now-playing-widget"]');
+                    if (nowPlaying) {
+                        var text = nowPlaying.innerText || "";
+                        if (text.indexOf("Advertisement") !== -1 || text.indexOf("Spotify Premium") !== -1) return true;
+                    }
+                    var adHeading = Array.from(document.querySelectorAll('h1, h2, h3, header, p, span, div')).some(function(el) {
+                        return el.childNodes.length === 1 && el.textContent.trim() === "Advertisement";
+                    });
+                    if (adHeading) return true;
+                    return false;
+                }
+
+                function cleanSpotifyAds() {
+                    // 1. Hide visual ad banners, companion iframes, interstitials
+                    var selectors = [
+                        '[data-testid="ad-companion-banner"]',
+                        '[data-testid="ad-iframe"]',
+                        '.Root__ads-container',
+                        '[aria-label="Advertisement"]',
+                        '[data-testid="interstitial-ad"]',
+                        'div[data-test="upsell-container"]',
+                        '#ad-leaderboard',
+                        '#leaderboard',
+                        '.main-leaderboard-container',
+                        '.desktop-interstitial'
+                    ];
+                    selectors.forEach(function(sel) {
+                        var els = document.querySelectorAll(sel);
+                        els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
+                    });
+
+                    // 2. Dismiss or close modal dialogues promoting ads / premium
+                    var modals = document.querySelectorAll('[data-testid="modal-container"], div[role="dialog"]');
+                    modals.forEach(function(modal) {
+                        var text = modal.innerText || "";
+                        if (text.indexOf("Spotify Premium") !== -1 || text.indexOf("Advertisement") !== -1 || text.indexOf("Get Premium") !== -1) {
+                            var closeBtn = modal.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[title="Close"]');
+                            if (closeBtn) {
+                                try { closeBtn.click(); } catch(e) {}
+                            } else {
+                                modal.style.setProperty('display', 'none', 'important');
+                            }
+                        }
+                    });
+
+                    // 3. Mobile / Fullscreen advertisement overlay container hiding
+                    var adHeaders = Array.from(document.querySelectorAll('span, p, h1, h2, h3, div')).filter(function(el) {
+                        return el.childNodes.length === 1 && el.textContent.trim() === "Advertisement";
+                    });
+                    adHeaders.forEach(function(header) {
+                        var container = header.closest('div[class*="container"], div[class*="overlay"], div[role="dialog"], main, section') || header.parentElement;
+                        if (container && container !== document.body && container !== document.documentElement) {
+                            var text = container.innerText || "";
+                            if (text.indexOf("Learn more") !== -1 || text.indexOf("Spotify Premium") !== -1 || text.indexOf("Advertisement") !== -1) {
+                                container.style.setProperty('display', 'none', 'important');
+                            }
+                        }
+                    });
+
+                    // 4. Media fast-forward & mute for audio/video ads
+                    var adActive = isSpotifyAdActive();
+                    var mediaElements = document.querySelectorAll('audio, video');
+                    mediaElements.forEach(function(media) {
+                        var src = media.src || "";
+                        var isAdMedia = adActive || src.indexOf("audio-fa.scdn.co") !== -1 || src.indexOf("heads-fa.scdn.co") !== -1 || src.indexOf("video-fa.scdn.co") !== -1;
+                        if (isAdMedia) {
+                            media.muted = true;
+                            media.volume = 0;
+                            if (media.duration && !isNaN(media.duration) && isFinite(media.duration) && media.duration > 0) {
+                                media.currentTime = media.duration;
+                            }
+                            media.playbackRate = 16.0;
+                        }
+                    });
+
+                    // 5. Auto-skip button clicking
+                    if (adActive) {
+                        var skipBtns = document.querySelectorAll('[data-testid="control-button-skip-forward"], button[aria-label="Next"], button[title="Next"], button[aria-label="Skip forward"], [data-testid="skip-ad-button"]');
+                        skipBtns.forEach(function(btn) {
+                            if (!btn.disabled) {
+                                try { btn.click(); } catch(e) {}
+                            }
+                        });
+                    }
+                }
+
+                setInterval(cleanSpotifyAds, 300);
+                cleanSpotifyAds();
             })();
         """.trimIndent()
         view?.evaluateJavascript(js, null)

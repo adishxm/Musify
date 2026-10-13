@@ -16,3 +16,4 @@ Musify_Browser_brain.zip
 *.jks
 signing.properties
 .kotlin/
+*.idsig
