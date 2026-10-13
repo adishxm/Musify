@@ -50,11 +50,11 @@ Most mobile browsers phone home. Musify doesn't. It's an independent, general-pu
 
 | APK | Architecture | Direct Download |
 |---|---|---|
-| **Musify.apk** | Universal (ARM64, ARMv7, x86_64) | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify.apk) |
-| **Musify-ARM64.apk** | Modern 64-bit phones (recommended) | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify-ARM64.apk) |
-| **Musify-Lite.apk** | Low-storage & older devices | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify-Lite.apk) |
+| **[Musify.apk](Musify.apk)** | Universal (ARM64, ARMv7, x86_64) | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify.apk) |
+| **[Musify-ARM64.apk](Musify-ARM64.apk)** | Modern 64-bit phones (recommended) | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify-ARM64.apk) |
+| **[Musify-Lite.apk](Musify-Lite.apk)** | Low-storage & older devices | [⬇️ Download APK](https://github.com/adishxm/Musify/raw/main/Musify-Lite.apk) |
 
-> 📦 All release APKs are hosted on [**GitHub Releases**](https://github.com/adishxm/Musify/releases). Requires **Android 8.0 (API 26)** or later. Sideload, allow the install, done — no account needed.
+Requires **Android 8.0 (API 26)** or later. Sideload, allow the install, done — no account needed.
 
 ## 🏗️ Tech Stack
 
