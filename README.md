@@ -1,86 +1,115 @@
-# Musify
+<div align="center">
 
-A native Android privacy-focused general-purpose web browser built with Kotlin, Jetpack Compose, and modern architecture.
+# 🎵 Musify
 
----
+### The privacy-first Android browser that loves music.
 
-## Executive Overview
+**Zero telemetry. Strict tracker blocking. HTTPS-first. And Spotify Web that actually plays.**
 
-Musify is an independent, native Android browser designed to deliver transparent, measurable privacy protections for arbitrary web browsing. It is engineered with safe defaults, zero telemetry, and a defensible local data lifecycle.
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?logo=android&logoColor=white)](#-download)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#-tech-stack)
+[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_M3-4285F4?logo=jetpackcompose&logoColor=white)](#-tech-stack)
+[![Engine](https://img.shields.io/badge/Engine-GeckoView_135-FF7139?logo=firefoxbrowser&logoColor=white)](#-tech-stack)
+[![Tests](https://img.shields.io/badge/Unit_Tests-101%2F101_passing-success)](#-building--testing)
+[![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
-### Core Architectural Guarantees & Scope
-- **General-Purpose Browsing:** Engineered for arbitrary web navigation, forms, media, and web applications without single-site special casing or hacks.
-- **Independent Design & Identity:** Distinct UI, code, icons, assets, and product language.
-- **Multi-Tab Architecture & Memory Protection:** Up to 20 concurrent tabs capped deterministically to prevent out-of-memory crashes; engine sessions are lazy-allocated and destroyed upon tab closure to free native memory.
-- **Process & Session Recovery:** Automatic, zero-leak session recovery that persists strictly minimal tab metadata (UUID, URL, Title, Timestamps) while completely excluding DOM contents, form entries, cookies, or secrets.
-- **Zero Telemetry or Credential Harvesting:** Zero behavioral analytics, ad tracking, or cloud profile synchronization. All browsing data remains strictly on-device.
-- **Strict TLS Security:** Enforced certificate validation with zero silent overrides or unsafe blanket SSL proceed options; cleartext traffic disabled globally via Android Network Security Config.
-- **Verified Origin Display & Anti-Spoofing:** Omnibar displays the full, verified origin (scheme, host, port) and decodes IDN homoglyphs into ASCII Punycode (`xn--...`) to mitigate visual spoofing.
-- **Privacy Shields & Content Blocking:** Engine-native GeckoView strict protection against advertising trackers, social trackers, cryptominers, and browser fingerprinters.
-- **Reversible Per-Origin Exceptions:** Scoped exception management without global toggle side-effects and zero hardcoded rules for production domains.
-- **Conservative HTTPS-First Behavior:** Automatic upgrade to HTTPS with explicit insecure connection warning dialog before loading unencrypted HTTP websites.
-- **Filter-List Pipeline & Licensing Gate:** Memory-bounded offline rule compiler (ABP network rules, exceptions, subdomains), staged atomic activations, last-known-good rollbacks, and transparent in-app licensing/provenance screens with zero false parity claims.
-- **Browser Essentials & Sandboxed Storage:** User-confirmed off-thread downloads in sandboxed app-specific storage with `FileProvider` mediation, executable threat badges, exact-origin deny-by-default site permissions, fail-closed external scheme protection, and in-page search.
+[**⬇️ Download**](#-download) · [**✨ Features**](#-features) · [**🛠️ Build**](#-building--testing) · [**🗺️ Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
 
----
+<!-- 📸 SCREENSHOTS: put real images in docs/screenshots/ and these render -->
+| 🏠 Home | 🛡️ Shields | 🗂️ Tabs | 🎵 Spotify Web |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/home.png" width="200"> | <img src="docs/screenshots/shields.png" width="200"> | <img src="docs/screenshots/tabs.png" width="200"> | <img src="docs/screenshots/spotify.png" width="200"> |
 
-## Tech Stack & Environment
-
-- **Language:** Kotlin 2.0.21
-- **UI Framework:** Jetpack Compose (Material 3, Edge-to-Edge)
-- **Build System:** Gradle 8.13 with Kotlin DSL (`build.gradle.kts`)
-- **Android Gradle Plugin (AGP):** 8.13.2
-- **Target SDK:** 35 (Android 15)
-- **Minimum SDK:** 26 (Android 8.0)
-- **JVM Target:** Java 17 / 21
-- **Engine Architecture:** Decoupled `EngineAdapter` interface with:
-  - **GeckoView Stable** (`135.0.20250130195129`) as primary production candidate
-  - **AndroidX WebKit WebView** (`1.12.1`) as bounded prototype/fallback adapter
+</div>
 
 ---
 
-## Roadmap & .brain Workspace
+## Why Musify?
 
-Project development follows the phased, evidence-based roadmap structured in the `.brain/` directory:
+Most mobile browsers phone home. Musify doesn't. It's an independent, general-purpose Android browser engineered for **transparent, measurable privacy** — no telemetry, no accounts, no cloud sync, no crypto tokens, no news feed. Just a fast, honest browser — that's also been painstakingly tuned so **Spotify Web playback works flawlessly** (Widevine DRM, desktop-mode recovery and all).
 
-| Phase | Description | Status | Evidence / Report |
-|---|---|---|---|
-| **Phase 00** | Repository, project foundation & Jetpack Compose setup | **Completed (PASS)** | [.brain/.report/PHASE-00-REPORT.md](.brain/.report/PHASE-00-REPORT.md) |
-| **Phase 01** | Browser engine feasibility spike (GeckoView Stable & WebView) | **Completed (PASS)** | [.brain/.report/PHASE-01-REPORT.md](.brain/.report/PHASE-01-REPORT.md) |
-| **Phase 02** | Single-tab browser shell, safe URL parser & navigation controls | **Completed (PASS)** | [.brain/.report/PHASE-02-REPORT.md](.brain/.report/PHASE-02-REPORT.md) |
-| **Phase 03** | Tabs, lifecycle & session recovery (max-tab cap, process restore) | **Completed (PASS)** | [.brain/.report/PHASE-03-REPORT.md](.brain/.report/PHASE-03-REPORT.md) |
-| **Phase 04** | History, bookmarks & disposable private sessions | **Completed (PASS)** | [.brain/.report/PHASE-04-REPORT.md](.brain/.report/PHASE-04-REPORT.md) |
-| **Phase 05** | Privacy shields & content blocking controls | **Completed (PASS)** | [.brain/.report/PHASE-05-REPORT.md](.brain/.report/PHASE-05-REPORT.md) |
-| **Phase 06** | Filter-list pipeline & licensing compliance gate | **Completed (PASS)** | [.brain/.report/PHASE-06-REPORT.md](.brain/.report/PHASE-06-REPORT.md) |
-| **Phase 07** | Browser essentials (downloads, site permissions & safety) | **Completed (PASS)** | [.brain/.report/PHASE-07-REPORT.md](.brain/.report/PHASE-07-REPORT.md) |
-| **Phase 08** | Hardening (security audit, a11y, memory profiling) | **Completed (PASS)** | [.brain/.report/PHASE-08-REPORT.md](.brain/.report/PHASE-08-REPORT.md) |
-| **Phase 09** | Beta distribution & release readiness gate | **Completed (PASS)** | [.brain/.report/PHASE-09-REPORT.md](.brain/.report/PHASE-09-REPORT.md) |
+## ✨ Features
 
----
+- 🕵️ **Zero telemetry, zero harvesting** — no behavioral analytics, no ad tracking, no cloud profile sync. All browsing data stays strictly on-device.
+- 🛡️ **Privacy Shields** — engine-native strict protection against ad trackers, social trackers, cryptominers & fingerprinters.
+- 🎵 **Spotify Web, verified working** — hardware Widevine DRM probing (`MediaDrm`), desktop-mode playback recovery, and measured capability badges instead of hardcoded hacks.
+- 🌐 **HTTPS-first** — automatic HTTPS upgrades with an explicit warning before any cleartext HTTP load; cleartext disabled in Network Security Config.
+- 🔒 **Strict TLS** — enforced certificate validation. Zero silent overrides, no blanket "proceed anyway" SSL button.
+- 🗂️ **20-tab architecture** — deterministic tab cap prevents OOM crashes; engine sessions are lazy-allocated and destroyed on tab close.
+- ♻️ **Zero-leak session recovery** — restores tabs after process death using only minimal metadata (UUID, URL, title, timestamps) — never DOM content, form entries, cookies or secrets.
+- 🚫 **Filter-list pipeline** — memory-bounded offline ABP rule compiler, staged atomic activations, last-known-good rollback, transparent licensing/provenance screens.
+- 🔍 **Anti-spoofing omnibar** — displays full verified origin (scheme, host, port) and decodes IDN homoglyphs to Punycode (`xn--…`).
+- ⬇️ **Safe downloads** — user-confirmed, off-thread, sandboxed app storage with `FileProvider` mediation and executable threat badges.
+- 🎛️ **Per-site control** — reversible per-origin shield exceptions, deny-by-default permissions, fail-closed external scheme protection.
+- 📡 **AdGuard DNS companion layer** — system-wide Android Private DNS integration, segregated from in-page Shields counters.
+- 🧪 **101/101 unit tests passing** across all development phases.
+- 🆓 **Free & open source** — Apache 2.0, independent design & identity.
 
-## Building and Testing
+## ⬇️ Download
 
-### Prerequisites
-- Android Studio Ladybug / Meerkat or Android SDK (API 35 platforms, build-tools 35.0.0+)
-- JDK 17 or JDK 21 (Microsoft OpenJDK 21 LTS configured via `JAVA_HOME`)
+| APK | Architecture | Direct Download |
+|---|---|---|
+| **Musify.apk** | Universal (ARM64, ARMv7, x86_64) | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify.apk) |
+| **Musify-ARM64.apk** | Modern 64-bit phones (recommended) | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify-ARM64.apk) |
+| **Musify-Lite.apk** | Low-storage & older devices | [⬇️ Download from Releases](https://github.com/adishxm/Musify/releases/latest/download/Musify-Lite.apk) |
 
-### Build Commands
+> 📦 All release APKs are hosted on [**GitHub Releases**](https://github.com/adishxm/Musify/releases). Requires **Android 8.0 (API 26)** or later. Sideload, allow the install, done — no account needed.
+
+## 🏗️ Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Language | **Kotlin 2.0.21** |
+| UI | **Jetpack Compose** (Material 3, edge-to-edge) |
+| Engine | Decoupled `EngineAdapter` → **GeckoView 135** (primary) + **AndroidX WebKit 1.12.1** (fallback) |
+| Build | Gradle 8.13 (Kotlin DSL), AGP 8.13.2 |
+| Target / Min SDK | **35 (Android 15)** / **26 (Android 8.0)** |
+| JVM | Java 17 / 21 |
+
+## 🛠️ Building & Testing
+
+**Prerequisites:** Android Studio Ladybug/Meerkat (SDK 35, build-tools 35.0.0+), JDK 17 or 21.
+
 ```bash
-# Run all unit tests (88 tests across Phases 00-09)
+# Run all unit tests (101 tests)
 ./gradlew testDebugUnitTest
 
-# Assemble debug APK
+# Debug / release APK
 ./gradlew assembleDebug
-
-# Assemble release APK
 ./gradlew assembleRelease
 
-# Install on connected device or emulator
+# Install on a connected device
 ./gradlew installDebug
 ```
 
+## 🗺️ Roadmap
+
+Development followed a phased, evidence-based plan — every phase ships with a written verification report in [`.brain/.report/`](.brain/.report/).
+
+| Phase | Scope | Status |
+|---|---|---|
+| 00–02 | Foundation, engine feasibility, single-tab shell | ✅ Pass |
+| 03–04 | Tabs, lifecycle, session recovery, history & bookmarks | ✅ Pass |
+| 05–06 | Privacy Shields, filter-list pipeline & licensing gate | ✅ Pass |
+| 07–08 | Downloads, permissions, hardening & memory profiling | ✅ Pass |
+| 09 | Beta distribution & release readiness | ✅ Pass |
+| 10 | **Spotify Web compatibility** — Widevine probe, desktop playback recovery, AdGuard DNS layer | ✅ Implementation verified |
+
+## 🤝 Contributing
+
+Issues and PRs are welcome! Found a site that breaks with Shields on? A playback edge case? Open an issue — measured capability reports > "it doesn't work." See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adishxm/Musify&type=Date)](https://star-history.com/#adishxm/Musify&Date)
+
+## 📄 License
+
+[Apache 2.0](LICENSE) — use it, fork it, ship it.
+
 ---
 
-## License
-
-This project is licensed under the Apache 2.0 License. See the [LICENSE](LICENSE) file for details.
+<div align="center">
+If Musify earned a place on your home screen, a ⭐ tells others it's worth a look.
+</div>

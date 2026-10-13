@@ -221,8 +221,8 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 session: GeckoSession,
                 securityInfo: GeckoSession.ProgressDelegate.SecurityInformation
             ) {
-                val isSecure = securityInfo.isSecure
-                val host = securityInfo.host
+                val isSecure = try { securityInfo.isSecure } catch (_: Throwable) { false }
+                val host = try { securityInfo.host } catch (_: Throwable) { null }
                 _securityState.value = _securityState.value.copy(
                     isSecure = isSecure,
                     host = host,
