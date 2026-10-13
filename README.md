@@ -14,7 +14,7 @@
 [![Tests](https://img.shields.io/badge/Unit_Tests-101%2F101_passing-success)](#-building--testing)
 [![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
-[**⬇️ Download**](#-download) · [**✨ Features**](#-features) · [**🛠️ Build**](#-building--testing) · [**🗺️ Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
+[**⬇️ Download**](#-download) · [**✨ Features**](#-features) · [**🛠️ Build**](#-building--testing) · [**🗺️ Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing) · [**⭐ Star History**](#-star-history)
 
 <!-- 📸 SCREENSHOTS: put real images in docs/screenshots/ and these render -->
 | 🏠 Home | 🛡️ Shields | 🗂️ Tabs | 🎵 Spotify Web |
@@ -107,7 +107,17 @@ Issues and PRs are welcome! Found a site that breaks with Shields on? A playback
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=adishxm/Musify&type=Date)](https://star-history.com/#adishxm/Musify&Date)
+<div align="center">
+
+<a href="https://star-history.com/#adishxm/Musify&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=adishxm/Musify&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=adishxm/Musify&type=Date" />
+    <img alt="Musify Star History Chart" src="https://api.star-history.com/svg?repos=adishxm/Musify&type=Date" width="700" />
+  </picture>
+</a>
+
+</div>
 
 ## 📄 License
 
