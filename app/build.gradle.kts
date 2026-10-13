@@ -8,6 +8,8 @@ android {
     namespace = "com.musify.browser"
     compileSdk = 35
 
+    val targetAbi = project.findProperty("TARGET_ABI") as String?
+
     defaultConfig {
         applicationId = "com.musify.browser"
         minSdk = 26
@@ -19,8 +21,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        val targetAbi = project.findProperty("TARGET_ABI") as String?
         ndk {
+            abiFilters.clear()
             if (targetAbi != null && targetAbi.isNotBlank()) {
                 abiFilters.add(targetAbi)
             } else {
@@ -85,6 +87,12 @@ android {
             useLegacyPackaging = true
             if (project.hasProperty("BUILD_LITE")) {
                 excludes += listOf("**/*")
+            } else if (targetAbi != null && targetAbi.isNotBlank()) {
+                val allAbis = listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+                val otherAbis = allAbis.filter { it != targetAbi }
+                otherAbis.forEach { abi ->
+                    excludes += listOf("lib/$abi/**", "**/$abi/**")
+                }
             }
         }
     }
