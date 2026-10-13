@@ -42,6 +42,7 @@ object TabSessionSerializer {
             sb.append("      \"id\": \"").append(escapeJson(tab.id)).append("\",\n")
             sb.append("      \"url\": \"").append(escapeJson(tab.url)).append("\",\n")
             sb.append("      \"title\": \"").append(escapeJson(tab.title)).append("\",\n")
+            sb.append("      \"contentMode\": \"").append(tab.contentMode.name).append("\",\n")
             sb.append("      \"createdAt\": ").append(tab.createdAt).append(",\n")
             sb.append("      \"lastActiveAt\": ").append(tab.lastActiveAt).append("\n")
             sb.append("    }").append(if (index < tabsToPersist.size - 1) "," else "").append("\n")
@@ -56,21 +57,25 @@ object TabSessionSerializer {
         return try {
             val selectedTabId = extractStringField(json, "selectedTabId")
 
-            val tabsRegex = Regex("""\{[^{}]*"id"\s*:\s*"([^"]+)"[^{}]*"url"\s*:\s*"([^"]+)"[^{}]*"title"\s*:\s*"([^"]+)"[^{}]*"createdAt"\s*:\s*(\d+)[^{}]*"lastActiveAt"\s*:\s*(\d+)[^{}]*\}""")
+            val tabsRegex = Regex("""\{[^{}]*"id"\s*:\s*"([^"]+)"[^{}]*"url"\s*:\s*"([^"]+)"[^{}]*"title"\s*:\s*"([^"]+)"[^{}]*\}""")
             val matches = tabsRegex.findAll(json)
 
             val parsedTabs = matches.map { match ->
                 val id = unescapeJson(match.groupValues[1])
                 val url = unescapeJson(match.groupValues[2])
                 val title = unescapeJson(match.groupValues[3])
-                val createdAt = match.groupValues[4].toLongOrNull() ?: System.currentTimeMillis()
-                val lastActiveAt = match.groupValues[5].toLongOrNull() ?: System.currentTimeMillis()
+                val block = match.value
+                val createdAt = Regex(""""createdAt"\s*:\s*(\d+)""").find(block)?.groupValues?.get(1)?.toLongOrNull() ?: System.currentTimeMillis()
+                val lastActiveAt = Regex(""""lastActiveAt"\s*:\s*(\d+)""").find(block)?.groupValues?.get(1)?.toLongOrNull() ?: System.currentTimeMillis()
+                val isDesktop = block.contains("\"contentMode\": \"DESKTOP\"") || block.contains("\"contentMode\":\"DESKTOP\"")
+                val contentMode = if (isDesktop) com.musify.browser.engine.ContentMode.DESKTOP else com.musify.browser.engine.ContentMode.MOBILE
 
                 TabSession(
                     id = id,
                     url = url,
                     title = title,
                     origin = deriveOrigin(url),
+                    contentMode = contentMode,
                     createdAt = createdAt,
                     lastActiveAt = lastActiveAt
                 )

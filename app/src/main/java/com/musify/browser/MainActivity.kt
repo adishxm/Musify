@@ -87,6 +87,9 @@ class MainActivity : ComponentActivity() {
         val sitePermissionsFile = File(filesDir, "musify_site_permissions.json")
         val sitePermissionRepository = LocalSitePermissionRepository(sitePermissionsFile)
 
+        val siteContentModesFile = File(filesDir, "musify_site_content_mode.txt")
+        val siteContentModeRepository = com.musify.browser.storage.LocalSiteContentModeRepository(siteContentModesFile)
+
         val preferencesFile = File(filesDir, "musify_preferences.json")
         val preferencesRepository = LocalAppPreferencesRepository(preferencesFile)
 
@@ -104,7 +107,8 @@ class MainActivity : ComponentActivity() {
                         bookmarkRepository = bookmarkRepository,
                         shieldExceptionRepository = shieldExceptionRepository,
                         downloadManager = downloadManager,
-                        sitePermissionRepository = sitePermissionRepository
+                        sitePermissionRepository = sitePermissionRepository,
+                        siteContentModeRepository = siteContentModeRepository
                     )
                 }
                 activeTabsViewModel = tabsViewModel

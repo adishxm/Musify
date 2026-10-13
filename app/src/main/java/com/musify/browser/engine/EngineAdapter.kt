@@ -15,6 +15,10 @@ interface EngineAdapter {
     val securityState: StateFlow<EngineSecurityState>
     val shieldState: StateFlow<EngineShieldState>
     val processState: StateFlow<EngineProcessState>
+    val contentMode: StateFlow<ContentMode>
+        get() = kotlinx.coroutines.flow.MutableStateFlow(ContentMode.MOBILE)
+    val mediaCapabilityState: StateFlow<MediaCapabilityState>
+        get() = kotlinx.coroutines.flow.MutableStateFlow(MediaCapabilityState())
 
     fun createView(context: Context): View
     fun loadUrl(url: String)
@@ -26,6 +30,8 @@ interface EngineAdapter {
     fun setProtectionEnabled(enabled: Boolean)
     fun setOriginException(isException: Boolean) {}
     fun resetPageShieldCount() {}
+    fun setContentMode(mode: ContentMode) {}
+    fun getMediaCapabilityState(): MediaCapabilityState = mediaCapabilityState.value
     fun simulateRendererLoss()
     fun destroy()
 }

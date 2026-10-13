@@ -1,5 +1,6 @@
 package com.musify.browser.tabs
 
+import com.musify.browser.engine.ContentMode
 import java.util.UUID
 
 /**
@@ -17,6 +18,7 @@ data class TabSession(
     val isSecure: Boolean = true,
     val isRendererCrashed: Boolean = false,
     val isPrivate: Boolean = false,
+    val contentMode: ContentMode = ContentMode.MOBILE,
     val createdAt: Long = System.currentTimeMillis(),
     val lastActiveAt: Long = System.currentTimeMillis()
 )
@@ -96,6 +98,11 @@ sealed interface TabAction {
     data class UpdateTabRendererLoss(
         val tabId: String,
         val hasCrashed: Boolean
+    ) : TabAction
+
+    data class UpdateContentMode(
+        val tabId: String,
+        val contentMode: ContentMode
     ) : TabAction
 
     data class RestoreTabs(

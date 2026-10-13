@@ -5,6 +5,21 @@ enum class EngineType {
     WEB_VIEW
 }
 
+enum class ContentMode {
+    MOBILE,
+    DESKTOP
+}
+
+data class MediaCapabilityState(
+    val isEncryptedMediaSupported: Boolean = true,
+    val isWidevineSupported: Boolean = true,
+    val isDesktopMode: Boolean = false,
+    val isPrivateMode: Boolean = false,
+    val isAutoplayAllowed: Boolean = true,
+    val cookiePolicy: String = "Accept Non-Trackers & Isolate",
+    val lastMediaFailureReason: String? = null
+)
+
 data class EngineSecurityState(
     val isSecure: Boolean = false,
     val protocol: String = "HTTP",

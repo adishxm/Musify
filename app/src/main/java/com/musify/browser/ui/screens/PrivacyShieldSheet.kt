@@ -71,6 +71,9 @@ fun PrivacyShieldSheet(
     var isShieldEnabled by remember(activeTab?.origin) {
         mutableStateOf(viewModel.isShieldEnabledForCurrentTab())
     }
+    val contentMode by viewModel.activeContentMode.collectAsState()
+    val isDesktop = contentMode == com.musify.browser.engine.ContentMode.DESKTOP
+    var showPlaybackDialog by remember { mutableStateOf(false) }
     var showClearCookiesNotice by remember { mutableStateOf(false) }
 
     val currentOrigin = when {
@@ -192,6 +195,58 @@ fun PrivacyShieldSheet(
                 }
             }
 
+            // Desktop Web Mode Toggle Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDesktop) AccentCyan.copy(alpha = 0.1f) else SurfaceLightDark
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    if (isDesktop) AccentCyan.copy(alpha = 0.4f) else CardBorder
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (isDesktop) "Desktop Site Active 🖥️" else "Mobile Site Active 📱",
+                            color = if (isDesktop) AccentCyan else TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = if (isDesktop)
+                                "Desktop user agent and viewport active for this site."
+                            else
+                                "Request desktop site for web apps requiring full layout (e.g., Spotify Web).",
+                            color = TextSecondary,
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    Switch(
+                        checked = isDesktop,
+                        onCheckedChange = {
+                            viewModel.toggleContentModeCurrentTab()
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = AccentCyan,
+                            checkedTrackColor = AccentCyan.copy(alpha = 0.4f),
+                            uncheckedThumbColor = TextMuted,
+                            uncheckedTrackColor = SurfaceDark
+                        )
+                    )
+                }
+            }
+
             // Blocked Requests Counter Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -270,6 +325,21 @@ fun PrivacyShieldSheet(
                 }
             }
 
+            // Playback Compatibility & Recovery Action
+            Button(
+                onClick = { showPlaybackDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan.copy(alpha = 0.2f)),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "🎵 Web Playback & Media Diagnostics",
+                    color = AccentCyan,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
             // Per-Origin Clear Storage Action
             Button(
                 onClick = {
@@ -305,6 +375,13 @@ fun PrivacyShieldSheet(
                 lineHeight = 14.sp
             )
         }
+    }
+
+    if (showPlaybackDialog) {
+        PlaybackCompatibilityDialog(
+            viewModel = viewModel,
+            onDismiss = { showPlaybackDialog = false }
+        )
     }
 }
 

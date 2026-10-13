@@ -10,3 +10,4 @@
 - [Phase 07 — Browser essentials: downloads, permissions & safety](PHASE-07.md): 2–3 weeks. Complete useful browser interactions while minimizing unsafe privileges.
 - [Phase 08 — Security, privacy, accessibility & performance hardening](PHASE-08.md): 3–4 weeks. Run a structured release-readiness cycle across browser security, data, usability, and device performance.
 - [Phase 09 — Beta, documentation & release decision](PHASE-09.md): 2–4 weeks. Prepare a controlled beta or personal signed build with reproducible evidence; public release is optional and gated.
+- [Phase 10 — Desktop Content Mode, Protected Media & Playback Recovery](PHASE-10.md): 2–3 weeks. Enable desktop content mode, media/DRM capability handling, and scoped playback recovery for web media apps like Spotify.

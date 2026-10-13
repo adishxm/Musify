@@ -201,6 +201,17 @@ object TabsReducer {
                 state.copy(tabs = updatedTabs)
             }
 
+            is TabAction.UpdateContentMode -> {
+                val updatedTabs = state.tabs.map { tab ->
+                    if (tab.id == action.tabId) {
+                        tab.copy(contentMode = action.contentMode)
+                    } else {
+                        tab
+                    }
+                }
+                state.copy(tabs = updatedTabs)
+            }
+
             is TabAction.RestoreTabs -> {
                 // Strictly exclude any private tabs from restoration
                 val safeRestored = action.tabs.filterNot { it.isPrivate }

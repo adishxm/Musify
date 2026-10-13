@@ -29,6 +29,22 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     private val _processState = MutableStateFlow(EngineProcessState())
     override val processState: StateFlow<EngineProcessState> = _processState.asStateFlow()
 
+    private val _contentMode = MutableStateFlow(ContentMode.MOBILE)
+    override val contentMode: StateFlow<ContentMode> = _contentMode.asStateFlow()
+
+    private val _mediaCapabilityState = MutableStateFlow(
+        MediaCapabilityState(
+            isEncryptedMediaSupported = true,
+            isWidevineSupported = true,
+            isDesktopMode = false,
+            isPrivateMode = isPrivate,
+            isAutoplayAllowed = true,
+            cookiePolicy = "Accept Non-Trackers & Total Cookie Isolation",
+            lastMediaFailureReason = null
+        )
+    )
+    override val mediaCapabilityState: StateFlow<MediaCapabilityState> = _mediaCapabilityState.asStateFlow()
+
     private var geckoSession: GeckoSession? = null
     private var geckoView: GeckoView? = null
     private var isInitialized = false
@@ -46,9 +62,10 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                             .antiTracking(ContentBlocking.AntiTracking.STRICT)
                             .enhancedTrackingProtectionLevel(ContentBlocking.EtpLevel.STRICT)
                             .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
-                            .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_FIRST_PARTY)
+                            .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_NON_TRACKERS)
                             .build()
                     )
+                    .aboutConfigEnabled(true)
                     .build()
                 sharedRuntime = GeckoRuntime.create(context.applicationContext, settings)
             }
@@ -62,10 +79,41 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     private fun initSession(context: Context) {
         val runtime = ensureRuntime(context)
+        val isDesktop = _contentMode.value == ContentMode.DESKTOP
         val sessionSettings = GeckoSessionSettings.Builder()
             .usePrivateMode(isPrivate)
+            .userAgentMode(if (isDesktop) GeckoSessionSettings.USER_AGENT_MODE_DESKTOP else GeckoSessionSettings.USER_AGENT_MODE_MOBILE)
+            .viewportMode(if (isDesktop) GeckoSessionSettings.VIEWPORT_MODE_DESKTOP else GeckoSessionSettings.VIEWPORT_MODE_MOBILE)
             .build()
         val session = GeckoSession(sessionSettings)
+        if (isDesktop) {
+            session.settings.userAgentOverride = "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
+        }
+
+        session.permissionDelegate = object : GeckoSession.PermissionDelegate {
+            override fun onContentPermissionRequest(
+                session: GeckoSession,
+                perm: GeckoSession.PermissionDelegate.ContentPermission
+            ): org.mozilla.geckoview.GeckoResult<Int> {
+                val isMediaOrStorage = when (perm.permission) {
+                    GeckoSession.PermissionDelegate.PERMISSION_MEDIA_KEY_SYSTEM_ACCESS,
+                    GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE,
+                    GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_INAUDIBLE,
+                    GeckoSession.PermissionDelegate.PERMISSION_PERSISTENT_STORAGE,
+                    GeckoSession.PermissionDelegate.PERMISSION_STORAGE_ACCESS -> true
+                    else -> false
+                }
+                return if (isMediaOrStorage) {
+                    org.mozilla.geckoview.GeckoResult.fromValue(
+                        GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW
+                    )
+                } else {
+                    org.mozilla.geckoview.GeckoResult.fromValue(
+                        GeckoSession.PermissionDelegate.ContentPermission.VALUE_PROMPT
+                    )
+                }
+            }
+        }
 
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLocationChange(
@@ -286,6 +334,23 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             blockedCryptominers = 0,
             blockedFingerprinters = 0
         )
+    }
+
+    override fun setContentMode(mode: ContentMode) {
+        _contentMode.value = mode
+        val isDesktop = mode == ContentMode.DESKTOP
+        geckoSession?.let { session ->
+            session.settings.userAgentMode = if (isDesktop) GeckoSessionSettings.USER_AGENT_MODE_DESKTOP else GeckoSessionSettings.USER_AGENT_MODE_MOBILE
+            session.settings.viewportMode = if (isDesktop) GeckoSessionSettings.VIEWPORT_MODE_DESKTOP else GeckoSessionSettings.VIEWPORT_MODE_MOBILE
+            session.settings.userAgentOverride = if (isDesktop) "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0" else null
+        }
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            isDesktopMode = isDesktop
+        )
+    }
+
+    override fun getMediaCapabilityState(): MediaCapabilityState {
+        return _mediaCapabilityState.value
     }
 
     override fun simulateRendererLoss() {

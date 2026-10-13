@@ -46,6 +46,22 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     private val _processState = MutableStateFlow(EngineProcessState())
     override val processState: StateFlow<EngineProcessState> = _processState.asStateFlow()
 
+    private val _contentMode = MutableStateFlow(ContentMode.MOBILE)
+    override val contentMode: StateFlow<ContentMode> = _contentMode.asStateFlow()
+
+    private val _mediaCapabilityState = MutableStateFlow(
+        MediaCapabilityState(
+            isEncryptedMediaSupported = true,
+            isWidevineSupported = false,
+            isDesktopMode = false,
+            isPrivateMode = isPrivate,
+            isAutoplayAllowed = true,
+            cookiePolicy = "Per-site sandbox",
+            lastMediaFailureReason = null
+        )
+    )
+    override val mediaCapabilityState: StateFlow<MediaCapabilityState> = _mediaCapabilityState.asStateFlow()
+
     private var webView: WebView? = null
     private var isInitialized = false
 
@@ -87,6 +103,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 allowContentAccess = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 cacheMode = WebSettings.LOAD_DEFAULT
+                if (_contentMode.value == ContentMode.DESKTOP) {
+                    userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+                    useWideViewPort = true
+                    loadWithOverviewMode = true
+                }
             }
 
             webViewClient = object : WebViewClient() {
@@ -158,6 +179,12 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
                     val requestUrl = request?.url?.toString().orEmpty()
                     val host = request?.url?.host.orEmpty()
+
+                    // Preserve required media, authentication, and licensing flows
+                    val isPreservedMediaHost = host.contains("spotify.com") || host.contains("scdn.co") || host.contains("spotifycdn.com")
+                    if (isPreservedMediaHost) {
+                        return super.shouldInterceptRequest(view, request)
+                    }
 
                     val matchesTracker = blockedTrackerKeywords.any { host.contains(it, ignoreCase = true) }
                     if (matchesTracker) {
@@ -267,6 +294,27 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     override fun setProtectionEnabled(enabled: Boolean) {
         _shieldState.value = _shieldState.value.copy(isProtectionEnabled = enabled)
+    }
+
+    override fun setContentMode(mode: ContentMode) {
+        _contentMode.value = mode
+        val isDesktop = mode == ContentMode.DESKTOP
+        webView?.settings?.let { s ->
+            s.userAgentString = if (isDesktop) {
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+            } else {
+                null
+            }
+            s.useWideViewPort = isDesktop
+            s.loadWithOverviewMode = isDesktop
+        }
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            isDesktopMode = isDesktop
+        )
+    }
+
+    override fun getMediaCapabilityState(): MediaCapabilityState {
+        return _mediaCapabilityState.value
     }
 
     override fun simulateRendererLoss() {

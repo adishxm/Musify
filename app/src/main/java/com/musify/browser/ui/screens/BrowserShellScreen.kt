@@ -98,6 +98,8 @@ fun BrowserShellScreen(
     val activeTab = tabsState.selectedTab
     val activeAdapter = viewModel.getActiveEngineAdapter()
     val activeShieldState by viewModel.activeShieldState.collectAsState()
+    val activeContentMode by viewModel.activeContentMode.collectAsState()
+    val isDesktop = activeContentMode == com.musify.browser.engine.ContentMode.DESKTOP
     val httpFallbackPrompt by viewModel.httpFallbackPrompt.collectAsState()
     val downloadPrompt by viewModel.pendingDownloadPrompt.collectAsState()
     val sitePermissionPrompt by viewModel.pendingSitePermissionPrompt.collectAsState()
@@ -109,6 +111,7 @@ fun BrowserShellScreen(
     var addressInput by remember { mutableStateOf("") }
     var isAddressBarFocused by remember { mutableStateOf(false) }
     var showShieldSheet by remember { mutableStateOf(false) }
+    var showPlaybackDialog by remember { mutableStateOf(false) }
     var isBookmarked by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
@@ -121,9 +124,11 @@ fun BrowserShellScreen(
         isBookmarked = viewModel.isCurrentTabBookmarked()
     }
 
-    // Intercept hardware back button: close shield sheet, back in web page, or close switcher
-    BackHandler(enabled = showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
-        if (showShieldSheet) {
+    // Intercept hardware back button: close dialogs, shield sheet, back in web page, or close switcher
+    BackHandler(enabled = showPlaybackDialog || showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
+        if (showPlaybackDialog) {
+            showPlaybackDialog = false
+        } else if (showShieldSheet) {
             showShieldSheet = false
         } else if (findState.isActive) {
             viewModel.findInPageManager.close()
@@ -156,6 +161,9 @@ fun BrowserShellScreen(
                 isBookmarked = isBookmarked,
                 shieldBlockedCount = activeShieldState.blockedCount,
                 isShieldEnabled = viewModel.isShieldEnabledForCurrentTab(),
+                isDesktop = isDesktop,
+                onToggleDesktopMode = { viewModel.toggleContentModeCurrentTab() },
+                onOpenPlaybackCompatibility = { showPlaybackDialog = true },
                 onAddressChange = { addressInput = it },
                 onFocusChange = { isAddressBarFocused = it },
                 onSubmit = {
@@ -545,6 +553,14 @@ fun BrowserShellScreen(
             containerColor = SurfaceDark
         )
     }
+
+    // Playback Compatibility & Web Media Diagnostics Dialog
+    if (showPlaybackDialog) {
+        PlaybackCompatibilityDialog(
+            viewModel = viewModel,
+            onDismiss = { showPlaybackDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -557,6 +573,9 @@ private fun SurfaceDarkHeader(
     isBookmarked: Boolean,
     shieldBlockedCount: Int,
     isShieldEnabled: Boolean,
+    isDesktop: Boolean,
+    onToggleDesktopMode: () -> Unit,
+    onOpenPlaybackCompatibility: () -> Unit,
     onAddressChange: (String) -> Unit,
     onFocusChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
@@ -670,6 +689,33 @@ private fun SurfaceDarkHeader(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
+                // Desktop / Mobile Mode Toggle Button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (isDesktop) AccentCyan.copy(alpha = 0.2f) else SurfaceLightDark)
+                        .border(
+                            1.dp,
+                            if (isDesktop) AccentCyan else CardBorder,
+                            RoundedCornerShape(10.dp)
+                        )
+                        .clickable(onClick = onToggleDesktopMode)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .semantics {
+                            contentDescription = if (isDesktop) "Desktop mode active" else "Mobile mode active"
+                            role = androidx.compose.ui.semantics.Role.Button
+                        }
+                ) {
+                    Text(
+                        text = if (isDesktop) "🖥️ Desktop" else "📱 Mobile",
+                        color = if (isDesktop) AccentCyan else TextSecondary,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
                 // Tab Switcher Button with Count Badge
                 Box(
                     modifier = Modifier
@@ -725,6 +771,31 @@ private fun SurfaceDarkHeader(
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenHistory()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(if (isDesktop) "🖥️ Desktop Site (Active)" else "🖥️ Request Desktop Site", color = TextPrimary)
+                                    if (isDesktop) {
+                                        Text("✓", color = AccentCyan, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            },
+                            onClick = {
+                                showOverflowMenu = false
+                                onToggleDesktopMode()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("🎵 Media & Playback Recovery", color = AccentCyan) },
+                            onClick = {
+                                showOverflowMenu = false
+                                onOpenPlaybackCompatibility()
                             }
                         )
                         if (onOpenDownloads != null) {
