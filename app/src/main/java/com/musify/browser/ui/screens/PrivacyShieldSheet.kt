@@ -72,8 +72,10 @@ fun PrivacyShieldSheet(
         mutableStateOf(viewModel.isShieldEnabledForCurrentTab())
     }
     val contentMode by viewModel.activeContentMode.collectAsState()
+    val dnsState by viewModel.dnsProtectionState.collectAsState()
     val isDesktop = contentMode == com.musify.browser.engine.ContentMode.DESKTOP
     var showPlaybackDialog by remember { mutableStateOf(false) }
+    var showDnsSettingsDialog by remember { mutableStateOf(false) }
     var showClearCookiesNotice by remember { mutableStateOf(false) }
 
     val currentOrigin = when {
@@ -325,6 +327,46 @@ fun PrivacyShieldSheet(
                 }
             }
 
+            // AdGuard DNS Network Resolution Status Card (Architecturally Separated Layer)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = BackgroundDark),
+                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "AdGuard & System DNS Resolution",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = dnsState.description,
+                            color = TextSecondary,
+                            fontSize = 11.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SurfaceLightDark)
+                            .clickable { showDnsSettingsDialog = true }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text("Configure ⚙️", color = AccentCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
             // Playback Compatibility & Recovery Action
             Button(
                 onClick = { showPlaybackDialog = true },
@@ -381,6 +423,13 @@ fun PrivacyShieldSheet(
         PlaybackCompatibilityDialog(
             viewModel = viewModel,
             onDismiss = { showPlaybackDialog = false }
+        )
+    }
+
+    if (showDnsSettingsDialog) {
+        DnsSettingsDialog(
+            viewModel = viewModel,
+            onDismiss = { showDnsSettingsDialog = false }
         )
     }
 }

@@ -51,13 +51,15 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     private val _mediaCapabilityState = MutableStateFlow(
         MediaCapabilityState(
-            isEncryptedMediaSupported = true,
-            isWidevineSupported = false,
+            encryptedMediaStatus = CapabilityStatus.UNKNOWN,
+            widevineStatus = CapabilityStatus.UNSUPPORTED,
             isDesktopMode = false,
             isPrivateMode = isPrivate,
             isAutoplayAllowed = true,
             cookiePolicy = "Per-site sandbox",
-            lastMediaFailureReason = null
+            lastMediaFailureReason = "Standard Android WebView does not expose full Widevine CDM to arbitrary web content without custom system integration",
+            deviceDrmProvider = "System WebView (Widevine restricted)",
+            engineDetails = "System WebView ${Build.VERSION.RELEASE}"
         )
     )
     override val mediaCapabilityState: StateFlow<MediaCapabilityState> = _mediaCapabilityState.asStateFlow()
@@ -180,9 +182,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     val requestUrl = request?.url?.toString().orEmpty()
                     val host = request?.url?.host.orEmpty()
 
-                    // Preserve required media, authentication, and licensing flows
-                    val isPreservedMediaHost = host.contains("spotify.com") || host.contains("scdn.co") || host.contains("spotifycdn.com")
-                    if (isPreservedMediaHost) {
+                    // Preserve first-party, top-level main frame, and essential application resources
+                    val currentHost = try { Uri.parse(_navigationState.value.url).host.orEmpty() } catch (_: Exception) { "" }
+                    val isFirstParty = currentHost.isNotEmpty() && (host.equals(currentHost, ignoreCase = true) || host.endsWith(".$currentHost", ignoreCase = true))
+
+                    if (request?.isForMainFrame == true || isFirstParty) {
                         return super.shouldInterceptRequest(view, request)
                     }
 

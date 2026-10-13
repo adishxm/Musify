@@ -1,9 +1,11 @@
 package com.musify.browser.engine
 
 import android.content.Context
+import android.media.MediaDrm
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,15 +34,30 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     private val _contentMode = MutableStateFlow(ContentMode.MOBILE)
     override val contentMode: StateFlow<ContentMode> = _contentMode.asStateFlow()
 
+    private fun probeWidevineDrm(): CapabilityStatus {
+        return try {
+            val widevineUuid = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed")
+            if (MediaDrm.isCryptoSchemeSupported(widevineUuid)) {
+                CapabilityStatus.SUPPORTED
+            } else {
+                CapabilityStatus.UNSUPPORTED
+            }
+        } catch (_: Throwable) {
+            CapabilityStatus.UNKNOWN
+        }
+    }
+
     private val _mediaCapabilityState = MutableStateFlow(
         MediaCapabilityState(
-            isEncryptedMediaSupported = true,
-            isWidevineSupported = true,
+            encryptedMediaStatus = CapabilityStatus.UNKNOWN,
+            widevineStatus = CapabilityStatus.UNKNOWN,
             isDesktopMode = false,
             isPrivateMode = isPrivate,
             isAutoplayAllowed = true,
             cookiePolicy = "Accept Non-Trackers & Total Cookie Isolation",
-            lastMediaFailureReason = null
+            lastMediaFailureReason = null,
+            deviceDrmProvider = "Pending runtime probe",
+            engineDetails = "GeckoView 135"
         )
     )
     override val mediaCapabilityState: StateFlow<MediaCapabilityState> = _mediaCapabilityState.asStateFlow()
@@ -90,20 +107,53 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             session.settings.userAgentOverride = "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
         }
 
+        val widevineStatus = probeWidevineDrm()
+        val drmProvider = when (widevineStatus) {
+            CapabilityStatus.SUPPORTED -> "Google Widevine Modular DRM (Hardware/OS Verified)"
+            CapabilityStatus.UNSUPPORTED -> "Widevine DRM Scheme not present on this device"
+            else -> "Widevine DRM status unmeasured"
+        }
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            widevineStatus = widevineStatus,
+            encryptedMediaStatus = if (widevineStatus == CapabilityStatus.UNSUPPORTED) CapabilityStatus.UNSUPPORTED else CapabilityStatus.UNKNOWN,
+            deviceDrmProvider = drmProvider,
+            engineDetails = "GeckoView 135"
+        )
+
         session.permissionDelegate = object : GeckoSession.PermissionDelegate {
             override fun onContentPermissionRequest(
                 session: GeckoSession,
                 perm: GeckoSession.PermissionDelegate.ContentPermission
             ): org.mozilla.geckoview.GeckoResult<Int> {
-                val isMediaOrStorage = when (perm.permission) {
-                    GeckoSession.PermissionDelegate.PERMISSION_MEDIA_KEY_SYSTEM_ACCESS,
+                if (perm.permission == GeckoSession.PermissionDelegate.PERMISSION_MEDIA_KEY_SYSTEM_ACCESS) {
+                    val currentWidevine = _mediaCapabilityState.value.widevineStatus
+                    return if (currentWidevine == CapabilityStatus.UNSUPPORTED) {
+                        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+                            encryptedMediaStatus = CapabilityStatus.FAILED,
+                            lastMediaFailureReason = "Device lacks Widevine Modular CDM hardware/OS support"
+                        )
+                        org.mozilla.geckoview.GeckoResult.fromValue(
+                            GeckoSession.PermissionDelegate.ContentPermission.VALUE_DENY
+                        )
+                    } else {
+                        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+                            encryptedMediaStatus = CapabilityStatus.SUPPORTED,
+                            lastMediaFailureReason = null
+                        )
+                        org.mozilla.geckoview.GeckoResult.fromValue(
+                            GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW
+                        )
+                    }
+                }
+
+                val isAllowedMediaOrStorage = when (perm.permission) {
                     GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE,
                     GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_INAUDIBLE,
                     GeckoSession.PermissionDelegate.PERMISSION_PERSISTENT_STORAGE,
                     GeckoSession.PermissionDelegate.PERMISSION_STORAGE_ACCESS -> true
                     else -> false
                 }
-                return if (isMediaOrStorage) {
+                return if (isAllowedMediaOrStorage) {
                     org.mozilla.geckoview.GeckoResult.fromValue(
                         GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW
                     )
@@ -316,8 +366,6 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     override fun setProtectionEnabled(enabled: Boolean) {
         _shieldState.value = _shieldState.value.copy(isProtectionEnabled = enabled)
-        val antiTracking = if (enabled) ContentBlocking.AntiTracking.STRICT else ContentBlocking.AntiTracking.DEFAULT
-        sharedRuntime?.settings?.contentBlocking?.setAntiTracking(antiTracking)
     }
 
     override fun setOriginException(isException: Boolean) {

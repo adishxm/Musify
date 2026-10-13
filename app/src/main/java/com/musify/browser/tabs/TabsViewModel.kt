@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.musify.browser.browser.ParsedNavigation
 import com.musify.browser.browser.UrlParser
 import com.musify.browser.engine.ContentMode
+import com.musify.browser.engine.DnsProtectionMode
+import com.musify.browser.engine.DnsProtectionState
 import com.musify.browser.engine.EngineAdapter
 import com.musify.browser.engine.EngineShieldState
 import com.musify.browser.engine.MediaCapabilityState
 import com.musify.browser.shield.ShieldExceptionRepository
 import com.musify.browser.storage.BookmarkRepository
+import com.musify.browser.storage.DnsSettingsRepository
 import com.musify.browser.storage.HistoryRepository
 import com.musify.browser.storage.SiteContentModeRepository
 import com.musify.browser.storage.TimeRange
@@ -55,6 +58,7 @@ class TabsViewModel(
     val downloadManager: MusifyDownloadManager? = null,
     val sitePermissionRepository: SitePermissionRepository? = null,
     val siteContentModeRepository: SiteContentModeRepository? = null,
+    val dnsSettingsRepository: DnsSettingsRepository? = null,
     coroutineScope: CoroutineScope? = null
 ) : ViewModel() {
 
@@ -73,6 +77,17 @@ class TabsViewModel(
 
     private val _activeMediaCapabilityState = MutableStateFlow(MediaCapabilityState())
     val activeMediaCapabilityState: StateFlow<MediaCapabilityState> = _activeMediaCapabilityState.asStateFlow()
+
+    private val _dnsProtectionState = MutableStateFlow(
+        dnsSettingsRepository?.getDnsProtectionState() ?: DnsProtectionState()
+    )
+    val dnsProtectionState: StateFlow<DnsProtectionState> = _dnsProtectionState.asStateFlow()
+
+    fun setDnsMode(mode: DnsProtectionMode, host: String = DnsSettingsRepository.ADGUARD_STANDARD_HOST) {
+        dnsSettingsRepository?.setDnsMode(mode, host)
+        _dnsProtectionState.value = dnsSettingsRepository?.getDnsProtectionState()
+            ?: DnsProtectionState(mode = mode, configuredHost = host, isActive = mode != DnsProtectionMode.SYSTEM_DEFAULT)
+    }
 
     private val _httpFallbackPrompt = MutableStateFlow<HttpFallbackPrompt?>(null)
     val httpFallbackPrompt: StateFlow<HttpFallbackPrompt?> = _httpFallbackPrompt.asStateFlow()

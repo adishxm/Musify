@@ -28,6 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.musify.browser.engine.CapabilityStatus
 import com.musify.browser.engine.ContentMode
+import com.musify.browser.engine.DnsProtectionMode
 import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.theme.AccentCyan
 import com.musify.browser.ui.theme.AccentPurple
@@ -44,6 +49,7 @@ import com.musify.browser.ui.theme.BackgroundDark
 import com.musify.browser.ui.theme.CardBorder
 import com.musify.browser.ui.theme.StatusGreen
 import com.musify.browser.ui.theme.StatusOrange
+import com.musify.browser.ui.theme.StatusRed
 import com.musify.browser.ui.theme.SurfaceDark
 import com.musify.browser.ui.theme.SurfaceLightDark
 import com.musify.browser.ui.theme.TextMuted
@@ -59,7 +65,10 @@ fun PlaybackCompatibilityDialog(
     val activeTab = tabsState.selectedTab
     val contentMode by viewModel.activeContentMode.collectAsState()
     val mediaCap by viewModel.activeMediaCapabilityState.collectAsState()
+    val dnsState by viewModel.dnsProtectionState.collectAsState()
     val isShieldEnabled = viewModel.isShieldEnabledForCurrentTab()
+
+    var showDnsSettingsDialog by remember { mutableStateOf(false) }
 
     val currentOrigin = when {
         activeTab == null || activeTab.url == "about:blank" -> "musify://home"
@@ -76,7 +85,7 @@ fun PlaybackCompatibilityDialog(
                 Text("🎵", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
                 Column {
                     Text(
-                        text = "Playback & Media Compatibility",
+                        text = "Playback & Media Diagnostics",
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -98,7 +107,7 @@ fun PlaybackCompatibilityDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Explanation Note
+                // Honest Engineering Disclosure
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
@@ -107,14 +116,14 @@ fun PlaybackCompatibilityDialog(
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         Text(
-                            text = "Web Player Compatibility Guide",
+                            text = "Web Player Diagnostics Guide",
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Streaming services like Spotify Web Player restrict mobile browser user-agents and require Encrypted Media Extensions (EME) & desktop presentation. Enabling Desktop Mode and media permissions restores playback.",
+                            text = "Services like Spotify Web Player require both Desktop presentation and hardware Widevine CDM support. Statuses below reflect honest, measured capabilities from this Android device.",
                             color = TextSecondary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
@@ -122,7 +131,7 @@ fun PlaybackCompatibilityDialog(
                     }
                 }
 
-                // Status Breakdown
+                // Measured Capability Breakdown
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
@@ -130,36 +139,110 @@ fun PlaybackCompatibilityDialog(
                     border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        StatusRow(
-                            label = "Display Content Mode",
-                            value = if (isDesktop) "Desktop 🖥️" else "Mobile 📱 (May block web player)",
-                            isPositive = isDesktop
+                        CapabilityRow(
+                            label = "Content Presentation",
+                            statusText = if (isDesktop) "Desktop 🖥️" else "Mobile 📱 (May block player)",
+                            color = if (isDesktop) StatusGreen else StatusOrange
                         )
-                        StatusRow(
+
+                        val widevineStatusColor = when (mediaCap.widevineStatus) {
+                            CapabilityStatus.SUPPORTED -> StatusGreen
+                            CapabilityStatus.UNSUPPORTED -> StatusRed
+                            CapabilityStatus.FAILED -> StatusRed
+                            CapabilityStatus.UNKNOWN -> StatusOrange
+                        }
+                        CapabilityRow(
+                            label = "Device Widevine CDM",
+                            statusText = when (mediaCap.widevineStatus) {
+                                CapabilityStatus.SUPPORTED -> "Supported (OS Verified)"
+                                CapabilityStatus.UNSUPPORTED -> "Unsupported on device"
+                                CapabilityStatus.FAILED -> "Probe Failed"
+                                CapabilityStatus.UNKNOWN -> "Pending Check"
+                            },
+                            color = widevineStatusColor
+                        )
+
+                        val emeStatusColor = when (mediaCap.encryptedMediaStatus) {
+                            CapabilityStatus.SUPPORTED -> StatusGreen
+                            CapabilityStatus.UNSUPPORTED -> StatusRed
+                            CapabilityStatus.FAILED -> StatusRed
+                            CapabilityStatus.UNKNOWN -> StatusOrange
+                        }
+                        CapabilityRow(
                             label = "Encrypted Media (EME)",
-                            value = if (mediaCap.isEncryptedMediaSupported) "Supported & Allowed" else "Unavailable",
-                            isPositive = mediaCap.isEncryptedMediaSupported
+                            statusText = when (mediaCap.encryptedMediaStatus) {
+                                CapabilityStatus.SUPPORTED -> "Granted & Active"
+                                CapabilityStatus.UNSUPPORTED -> "Unavailable"
+                                CapabilityStatus.FAILED -> "Failed"
+                                CapabilityStatus.UNKNOWN -> "Pending Request"
+                            },
+                            color = emeStatusColor
                         )
-                        StatusRow(
-                            label = "Media Keys / DRM Access",
-                            value = "Granted on Request",
-                            isPositive = true
+
+                        val drmProvider = mediaCap.deviceDrmProvider
+                        if (!drmProvider.isNullOrBlank()) {
+                            CapabilityRow(
+                                label = "DRM Provider",
+                                statusText = drmProvider,
+                                color = TextSecondary
+                            )
+                        }
+
+                        CapabilityRow(
+                            label = "Browser Engine",
+                            statusText = mediaCap.engineDetails ?: "GeckoView 135",
+                            color = TextSecondary
                         )
-                        StatusRow(
+
+                        CapabilityRow(
                             label = "Audio Autoplay",
-                            value = if (mediaCap.isAutoplayAllowed) "Allowed" else "Blocked",
-                            isPositive = mediaCap.isAutoplayAllowed
+                            statusText = if (mediaCap.isAutoplayAllowed) "Allowed" else "Blocked",
+                            color = if (mediaCap.isAutoplayAllowed) StatusGreen else StatusOrange
                         )
-                        StatusRow(
-                            label = "Tab Privacy Profile",
-                            value = if (isPrivate) "Private Tab (DRM licenses may not persist)" else "Normal Tab (Persistent DRM supported)",
-                            isPositive = !isPrivate
+
+                        CapabilityRow(
+                            label = "Privacy Profile",
+                            statusText = if (isPrivate) "Private Mode (Ephemeral)" else "Normal Mode (Persistent)",
+                            color = if (!isPrivate) StatusGreen else StatusOrange
                         )
-                        StatusRow(
-                            label = "Privacy Shields",
-                            value = if (isShieldEnabled) "Shields Active" else "Shields Relaxed for this Origin",
-                            isPositive = true
+
+                        CapabilityRow(
+                            label = "DNS Resolution Layer",
+                            statusText = if (dnsState.mode == DnsProtectionMode.ADGUARD_PRIVATE_DNS) "AdGuard Private DNS" else "System DNS",
+                            color = if (dnsState.mode == DnsProtectionMode.ADGUARD_PRIVATE_DNS) StatusGreen else TextSecondary
                         )
+
+                        CapabilityRow(
+                            label = "In-Page Shields",
+                            statusText = if (isShieldEnabled) "Shields Active" else "Shields Relaxed for Origin",
+                            color = if (isShieldEnabled) StatusGreen else StatusOrange
+                        )
+                    }
+                }
+
+                // Error Callout if any failure occurred
+                val failureReason = mediaCap.lastMediaFailureReason
+                if (!failureReason.isNullOrBlank()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = StatusRed.copy(alpha = 0.12f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, StatusRed.copy(alpha = 0.4f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(
+                                text = "Playback Limitation Reason",
+                                color = StatusRed,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = failureReason,
+                                color = TextPrimary,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
 
@@ -210,6 +293,21 @@ fun PlaybackCompatibilityDialog(
                     }
                 }
 
+                // AdGuard DNS Guidance Button
+                Button(
+                    onClick = { showDnsSettingsDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "🛡️ Configure AdGuard / System DNS",
+                        color = TextPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
                 // One-Tap Optimize Button
                 Button(
                     onClick = {
@@ -221,7 +319,7 @@ fun PlaybackCompatibilityDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "⚡ Optimize & Recover Web Playback",
+                        text = "⚡ Apply Desktop Mode & Relax Shields",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -240,10 +338,17 @@ fun PlaybackCompatibilityDialog(
         },
         containerColor = SurfaceDark
     )
+
+    if (showDnsSettingsDialog) {
+        DnsSettingsDialog(
+            viewModel = viewModel,
+            onDismiss = { showDnsSettingsDialog = false }
+        )
+    }
 }
 
 @Composable
-private fun StatusRow(label: String, value: String, isPositive: Boolean) {
+private fun CapabilityRow(label: String, statusText: String, color: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -251,8 +356,8 @@ private fun StatusRow(label: String, value: String, isPositive: Boolean) {
     ) {
         Text(text = label, color = TextSecondary, fontSize = 11.sp)
         Text(
-            text = value,
-            color = if (isPositive) StatusGreen else StatusOrange,
+            text = statusText,
+            color = color,
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold
         )

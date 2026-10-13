@@ -1,6 +1,8 @@
 package com.musify.browser
 
+import com.musify.browser.engine.CapabilityStatus
 import com.musify.browser.engine.ContentMode
+import com.musify.browser.engine.DnsProtectionMode
 import com.musify.browser.engine.EngineAdapter
 import com.musify.browser.engine.EngineNavigationState
 import com.musify.browser.engine.EngineProcessState
@@ -8,6 +10,8 @@ import com.musify.browser.engine.EngineSecurityState
 import com.musify.browser.engine.EngineShieldState
 import com.musify.browser.engine.EngineType
 import com.musify.browser.engine.MediaCapabilityState
+import com.musify.browser.storage.DnsSettingsRepository
+import com.musify.browser.storage.LocalDnsSettingsRepository
 import com.musify.browser.storage.LocalSiteContentModeRepository
 import com.musify.browser.tabs.FileTabSessionStore
 import com.musify.browser.tabs.TabAction
@@ -60,12 +64,13 @@ class Phase10UniversalBlockerDesktopTest {
 
         private val _mediaState = MutableStateFlow(
             MediaCapabilityState(
-                isEncryptedMediaSupported = true,
-                isWidevineSupported = true,
+                encryptedMediaStatus = CapabilityStatus.SUPPORTED,
+                widevineStatus = CapabilityStatus.SUPPORTED,
                 isDesktopMode = false,
                 isPrivateMode = false,
                 isAutoplayAllowed = true,
-                cookiePolicy = "ACCEPT_NON_TRACKERS"
+                cookiePolicy = "ACCEPT_NON_TRACKERS",
+                deviceDrmProvider = "Google Widevine Modular DRM"
             )
         )
         override val mediaCapabilityState: StateFlow<MediaCapabilityState> = _mediaState
@@ -299,11 +304,60 @@ class Phase10UniversalBlockerDesktopTest {
     @Test
     fun testMediaCapabilityStateDefaults() {
         val defaultState = MediaCapabilityState()
-        assertTrue(defaultState.isEncryptedMediaSupported)
-        assertTrue(defaultState.isWidevineSupported)
+        // Honest baseline: media capabilities are UNKNOWN prior to live measurement
+        assertEquals(CapabilityStatus.UNKNOWN, defaultState.encryptedMediaStatus)
+        assertEquals(CapabilityStatus.UNKNOWN, defaultState.widevineStatus)
+        assertFalse(defaultState.isEncryptedMediaSupported)
+        assertFalse(defaultState.isWidevineSupported)
         assertFalse(defaultState.isDesktopMode)
         assertFalse(defaultState.isPrivateMode)
         assertTrue(defaultState.isAutoplayAllowed)
         assertEquals("Accept Non-Trackers & Isolate", defaultState.cookiePolicy)
+    }
+
+    @Test
+    fun testDnsSettingsRepositoryAndStateIsolation() {
+        val tempDnsFile = File.createTempFile("dns_test", ".txt")
+        tempDnsFile.deleteOnExit()
+        val dnsRepo = LocalDnsSettingsRepository(tempDnsFile)
+
+        val defaultState = dnsRepo.getDnsProtectionState()
+        assertEquals(DnsProtectionMode.SYSTEM_DEFAULT, defaultState.mode)
+        assertFalse(defaultState.isActive)
+
+        dnsRepo.setDnsMode(DnsProtectionMode.ADGUARD_PRIVATE_DNS, DnsSettingsRepository.ADGUARD_STANDARD_HOST)
+        val adguardState = dnsRepo.getDnsProtectionState()
+        assertEquals(DnsProtectionMode.ADGUARD_PRIVATE_DNS, adguardState.mode)
+        assertTrue(adguardState.isActive)
+        assertEquals("dns.adguard-dns.com", adguardState.configuredHost)
+
+        // Reload from disk
+        val dnsRepo2 = LocalDnsSettingsRepository(tempDnsFile)
+        val loadedState = dnsRepo2.getDnsProtectionState()
+        assertEquals(DnsProtectionMode.ADGUARD_PRIVATE_DNS, loadedState.mode)
+        assertEquals("dns.adguard-dns.com", loadedState.configuredHost)
+    }
+
+    @Test
+    fun testCapabilityStatusTransitions() {
+        val initial = MediaCapabilityState()
+        assertEquals(CapabilityStatus.UNKNOWN, initial.widevineStatus)
+        assertFalse(initial.isWidevineSupported)
+
+        val supported = initial.copy(
+            widevineStatus = CapabilityStatus.SUPPORTED,
+            encryptedMediaStatus = CapabilityStatus.SUPPORTED
+        )
+        assertTrue(supported.isWidevineSupported)
+        assertTrue(supported.isEncryptedMediaSupported)
+
+        val failed = initial.copy(
+            widevineStatus = CapabilityStatus.UNSUPPORTED,
+            encryptedMediaStatus = CapabilityStatus.FAILED,
+            lastMediaFailureReason = "Device lacks Widevine CDM"
+        )
+        assertFalse(failed.isWidevineSupported)
+        assertFalse(failed.isEncryptedMediaSupported)
+        assertEquals("Device lacks Widevine CDM", failed.lastMediaFailureReason)
     }
 }
