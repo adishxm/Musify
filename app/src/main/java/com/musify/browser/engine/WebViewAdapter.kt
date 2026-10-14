@@ -66,6 +66,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     private var webView: WebView? = null
     private var isInitialized = false
+    private var pendingUrl: String? = null
 
     // Known tracker indicators for the WebView fallback spike demonstration
     private val blockedTrackerKeywords = listOf(
@@ -293,6 +294,13 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
         webView = view
         isInitialized = true
+
+        val pending = pendingUrl
+        if (!pending.isNullOrBlank() && pending != "about:blank") {
+            pendingUrl = null
+            view.loadUrl(pending)
+        }
+
         return view
     }
 
@@ -302,7 +310,12 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             !url.startsWith("http://") && !url.startsWith("https://") -> "https://$url"
             else -> url
         }
-        webView?.loadUrl(targetUrl)
+        val wv = webView
+        if (wv != null) {
+            wv.loadUrl(targetUrl)
+        } else {
+            pendingUrl = targetUrl
+        }
     }
 
     override fun goBack(): Boolean {

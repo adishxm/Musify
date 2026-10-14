@@ -16,7 +16,7 @@
       "js": [
         "spotify_adblock.js"
       ],
-      "run_at": "document_start",
+      "run_at": "document_end",
       "all_frames": true
     }
   ]

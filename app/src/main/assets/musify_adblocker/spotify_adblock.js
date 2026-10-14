@@ -12,35 +12,36 @@
 
     // 1. Inject CSS for permanent ad suppression
     function injectAdHidingCSS() {
-        if (document.getElementById('musify-ad-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'musify-ad-styles';
-        style.textContent = `
-            [data-testid="ad-companion-banner"],
-            [data-testid="ad-iframe"],
-            [data-testid="interstitial-ad"],
-            [aria-label="Advertisement"],
-            .Root__ads-container,
-            div[data-test="upsell-container"],
-            #ad-leaderboard,
-            #leaderboard,
-            .main-leaderboard-container,
-            .desktop-interstitial,
-            .upsell-banner,
-            div[class*="GenericModal"][class*="open"]:has(*:is(:text("Premium"), :text("Advertisement"))) {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-                height: 0 !important;
-                width: 0 !important;
-                max-height: 0 !important;
+        try {
+            if (document.getElementById('musify-ad-styles')) return;
+            const style = document.createElement('style');
+            style.id = 'musify-ad-styles';
+            style.textContent = `
+                [data-testid="ad-companion-banner"],
+                [data-testid="ad-iframe"],
+                [data-testid="interstitial-ad"],
+                [aria-label="Advertisement"],
+                .Root__ads-container,
+                div[data-test="upsell-container"],
+                #ad-leaderboard,
+                #leaderboard,
+                .main-leaderboard-container,
+                .desktop-interstitial,
+                .upsell-banner {
+                    display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                    height: 0 !important;
+                    width: 0 !important;
+                    max-height: 0 !important;
+                }
+            `;
+            const target = document.head || document.documentElement;
+            if (target) {
+                target.appendChild(style);
             }
-        `;
-        const target = document.head || document.documentElement;
-        if (target) {
-            target.appendChild(style);
-        }
+        } catch (_) {}
     }
 
     if (document.head || document.documentElement) {
@@ -51,16 +52,19 @@
 
     // 2. Track & intercept HTMLMediaElements (audio and video)
     const trackedMedia = new Set();
-    const origCreateElement = document.createElement;
-
-    document.createElement = function(tagName, options) {
-        const el = origCreateElement.call(document, tagName, options);
-        if (el && tagName && (tagName.toLowerCase() === 'audio' || tagName.toLowerCase() === 'video')) {
-            trackedMedia.add(el);
-            attachMediaListeners(el);
-        }
-        return el;
-    };
+    try {
+        const origCreateElement = document.createElement;
+        document.createElement = function(tagName, options) {
+            const el = origCreateElement.call(document, tagName, options);
+            try {
+                if (el && tagName && (tagName.toLowerCase() === 'audio' || tagName.toLowerCase() === 'video')) {
+                    trackedMedia.add(el);
+                    attachMediaListeners(el);
+                }
+            } catch (_) {}
+            return el;
+        };
+    } catch (_) {}
 
     function attachMediaListeners(media) {
         ['play', 'playing', 'timeupdate', 'loadedmetadata'].forEach(evt => {

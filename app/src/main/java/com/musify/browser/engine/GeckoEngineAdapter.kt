@@ -65,6 +65,7 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     private var geckoSession: GeckoSession? = null
     private var geckoView: GeckoView? = null
     private var isInitialized = false
+    private var pendingUrl: String? = null
 
     companion object {
         @Volatile
@@ -312,6 +313,12 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         session.open(runtime)
         geckoSession = session
         isInitialized = true
+
+        val pending = pendingUrl
+        if (!pending.isNullOrBlank() && pending != "about:blank") {
+            pendingUrl = null
+            session.loadUri(pending)
+        }
     }
 
     private fun handleProcessCrash(reason: String) {
@@ -343,7 +350,12 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             !url.startsWith("http://") && !url.startsWith("https://") -> "https://$url"
             else -> url
         }
-        geckoSession?.loadUri(targetUrl)
+        val session = geckoSession
+        if (session != null) {
+            session.loadUri(targetUrl)
+        } else {
+            pendingUrl = targetUrl
+        }
     }
 
     override fun goBack(): Boolean {
