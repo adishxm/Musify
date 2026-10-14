@@ -466,7 +466,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 }
 
                 function cleanSpotifyAds() {
-                    // 1. Hide visual ad banners, companion iframes, interstitials
+                    // 1. Hide visual ad banners, companion iframes, interstitials, and app install nags
                     var selectors = [
                         '[data-testid="ad-companion-banner"]',
                         '[data-testid="ad-iframe"]',
@@ -504,6 +504,10 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     // Hide any button or link whose text is 'Open App', 'Install App', 'Get the app'
                     var clickables = document.querySelectorAll('button, a, div[role="button"], span');
                     clickables.forEach(function(el) {
+                        var testId = el.getAttribute('data-testid') || '';
+                        if (testId.indexOf('control') !== -1 || testId.indexOf('play') !== -1 || testId.indexOf('pause') !== -1 || testId.indexOf('skip') !== -1) {
+                            return;
+                        }
                         var txt = (el.textContent || '').trim().toLowerCase();
                         if (
                             txt === 'open app' ||
@@ -520,11 +524,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         }
                     });
 
-                    // 2. Dismiss or close modal dialogues promoting ads / premium
+                    // 2. Dismiss or close modal dialogues promoting ads / premium / app install
                     var modals = document.querySelectorAll('[data-testid="modal-container"], div[role="dialog"]');
                     modals.forEach(function(modal) {
-                        var text = modal.innerText || "";
-                        if (text.indexOf("Spotify Premium") !== -1 || text.indexOf("Advertisement") !== -1 || text.indexOf("Get Premium") !== -1) {
+                        var text = (modal.innerText || "").toLowerCase();
+                        if (text.indexOf("spotify premium") !== -1 || text.indexOf("advertisement") !== -1 || text.indexOf("get premium") !== -1 || text.indexOf("open app") !== -1 || text.indexOf("install app") !== -1) {
                             var closeBtn = modal.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[title="Close"]');
                             if (closeBtn) {
                                 try { closeBtn.click(); } catch(e) {}
@@ -533,49 +537,9 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                             }
                         }
                     });
-
-                    // 3. Mobile / Fullscreen advertisement overlay container hiding
-                    var adHeaders = Array.from(document.querySelectorAll('span, p, h1, h2, h3, div')).filter(function(el) {
-                        return el.childNodes.length === 1 && el.textContent.trim() === "Advertisement";
-                    });
-                    adHeaders.forEach(function(header) {
-                        var container = header.closest('div[class*="container"], div[class*="overlay"], div[role="dialog"], main, section') || header.parentElement;
-                        if (container && container !== document.body && container !== document.documentElement) {
-                            var text = container.innerText || "";
-                            if (text.indexOf("Learn more") !== -1 || text.indexOf("Spotify Premium") !== -1 || text.indexOf("Advertisement") !== -1) {
-                                container.style.setProperty('display', 'none', 'important');
-                            }
-                        }
-                    });
-
-                    // 4. Media fast-forward & mute for audio/video ads
-                    var adActive = isSpotifyAdActive();
-                    var mediaElements = document.querySelectorAll('audio, video');
-                    mediaElements.forEach(function(media) {
-                        var src = media.src || "";
-                        var isAdMedia = adActive || src.indexOf("audio-fa.scdn.co") !== -1 || src.indexOf("heads-fa.scdn.co") !== -1 || src.indexOf("video-fa.scdn.co") !== -1;
-                        if (isAdMedia) {
-                            media.muted = true;
-                            media.volume = 0;
-                            if (media.duration && !isNaN(media.duration) && isFinite(media.duration) && media.duration > 0) {
-                                media.currentTime = media.duration;
-                            }
-                            media.playbackRate = 16.0;
-                        }
-                    });
-
-                    // 5. Auto-skip button clicking
-                    if (adActive) {
-                        var skipBtns = document.querySelectorAll('[data-testid="control-button-skip-forward"], button[aria-label="Next"], button[title="Next"], button[aria-label="Skip forward"], [data-testid="skip-ad-button"]');
-                        skipBtns.forEach(function(btn) {
-                            if (!btn.disabled) {
-                                try { btn.click(); } catch(e) {}
-                            }
-                        });
-                    }
                 }
 
-                setInterval(cleanSpotifyAds, 300);
+                setInterval(cleanSpotifyAds, 500);
                 cleanSpotifyAds();
             })();
         """.trimIndent()
