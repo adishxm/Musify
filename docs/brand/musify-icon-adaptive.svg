@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
+  <!-- 108dp adaptive canvas; artwork held to the centre 62% (the 72dp safe zone) -->
+  <g transform="translate(54,54) scale(3.125) translate(-12,-12)"
+     fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 1.8 L21.2 5.5 L21.2 12 C21.2 17.6 17.3 21.7 12 23.2 C6.7 21.7 2.8 17.6 2.8 12 L2.8 5.5 Z"/>
+    <path d="M11.1 16.2 L11.1 9.2 L15.4 8.3"/>
+    <circle cx="9.6" cy="16.2" r="1.5"/>
+  </g>
+</svg>

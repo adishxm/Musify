@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Musify — Expandable Action Bar</title>
+<style>
+  :root{
+    --ink:#000; --surface:#0A0A0A; --raised:#111; --elevated:#171717; --elevated-high:#1F1F1F;
+    --hairline:#242424; --hairline-strong:#343434;
+    --text-primary:#FAFAFA; --text-secondary:#A3A3A3; --text-muted:#6E6E6E;
+    --accent:#FFF; --on-accent:#0A0A0A;
+    --success:#4FCB92; --warning:#DFB356; --danger:#E0645B; --private:#B0A0F0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#050505;color:var(--text-primary);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:52px 32px 90px;
+  }
+  .head{max-width:1400px;margin:0 auto 40px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
+  h1{font-size:40px;font-weight:700;letter-spacing:-.026em;line-height:1.08;margin-bottom:12px}
+  .sub{font-size:15px;color:var(--text-secondary);max-width:640px;line-height:1.55}
+  .controls{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+  .tg{display:inline-flex;align-items:center;gap:9px;background:var(--elevated);border:1px solid var(--hairline);
+      border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:600;color:var(--text-secondary);cursor:pointer}
+  .tg:hover{background:var(--elevated-high);color:var(--text-primary)}
+  .tg .d{width:7px;height:7px;border-radius:50%;background:var(--hairline-strong)}
+  .tg.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .tg.on .d{background:var(--on-accent)}
+
+  .rack{display:flex;gap:34px;max-width:1400px;margin:0 auto;flex-wrap:wrap}
+  .slot{width:320px}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:13px}
+
+  .phone{position:relative;width:320px;height:660px;background:var(--ink);
+         border:1px solid var(--hairline);border-radius:40px;overflow:hidden;
+         box-shadow:0 26px 70px -20px rgba(0,0,0,.9);display:flex;flex-direction:column}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:78px;height:5px;border-radius:99px;background:#1c1c1c;z-index:30}
+  .sb{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 21px;font-size:11px;font-weight:600;flex:0 0 auto;position:relative;z-index:5}
+  .sb .r{display:flex;gap:5px;color:var(--text-secondary)}
+
+  /* ---- browser chrome ---- */
+  .chrome{background:var(--surface);border-bottom:1px solid var(--hairline);border-radius:0 0 16px 16px;padding:9px 11px 10px;flex:0 0 auto}
+  .ctop{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+  .origin{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+  .origin .u{font-size:11.5px;font-weight:600;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--elevated);border:1px solid var(--hairline);
+        border-radius:9px;padding:4px 8px;font-size:9.5px;font-weight:700;letter-spacing:.045em;color:var(--text-secondary);white-space:nowrap}
+  .chip.ok{color:var(--success);border-color:rgba(79,203,146,.42)}
+  .chip.solid{background:var(--accent);border-color:var(--accent);color:var(--on-accent);padding:4px 9px}
+  .orow{display:flex;align-items:center;gap:7px}
+  .nb{width:36px;height:36px;flex:0 0 auto;border-radius:50%;background:var(--elevated);display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .field{flex:1;height:36px;border-radius:11px;background:var(--ink);border:1px solid var(--hairline);display:flex;align-items:center;padding:0 11px}
+  .field .u{font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .page{flex:1;position:relative;background:var(--ink);overflow:hidden}
+  .wsp{position:absolute;inset:0;background:
+     radial-gradient(420px 260px at 50% 22%, rgba(255,255,255,.045), transparent 70%),
+     var(--ink)}
+  .hometxt{position:absolute;top:118px;left:0;right:0;text-align:center}
+  .hometxt .t{font-size:21px;font-weight:700;letter-spacing:-.028em;margin-bottom:8px}
+  .hometxt .s{font-size:11.5px;color:var(--text-secondary);line-height:1.6}
+
+  /* ================= THE ACTION BAR ================= */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.72);opacity:0;pointer-events:none;transition:opacity .18s cubic-bezier(.2,0,0,1);z-index:10}
+  .phone.open .scrim{opacity:1}
+
+  .barwrap{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;align-items:center;gap:10px;z-index:20;
+           transition:opacity .16s cubic-bezier(.2,0,0,1), transform .22s cubic-bezier(.2,0,0,1)}
+  .phone.open .barwrap{opacity:0;transform:translateY(10px) scale(.97);pointer-events:none}
+
+  .pill{display:flex;align-items:center;gap:0;background:rgba(10,10,10,.94);border:1px solid var(--hairline);
+        border-radius:999px;padding:6px}
+  .pill .it{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--text-primary);cursor:pointer;transition:background .15s}
+  .pill .it:hover{background:var(--elevated)}
+  .pill .it.hi{background:var(--elevated-high)}
+
+  .fab{width:50px;height:50px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+       display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;
+       transition:transform .22s cubic-bezier(.2,0,0,1)}
+  .fab svg{transition:transform .22s cubic-bezier(.2,0,0,1)}
+  .phone.open .fab svg{transform:rotate(45deg)}
+
+  /* ---- expanded grid panel ---- */
+  .panel{position:absolute;left:16px;right:16px;bottom:20px;z-index:25;
+         background:rgba(10,10,10,.98);border:1px solid var(--hairline);border-radius:20px;
+         padding:16px 12px 14px;
+         opacity:0;transform:translateY(22px) scale(.94);pointer-events:none;
+         transition:opacity .14s cubic-bezier(.2,0,0,1), transform .26s cubic-bezier(.2,0,0,1);
+         box-shadow:0 22px 60px -14px rgba(0,0,0,.95)}
+  .phone.open .panel{opacity:1;transform:none;pointer-events:auto}
+  .panel .ov{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);padding:0 8px 12px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+  .tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:8px 2px;border-radius:14px;cursor:pointer;transition:background .15s}
+  .tile:hover{background:var(--elevated)}
+  .tile .box{width:48px;height:48px;border-radius:16px;background:var(--elevated);display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .tile .lb{font-size:10px;line-height:13px;letter-spacing:.1sp;color:var(--text-secondary);text-align:center;
+            min-height:26px;display:flex;align-items:flex-start;justify-content:center}
+  .tile.accent .box{color:var(--accent)}
+  .tile.priv .box{color:var(--private)}
+  .tile.on .box{color:var(--accent);background:var(--elevated-high)}
+  .tile.on .lb{color:var(--text-primary)}
+
+  /* ---- hairline detail callouts ---- */
+  .dials{max-width:1400px;margin:52px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .dl{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:16px}
+  .dl .k{font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:11px}
+  .dl .v{font-size:14px;font-weight:600;margin-bottom:6px}
+  .dl p{font-size:11.5px;color:var(--text-secondary);line-height:1.6}
+  .dl code{color:var(--text-primary);font-size:11px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="i-plus"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></g>
+  <g id="i-more"><circle cx="12" cy="5.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="18.6" r="1.15" fill="currentColor" stroke="none"/></g>
+  <g id="i-shieldcheck"><path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/><path d="M8.9 11.9 11.2 14.3 15.5 9.3"/></g>
+  <g id="i-shield"><path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/></g>
+  <g id="i-lock"><path d="M8 10.4V7.6C8 5.2 9.7 3.6 12 3.6s4 1.6 4 4v2.8"/><path d="M5.6 10.4h12.8V20H5.6Z"/></g>
+  <g id="i-mobile"><path d="M7 2.8h10v18.4H7Z"/><path d="M10.6 18.4h2.8"/></g>
+  <g id="i-arrowleft"><path d="M19.4 12H4.8"/><path d="M11 5.6 4.8 12l6.2 6.4"/></g>
+  <g id="i-arrowright"><path d="M4.6 12h14.6"/><path d="M13 5.6 19.2 12 13 18.4"/></g>
+  <g id="i-search"><circle cx="10.8" cy="10.8" r="7.2"/><path d="M16.2 16.2 21 21"/></g>
+  <g id="i-star"><path d="M12 3.5 14.12 9.59 20.56 9.72 15.42 13.61 17.29 19.78 12 16.1 6.71 19.78 8.58 13.61 3.44 9.72 9.88 9.59Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-clock"><circle cx="12" cy="12" r="9"/><path d="M12 6.8v5.4l3.9 2.3"/></g>
+  <g id="i-link"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1H11V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12ZM8 13h8v-2H8v2Zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-download"><path d="M12 3.2v12"/><path d="M7.4 10.6 12 15.2l4.6-4.6"/><path d="M4 17.2v3.2h16v-3.2"/></g>
+  <g id="i-desktop"><path d="M2.8 4.4h18.4v11.8H2.8Z"/><path d="M12 16.2v3.4"/><path d="M9 19.6h6"/></g>
+  <g id="i-music"><path d="M10.9 16.6V5.4L20 3.4v11.2"/><circle cx="8.3" cy="16.6" r="2.6"/><circle cx="17.4" cy="14.6" r="2.6"/></g>
+  <g id="i-location"><path d="M12 21.4s7-6.8 7-11.8A7 7 0 0 0 5 9.6c0 5 7 11.8 7 11.8Z"/><circle cx="12" cy="9.6" r="2.6"/></g>
+  <g id="i-incognito"><path d="M2.6 12c2.3-4 5.6-5.9 9.4-5.9S19.1 8 21.4 12c-2.3 4-5.6 5.9-9.4 5.9S4.9 16 2.6 12Z"/><circle cx="12" cy="12" r="2.5"/><path d="M4.4 4.4 19.6 19.6"/></g>
+  <g id="i-info"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5.4"/><path d="M12 7.6v.05"/></g>
+  <g id="i-bolt"><path d="M13.4 2.6 5.2 13.4h6l-.6 8 8.2-10.8h-6Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-globe"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c-3.3 0-3.3 18 0 18"/><path d="M12 3c3.3 0 3.3 18 0 18"/></g>
+</defs></svg>
+
+<div class="head">
+  <div class="eyebrow">Musify · New component</div>
+  <h1>Expandable action bar</h1>
+  <p class="sub">
+    A floating pill keeps four actions one tap away. The white circular control
+    expands it into a labelled grid — every destination becomes a thumb-sized
+    target instead of a hidden row in a scrolling dropdown. Tap to try it.
+  </p>
+  <div class="controls">
+    <div class="tg on" id="toggle"><span class="d"></span><span id="tl">Showing: expanded</span></div>
+  </div>
+</div>
+
+<div class="rack">
+
+  <!-- ============ COLLAPSED ============ -->
+  <div class="slot">
+    <div class="cap">Collapsed · default</div>
+    <div class="phone" id="p1">
+      <div class="notch"></div>
+      <div class="sb"><span>2:50</span><span class="r">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="chrome">
+        <div class="ctop">
+          <div class="origin">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+            <span class="u">open.spotify.com</span>
+          </div>
+          <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>2</span>
+          <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-mobile"/></svg>Mobile</span>
+          <span class="chip solid">2</span>
+          <span class="chip" style="padding:4px 6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-more"/></svg></span>
+        </div>
+        <div class="orow">
+          <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg></div>
+          <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></div>
+          <div class="field"><span class="u">https://open.spotify.com/se…</span></div>
+          <div class="nb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg></div>
+        </div>
+      </div>
+      <div class="page">
+        <div class="wsp"></div>
+        <div class="hometxt">
+          <div class="t">Spotify — Web Player</div>
+          <div class="s">Page content sits behind the floating bar</div>
+        </div>
+        <div class="scrim"></div>
+        <div class="barwrap"><div class="pill">
+          <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+        </div><div class="fab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EXPANDED ============ -->
+  <div class="slot">
+    <div class="cap">Expanded · all 14 actions</div>
+    <div class="phone open" id="p2">
+      <div class="notch"></div>
+      <div class="sb"><span>2:50</span><span class="r">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="chrome">
+        <div class="ctop">
+          <div class="origin">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+            <span class="u">open.spotify.com</span>
+          </div>
+          <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>2</span>
+          <span class="chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-mobile"/></svg>Mobile</span>
+          <span class="chip solid">2</span>
+          <span class="chip" style="padding:4px 6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-more"/></svg></span>
+        </div>
+        <div class="orow">
+          <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg></div>
+          <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></div>
+          <div class="field"><span class="u">https://open.spotify.com/se…</span></div>
+          <div class="nb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg></div>
+        </div>
+      </div>
+      <div class="page">
+        <div class="wsp"></div>
+        <div class="hometxt">
+          <div class="t">Spotify — Web Player</div>
+          <div class="s">Page content sits behind the floating bar</div>
+        </div>
+        <div class="scrim"></div>
+        <div class="barwrap"><div class="pill">
+          <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+          <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+        </div><div class="fab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div>
+
+        <div class="panel">
+          <div class="ov">Browser actions</div>
+          <div class="grid">
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div><div class="lb">New tab</div></div>
+            <div class="tile priv"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-incognito"/></svg></div><div class="lb">Private tab</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div><div class="lb">Bookmarks</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div><div class="lb">History</div></div>
+
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"/></svg></div><div class="lb">Downloads</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div><div class="lb">Find in page</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div><div class="lb">Share page</div></div>
+            <div class="tile on"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-desktop"/></svg></div><div class="lb">Desktop (on)</div></div>
+
+            <div class="tile accent"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-music"/></svg></div><div class="lb">Media</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-location"/></svg></div><div class="lb">Permissions</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg></div><div class="lb">Data &amp; privacy</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg></div><div class="lb">Filter lists</div></div>
+
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-info"/></svg></div><div class="lb">About Musify</div></div>
+            <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-bolt"/></svg></div><div class="lb">Welcome</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ANATOMY ============ -->
+  <div class="slot">
+    <div class="cap">Anatomy</div>
+    <div class="phone" style="height:660px">
+      <div class="notch"></div>
+      <div class="sb"><span>2:50</span><span class="r"></span></div>
+      <div class="page" style="display:flex;flex-direction:column;justify-content:center;gap:30px;padding:0 26px">
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px">Collapsed bar</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:14px;background:var(--raised);border:1px solid var(--hairline);border-radius:16px">
+            <div class="pill">
+              <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+              <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+              <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+              <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+            </div>
+            <div class="fab" style="width:42px;height:42px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px">Single tile</div>
+          <div style="display:flex;gap:16px;padding:16px;background:var(--raised);border:1px solid var(--hairline);border-radius:16px">
+            <div class="tile" style="width:64px"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"/></svg></div><div class="lb">Downloads</div></div>
+            <div class="tile on" style="width:64px"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-desktop"/></svg></div><div class="lb">Desktop</div></div>
+            <div class="tile accent" style="width:64px"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-music"/></svg></div><div class="lb">Media</div></div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px">Expand control · idle → open</div>
+          <div style="display:flex;gap:16px;padding:16px;background:var(--raised);border:1px solid var(--hairline);border-radius:16px;align-items:center">
+            <div class="fab" style="width:50px;height:50px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#343434" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg>
+            <div class="fab" style="width:50px;height:50px"><svg style="transform:rotate(45deg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.5">One glyph,<br>rotated 45°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="dials">
+  <div class="dl"><div class="k">Why it's better here</div><div class="v">14 actions, all visible at once</div>
+    <p>The old overflow buried 14 rows in a scrolling dropdown. The grid shows each one as a labelled, thumb-sized target — no scrolling, no guessing from an icon alone.</p></div>
+  <div class="dl"><div class="k">Emphasis without colour</div><div class="v">One white object</div>
+    <p>The expand control is the only pure-white element on screen, so it reads as the primary affordance with no brand hue. Tiles stay neutral; glyphs carry meaning.</p></div>
+  <div class="dl"><div class="k">Motion</div><div class="v">260ms, slide + scale</div>
+    <p>The panel rises and scales in on the house curve. The bar fades out beneath it, so the pill visually folds into the panel. The <code>+</code> rotates 45° into an <code>×</code> — one glyph, two states.</p></div>
+  <div class="dl"><div class="k">Target sizes</div><div class="v">48dp tiles · 42dp pill items</div>
+    <p>Both clear the 48dp minimum touch target once padding is counted. Labels run to two lines so "Data &amp; privacy" never truncates.</p></div>
+</div>
+
+<script>
+  const t = document.getElementById('toggle'), tl = document.getElementById('tl');
+  let open = true;
+  const sync = () => {
+    document.getElementById('p1').classList.toggle('open', !open);
+    document.getElementById('p2').classList.toggle('open', open);
+    tl.textContent = open ? 'Showing: expanded' : 'Showing: collapsed';
+    t.classList.toggle('on', open);
+  };
+  t.addEventListener('click', () => { open = !open; sync(); });
+  // tap either phone's fab to flip
+  document.querySelectorAll('.fab').forEach(f =>
+    f.addEventListener('click', () => { open = !open; sync(); }));
+  sync();
+</script>
+</body>
+</html>

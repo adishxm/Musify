@@ -38,7 +38,7 @@ import com.musify.browser.ui.screens.LandingScreen
 import com.musify.browser.ui.screens.OnboardingDialog
 import com.musify.browser.ui.screens.ReleaseInfoScreen
 import com.musify.browser.ui.screens.SitePermissionsScreen
-import com.musify.browser.ui.screens.WelcomeMatrixScreen
+import com.musify.browser.ui.screens.WelcomeScreen
 import com.musify.browser.ui.theme.MusifyTheme
 import java.io.File
 
@@ -52,7 +52,7 @@ enum class ScreenState {
     RELEASE_INFO,
     LANDING,
     SPIKE,
-    WELCOME_MATRIX
+    WELCOME
 }
 
 class MainActivity : ComponentActivity() {
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MusifyTheme {
-                var currentScreen by remember { mutableStateOf(ScreenState.WELCOME_MATRIX) }
+                var currentScreen by remember { mutableStateOf(ScreenState.WELCOME) }
                 var hasEnteredBrowser by remember { mutableStateOf(false) }
                 var historyBookmarksTab by remember { mutableIntStateOf(0) }
                 var showOnboarding by remember { mutableStateOf(!preferencesRepository.hasCompletedOnboarding()) }
@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenSpikeDebug = { currentScreen = ScreenState.SPIKE },
                                 onOpenRoadmap = { currentScreen = ScreenState.LANDING },
-                                onOpenWelcome = { currentScreen = ScreenState.WELCOME_MATRIX }
+                                onOpenWelcome = { currentScreen = ScreenState.WELCOME }
                             )
                         }
                         ScreenState.HISTORY_BOOKMARKS -> {
@@ -229,12 +229,12 @@ class MainActivity : ComponentActivity() {
                             BackHandler { currentScreen = ScreenState.BROWSER }
                             EngineSpikeScreen(modifier = Modifier.padding(innerPadding))
                         }
-                        ScreenState.WELCOME_MATRIX -> {
+                        ScreenState.WELCOME -> {
                             BackHandler(enabled = hasEnteredBrowser) {
                                 currentScreen = ScreenState.BROWSER
                             }
-                            WelcomeMatrixScreen(
-                                onSkipMatrix = {
+                            WelcomeScreen(
+                                onEnter = {
                                     hasEnteredBrowser = true
                                     currentScreen = ScreenState.BROWSER
                                 }

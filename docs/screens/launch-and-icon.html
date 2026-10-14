@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Musify — launch screen + launcher icon, as built</title>
+<style>
+  :root{
+    --ink:#000; --welcome:#242424;
+    --text-primary:#FAFAFA; --text-secondary:#A3A3A3; --text-muted:#6E6E6E;
+    --hairline:#242424; --elevated:#171717;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050505;color:var(--text-primary);
+    font-family:"Inter",sans-serif;-webkit-font-smoothing:antialiased;padding:44px 44px 60px}
+  .head{max-width:1080px;margin:0 auto 34px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+  h1{font-size:31px;font-weight:700;letter-spacing:-.026em;margin-bottom:10px}
+  .sub{font-size:13.5px;color:var(--text-secondary);line-height:1.6;max-width:640px}
+  .sub b{color:var(--text-primary);font-weight:600}
+  .sub code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--text-primary)}
+
+  .row{display:flex;gap:52px;max-width:1080px;margin:0 auto;align-items:flex-start}
+  .cap{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+
+  /* 411 x 914 dp — the reference device */
+  .phone{position:relative;width:411px;height:914px;background:var(--welcome);
+         border-radius:44px;overflow:hidden;box-shadow:0 30px 80px -24px rgba(0,0,0,.95);
+         border:1px solid #2E2E2E}
+  .sb{height:40px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 30px;font-size:13px;font-weight:600;color:var(--text-primary)}
+  .scr{position:relative;height:874px}
+  /* start 34dp, y = 30% of 914, Inter Medium 24sp/29sp, tracking -0.5sp */
+  .hello{position:absolute;left:34px;top:274px;font-size:24px;line-height:29px;
+         font-weight:500;letter-spacing:-0.5px;color:var(--text-primary)}
+  /* 14sp, centred, bottom 13.5% of 914 = 123px */
+  .credit{position:absolute;left:0;right:0;bottom:123px;text-align:center;
+          font-size:14px;font-weight:400;color:var(--text-primary)}
+
+  .iconcol{flex:1;min-width:0}
+  .iconbig{width:260px;height:260px;border-radius:260px;background:#000;
+           display:flex;align-items:center;justify-content:center;overflow:hidden;
+           box-shadow:0 24px 60px -20px rgba(0,0,0,.9)}
+  /* adaptive: artwork held to the centre 62% of the 108dp canvas */
+  .iconbig img{width:62%;height:62%;display:block}
+  .ladder{display:flex;align-items:flex-end;gap:22px;margin-top:30px}
+  .ladder figure{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .ladder .d{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--text-muted);letter-spacing:.06em}
+  .ladder .s{font-size:9.5px;color:#4A4A4A}
+  .tile{border-radius:22%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .tile img{width:62%;height:62%}
+  .note{margin-top:30px;font-size:12.5px;color:var(--text-muted);line-height:1.65;max-width:430px}
+  .note b{color:var(--text-secondary);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div class="eyebrow">Musify · Obsidian</div>
+  <h1>Launch screen and launcher icon, as built</h1>
+  <p class="sub">
+    Not a mockup this time — both are in the source and compiling.
+    <b>Left:</b> <code>WelcomeScreen.kt</code> rendering at the exact values in the code, on a 411×914 dp frame.
+    <b>Right:</b> the new icon, drawn from the app's own <code>Musify.Emblem</code> geometry.
+  </p>
+</div>
+
+<div class="row">
+
+  <div>
+    <div class="cap">WelcomeScreen.kt · WelcomeSurface #242424</div>
+    <div class="phone">
+      <div class="sb"><span>2:50</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="scr">
+        <div class="hello">Welcome to<br>Musify</div>
+        <div class="credit">crafted by adishxm</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="iconcol">
+    <div class="cap">ic_launcher · adaptive</div>
+    <div class="iconbig">
+      <img src="file:///home/user/render/icon/adaptive.png" alt="">
+    </div>
+
+    <div class="ladder" id="ladder"></div>
+
+    <div class="note">
+      <b>What changed.</b> The repo already had an adaptive icon at <code>mipmap-anydpi/</code> — but its
+      foreground <i>was</i> the green Spotify artwork, and its background was <code>#010201</code>, a
+      near-black carrying a green cast from the old palette. Foreground replaced in all five
+      densities, background squared to <code>#000000</code>, structure left exactly as it was.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const sizes = [192,144,96,72,48];
+  const dens  = ['xxxhdpi','xxhdpi','xhdpi','hdpi','mdpi'];
+  const host  = document.getElementById('ladder');
+  sizes.forEach((s,i)=>{
+    const f=document.createElement('figure');
+    f.innerHTML = `<div class="tile" style="width:${s}px;height:${s}px">
+        <img src="file:///home/user/render/icon/legacy.png" alt=""></div>
+      <div class="d">${dens[i]}</div><div class="s">${s}px</div>`;
+    host.appendChild(f);
+  });
+</script>
+</body>
+</html>

@@ -28,6 +28,7 @@ Verified   :app:compileDebugKotlin → BUILD SUCCESSFUL
 | `Elevated` | `#171717` | Inputs, chips, nested cards — any interactive fill at rest. |
 | `ElevatedHigh` | `#1F1F1F` | Hover / pressed / selected fills. |
 | `Hairline` | `#242424` | Divider and resting border. Barely there, by design. |
+| `WelcomeSurface` | `#242424` | Minimalist launch surface canvas (Phase 20). |
 | `HairlineStrong` | `#343434` | Focus rings and active selections. |
 
 ### Text ladder

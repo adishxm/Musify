@@ -1,0 +1,20 @@
+<!--
+  Musify launcher icon — master artwork.
+  Geometry is lifted verbatim from MusifyIcons.Emblem (24×24 viewport):
+  a shield (privacy) enclosing an eighth note (music).
+  Stroke is 1.7 rather than the in-app 1.5 — launcher glyphs need the extra weight
+  to survive downsampling to 48 px.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24">
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <!-- shield -->
+    <path d="M12 1.8 L21.2 5.5 L21.2 12
+             C21.2 17.6 17.3 21.7 12 23.2
+             C6.7 21.7 2.8 17.6 2.8 12
+             L2.8 5.5 Z"/>
+    <!-- note: stem + beam -->
+    <path d="M11.1 16.2 L11.1 9.2 L15.4 8.3"/>
+    <!-- note: head -->
+    <circle cx="9.6" cy="16.2" r="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Musify — Full UI · all references applied</title>
+<style>
+  :root{
+    --ink:#000; --surface:#0A0A0A; --raised:#111; --elevated:#171717; --elevated-high:#1F1F1F;
+    --hairline:#242424; --hairline-strong:#343434;
+    --text-primary:#FAFAFA; --text-secondary:#A3A3A3; --text-muted:#6E6E6E;
+    --accent:#FFF; --on-accent:#0A0A0A;
+    --success:#4FCB92; --warning:#DFB356; --danger:#E0645B; --private:#B0A0F0;
+    /* iridescent "liquid chrome" — ref 3 & 4 */
+    --ir-1:#60A5FA; --ir-2:#C084FC; --ir-3:#F472B6; --ir-4:#FBBF24; --ir-5:#34D399;
+    /* paper — ref 5 */
+    --paper:#FFFFFF; --paper-surface:#FAFAFA; --paper-elev:#F4F4F5; --paper-hair:#E4E4E7;
+    --paper-text:#09090B; --paper-text-2:#52525B; --paper-muted:#8A8A94;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050505;color:var(--text-primary);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:52px 32px 90px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+  .head{max-width:1500px;margin:0 auto 42px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
+  h1{font-size:42px;font-weight:700;letter-spacing:-.028em;line-height:1.06;margin-bottom:12px}
+  .sub{font-size:15px;color:var(--text-secondary);max-width:680px;line-height:1.55}
+  .refmap{display:flex;gap:9px;margin-top:26px;flex-wrap:wrap}
+  .rf{display:inline-flex;align-items:center;gap:9px;background:var(--elevated);border:1px solid var(--hairline);
+      border-radius:999px;padding:8px 15px;font-size:11.5px;font-weight:600;color:var(--text-secondary)}
+  .rf .n{width:17px;height:17px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+         font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+
+  .rack{display:flex;gap:30px;max-width:1500px;margin:0 auto;flex-wrap:wrap}
+  .slot{width:318px}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+  .cap b{color:var(--text-secondary);font-weight:700}
+
+  .phone{position:relative;width:318px;height:672px;background:var(--ink);
+         border:1px solid var(--hairline);border-radius:40px;overflow:hidden;
+         box-shadow:0 26px 70px -20px rgba(0,0,0,.9);display:flex;flex-direction:column}
+  .phone.paper{background:var(--paper);border-color:var(--paper-hair)}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:78px;height:5px;border-radius:99px;background:#1c1c1c;z-index:40}
+  .phone.paper .notch{background:#d4d4d8}
+  .sb{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 21px;font-size:11px;font-weight:600;flex:0 0 auto;position:relative;z-index:5}
+  .sb .r{display:flex;gap:5px;color:var(--text-secondary)}
+
+  /* ---------- chrome ---------- */
+  .chrome{background:var(--surface);border-bottom:1px solid var(--hairline);border-radius:0 0 16px 16px;padding:9px 11px 10px;flex:0 0 auto}
+  .phone.paper .chrome{background:var(--paper-surface);border-bottom-color:var(--paper-hair)}
+  .ctop{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+  .origin{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+  .origin .u{font-size:11.5px;font-weight:600;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:ui-monospace,Menlo,monospace}
+  .phone.paper .origin .u{color:#0F7B4F}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--elevated);border:1px solid var(--hairline);
+        border-radius:9px;padding:4px 8px;font-size:9.5px;font-weight:700;letter-spacing:.045em;color:var(--text-secondary);white-space:nowrap}
+  .phone.paper .chip{background:var(--paper-elev);border-color:var(--paper-hair);color:var(--paper-text-2)}
+  .chip.ok{color:var(--success);border-color:rgba(79,203,146,.42)}
+  .chip.solid{background:var(--accent);border-color:var(--accent);color:var(--on-accent);padding:4px 9px}
+  .phone.paper .chip.solid{background:var(--paper-text);border-color:var(--paper-text);color:#fff}
+  .orow{display:flex;align-items:center;gap:7px}
+  .nb{width:36px;height:36px;flex:0 0 auto;border-radius:50%;background:var(--elevated);display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .phone.paper .nb{background:var(--paper-elev);color:var(--paper-text)}
+  .field{flex:1;height:36px;border-radius:11px;background:var(--ink);border:1px solid var(--hairline);
+         display:flex;align-items:center;padding:0 11px}
+  .phone.paper .field{background:var(--paper);border-color:var(--paper-hair)}
+  .field .u{font-size:11.5px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .phone.paper .field .u{color:var(--paper-text)}
+
+  .page{flex:1;position:relative;background:var(--ink);overflow:hidden}
+  .phone.paper .page{background:var(--paper)}
+  .wsp{position:absolute;inset:0;background:radial-gradient(420px 250px at 50% 18%,rgba(255,255,255,.05),transparent 70%)}
+  .phone.paper .wsp{background:radial-gradient(420px 250px at 50% 18%,rgba(0,0,0,.035),transparent 70%)}
+
+  /* ---------- THE GLOW BUTTON (ref 3 + 4) ---------- */
+  .glow{position:relative;display:inline-flex;align-items:center;gap:12px;
+        border-radius:999px;background:rgba(10,10,10,.96);border:1px solid var(--hairline-strong);
+        padding:6px 20px 6px 6px;cursor:pointer}
+  .glow.plate{background:var(--paper-surface);border:none;padding:5px}
+  .glow.plate .inner{display:flex;align-items:center;gap:12px;border-radius:999px;background:var(--paper);
+                     padding:6px 20px 6px 6px;position:relative}
+  .glow.plate .inner::before{content:"";position:absolute;inset:0;border-radius:999px;padding:1px;
+      background:conic-gradient(from 200deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;opacity:.6}
+  .glow.ghost{background:transparent;border:1px solid var(--hairline)}
+
+  .ring{position:relative;width:40px;height:40px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .ring .bloom2{position:absolute;inset:-10px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      filter:blur(10px);opacity:.20;
+      -webkit-mask:radial-gradient(circle,transparent 42%,#000 52%,#000 74%,transparent 84%);
+              mask:radial-gradient(circle,transparent 42%,#000 52%,#000 74%,transparent 84%)}
+  .ring .bloom1{position:absolute;inset:-5px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      opacity:.42;
+      -webkit-mask:radial-gradient(circle,transparent 46%,#000 62%,#000 82%,transparent 92%);
+              mask:radial-gradient(circle,transparent 46%,#000 62%,#000 82%,transparent 92%)}
+  .ring .chipc{position:relative;width:40px;height:40px;border-radius:50%;background:var(--elevated);
+      display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .ring .chipc::after{content:"";position:absolute;inset:0;border-radius:50%;padding:2.2px;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude}
+  .glow.plate .ring .chipc{background:var(--paper-elev);color:var(--paper-text)}
+  .glow .lbl{font-size:15px;font-weight:600;letter-spacing:-.012em}
+  .glow.plate .lbl{color:var(--paper-text)}
+  .glow .meta{font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--text-muted);font-family:ui-monospace,Menlo,monospace}
+  .glow.plate .meta{color:var(--paper-muted)}
+
+  /* ---------- editorial (ref 5) ---------- */
+  .dots{display:grid;gap:5px}
+  .dots i{width:2px;height:2px;border-radius:50%;background:#4A4A4A;display:block}
+  .phone.paper .dots i{background:#C4C4C8}
+  .emeta{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:600;letter-spacing:.14em;
+         text-transform:uppercase;color:var(--text-muted);line-height:1.7}
+  .phone.paper .emeta{color:var(--paper-muted)}
+
+  .disc{width:88px;height:88px;border-radius:50%;overflow:hidden;position:relative;
+        background:linear-gradient(140deg,#2a2a2a,#0d0d0d);border:1px solid var(--hairline);
+        display:flex;align-items:center;justify-content:center}
+  .phone.paper .disc{background:linear-gradient(140deg,#e8e8ea,#d2d2d6);border-color:var(--paper-hair)}
+
+  .scrub{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+  .scrub i{width:2px;background:var(--hairline-strong);display:block;height:8px}
+  .scrub i.on{background:var(--text-primary);height:14px}
+  .phone.paper .scrub i{background:#C4C4C8}
+  .phone.paper .scrub i.on{background:var(--paper-text)}
+
+  /* ---------- action bar ---------- */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.72);opacity:0;pointer-events:none;transition:opacity .18s;z-index:10}
+  .phone.open .scrim{opacity:1}
+  .barwrap{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;align-items:center;gap:10px;z-index:20;
+           transition:opacity .16s,transform .22s cubic-bezier(.2,0,0,1)}
+  .phone.open .barwrap{opacity:0;transform:translateY(10px) scale(.97);pointer-events:none}
+  .pill{display:flex;align-items:center;background:rgba(10,10,10,.94);border:1px solid var(--hairline);border-radius:999px;padding:6px}
+  .phone.paper .pill{background:rgba(255,255,255,.95);border-color:var(--paper-hair)}
+  .pill .it{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--text-primary);cursor:pointer}
+  .phone.paper .pill .it{color:var(--paper-text)}
+  .pill .it.hi{background:var(--elevated)}
+  .phone.paper .pill .it.hi{background:var(--paper-elev)}
+  .fabwrap{position:relative;width:50px;height:50px;border-radius:50%;background:var(--accent);
+           display:flex;align-items:center;justify-content:center;color:var(--on-accent);cursor:pointer;flex:0 0 auto}
+  .fabwrap .bloom2{position:absolute;inset:-12px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      filter:blur(12px);opacity:.22;
+      -webkit-mask:radial-gradient(circle,transparent 44%,#000 54%,#000 76%,transparent 86%);
+              mask:radial-gradient(circle,transparent 44%,#000 54%,#000 76%,transparent 86%)}
+  .fabwrap .bloom1{position:absolute;inset:-6px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      opacity:.46;
+      -webkit-mask:radial-gradient(circle,transparent 48%,#000 64%,#000 84%,transparent 94%);
+              mask:radial-gradient(circle,transparent 48%,#000 64%,#000 84%,transparent 94%)}
+  .fabwrap .chipc{position:relative;width:50px;height:50px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center}
+  .fabwrap .chipc::after{content:"";position:absolute;inset:0;border-radius:50%;padding:2px;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;opacity:.78}
+
+  .panel{position:absolute;left:16px;right:16px;bottom:20px;z-index:25;background:rgba(10,10,10,.98);
+         border:1px solid var(--hairline);border-radius:20px;padding:16px 12px 14px;
+         opacity:0;transform:translateY(22px) scale(.94);pointer-events:none;transition:opacity .14s,transform .26s cubic-bezier(.2,0,0,1)}
+  .phone.open .panel{opacity:1;transform:none;pointer-events:auto}
+  .panel .ov{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);padding:0 8px 12px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+  .tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:8px 2px;border-radius:14px}
+  .tile .box{width:48px;height:48px;border-radius:16px;background:var(--elevated);display:flex;align-items:center;justify-content:center}
+  .tile .lb{font-size:10px;line-height:13px;color:var(--text-secondary);text-align:center;min-height:26px}
+  .tile.priv .box{color:var(--private)} .tile.acc .box{color:var(--accent)}
+  .tile.on .box{background:var(--elevated-high);color:var(--accent)} .tile.on .lb{color:var(--text-primary)}
+
+  /* ---------- lists / cards ---------- */
+  .pad{padding:15px;flex:1;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .card{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:13px 14px}
+  .phone.paper .card{background:var(--paper);border-color:var(--paper-hair)}
+  .row{display:flex;align-items:center;gap:11px}
+  .row .grow{flex:1;min-width:0}
+  .card h4{font-size:13.5px;font-weight:600;letter-spacing:-.012em;margin-bottom:4px}
+  .phone.paper .card h4{color:var(--paper-text)}
+  .card .desc{font-size:11px;color:var(--text-muted);line-height:1.5}
+  .phone.paper .card .desc{color:var(--paper-muted)}
+  .sw{width:42px;height:24px;border-radius:99px;background:var(--elevated-high);border:1px solid var(--hairline-strong);position:relative;flex:0 0 auto}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--text-muted)}
+  .sw.ok{background:rgba(79,203,146,.24);border-color:rgba(79,203,146,.55)}
+  .sw.ok::after{transform:translateX(18px);background:var(--success)}
+
+  .note{font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:12px}
+  .key{max-width:1500px;margin:48px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:14px}
+  .kc{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:16px}
+  .kc .k{font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:11px}
+  .kc .v{font-size:14px;font-weight:600;margin-bottom:7px}
+  .kc p{font-size:11.5px;color:var(--text-secondary);line-height:1.6}
+  .kc code{color:var(--text-primary);font-size:11px;font-family:ui-monospace,Menlo,monospace}
+  .sws{display:flex;gap:5px;margin-bottom:12px}
+  .sws span{flex:1;height:34px;border-radius:8px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="i-plus"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></g>
+  <g id="i-more"><circle cx="12" cy="5.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="18.6" r="1.15" fill="currentColor" stroke="none"/></g>
+  <g id="i-shieldcheck"><path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/><path d="M8.9 11.9 11.2 14.3 15.5 9.3"/></g>
+  <g id="i-shield"><path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/></g>
+  <g id="i-lock"><path d="M8 10.4V7.6C8 5.2 9.7 3.6 12 3.6s4 1.6 4 4v2.8"/><path d="M5.6 10.4h12.8V20H5.6Z"/></g>
+  <g id="i-globe"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c-3.3 0-3.3 18 0 18"/><path d="M12 3c3.3 0 3.3 18 0 18"/></g>
+  <g id="i-arrowleft"><path d="M19.4 12H4.8"/><path d="M11 5.6 4.8 12l6.2 6.4"/></g>
+  <g id="i-arrowright"><path d="M4.6 12h14.6"/><path d="M13 5.6 19.2 12 13 18.4"/></g>
+  <g id="i-search"><circle cx="10.8" cy="10.8" r="7.2"/><path d="M16.2 16.2 21 21"/></g>
+  <g id="i-star"><path d="M12 3.5 14.12 9.59 20.56 9.72 15.42 13.61 17.29 19.78 12 16.1 6.71 19.78 8.58 13.61 3.44 9.72 9.88 9.59Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-clock"><circle cx="12" cy="12" r="9"/><path d="M12 6.8v5.4l3.9 2.3"/></g>
+  <g id="i-link"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1H11V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12ZM8 13h8v-2H8v2Zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-download"><path d="M12 3.2v12"/><path d="M7.4 10.6 12 15.2l4.6-4.6"/><path d="M4 17.2v3.2h16v-3.2"/></g>
+  <g id="i-desktop"><path d="M2.8 4.4h18.4v11.8H2.8Z"/><path d="M12 16.2v3.4"/><path d="M9 19.6h6"/></g>
+  <g id="i-music"><path d="M10.9 16.6V5.4L20 3.4v11.2"/><circle cx="8.3" cy="16.6" r="2.6"/><circle cx="17.4" cy="14.6" r="2.6"/></g>
+  <g id="i-location"><path d="M12 21.4s7-6.8 7-11.8A7 7 0 0 0 5 9.6c0 5 7 11.8 7 11.8Z"/><circle cx="12" cy="9.6" r="2.6"/></g>
+  <g id="i-incognito"><path d="M2.6 12c2.3-4 5.6-5.9 9.4-5.9S19.1 8 21.4 12c-2.3 4-5.6 5.9-9.4 5.9S4.9 16 2.6 12Z"/><circle cx="12" cy="12" r="2.5"/><path d="M4.4 4.4 19.6 19.6"/></g>
+  <g id="i-info"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5.4"/><path d="M12 7.6v.05"/></g>
+  <g id="i-bolt"><path d="M13.4 2.6 5.2 13.4h6l-.6 8 8.2-10.8h-6Z" fill="currentColor" stroke="none"/></g>
+  <g id="i-emblem"><path d="M12 1.8 21.2 5.5V12c0 5.6-3.9 9.7-9.2 11.2C6.7 21.7 2.8 17.6 2.8 12V5.5Z" stroke-width="1.5"/><path d="M11.1 16.2V9.2l4.3-.9" stroke-width="1.5"/><circle cx="9.6" cy="16.2" r="1.5" stroke-width="1.5"/></g>
+  <g id="i-starline"><path d="M12 3.5 14.12 9.59 20.56 9.72 15.42 13.61 17.29 19.78 12 16.1 6.71 19.78 8.58 13.61 3.44 9.72 9.88 9.59Z"/></g>
+  <g id="i-trash"><path d="M4.4 6.6h15.2"/><path d="M9.4 6.6V4.2h5.2v2.4"/><path d="M6.6 6.6 7.8 20.4h8.4l1.2-13.8"/></g>
+</defs></svg>
+
+<div class="head">
+  <div class="eyebrow">Musify · Full interface</div>
+  <h1>Every reference, one system.</h1>
+  <p class="sub">
+    The monochrome Obsidian base stays intact. On top of it: the iridescent
+    "liquid chrome" ring on the primary control, the double-layer plate button,
+    the expandable action bar, and an editorial monospace layer for facts.
+  </p>
+  <div class="refmap">
+    <span class="rf"><span class="n">1·2</span> Expandable action bar</span>
+    <span class="rf"><span class="n">3</span> Iridescent glow ring</span>
+    <span class="rf"><span class="n">4</span> Plate button + micro accents</span>
+    <span class="rf"><span class="n">5</span> Editorial monospace layer</span>
+  </div>
+</div>
+
+<div class="rack">
+
+<!-- ============ 1. HOME · DARK ============ -->
+<div class="slot">
+  <div class="cap">Home <b>· dark</b></div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="sb"><span>2:50</span><span class="r"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg></span></div>
+    <div class="chrome">
+      <div class="ctop">
+        <div class="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg><span class="u">musify://home</span></div>
+        <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>Shields</span>
+        <span class="chip solid">1</span>
+        <span class="chip" style="padding:4px 6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-more"/></svg></span>
+      </div>
+      <div class="orow">
+        <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg></div>
+        <div class="field"><span class="u" style="color:var(--text-muted)">Search or enter URL…</span></div>
+      </div>
+    </div>
+    <div class="page"><div class="wsp"></div>
+      <div style="position:absolute;top:76px;left:0;right:0;text-align:center">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-emblem"/></svg>
+        <div style="font-size:21px;font-weight:700;letter-spacing:-.028em;margin:16px 0 10px">Musify Browser</div>
+        <!-- editorial meta layer (ref 5) -->
+        <div class="emeta" style="margin-bottom:20px">Zero telemetry<br>Multi-tab isolation<br>Strict TLS</div>
+        <div class="glow plate" style="display:inline-flex">
+          <div class="inner">
+            <div class="ring">
+              <div class="chipc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+            </div>
+            <span class="lbl">DuckDuckGo</span><span class="meta">SECURE</span>
+          </div>
+        </div>
+      </div>
+      <!-- dot matrix ornament -->
+      <div class="dots" style="grid-template-columns:repeat(7,2px);position:absolute;left:34px;top:330px">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="emeta" style="position:absolute;left:34px;top:372px">Session<br>01<br>Active</div>
+    </div>
+    <div class="barwrap"><div class="pill">
+      <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+    </div>
+    <div class="fabwrap"><div class="bloom2"></div><div class="bloom1"></div><div class="chipc"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2. HOME · PAPER (ref 5) ============ -->
+<div class="slot">
+  <div class="cap">Home <b>· paper editorial</b></div>
+  <div class="phone paper">
+    <div class="notch"></div>
+    <div class="sb" style="color:var(--paper-text)"><span>2:50</span><span class="r" style="color:var(--paper-muted)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg></span></div>
+    <div class="chrome">
+      <div class="ctop">
+        <div class="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F7B4F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg><span class="u">musify://home</span></div>
+        <span class="chip" style="color:#0F7B4F;border-color:rgba(15,123,79,.4)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>Shields</span>
+        <span class="chip solid">1</span>
+        <span class="chip" style="padding:4px 6px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-more"/></svg></span>
+      </div>
+      <div class="orow">
+        <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg></div>
+        <div class="field"><span class="u" style="color:var(--paper-muted)">Search or enter URL…</span></div>
+      </div>
+    </div>
+    <div class="page"><div class="wsp"></div>
+      <!-- editorial header block, asymmetrical -->
+      <div class="emeta" style="position:absolute;left:30px;top:34px">Monday<br>01 May<br><span style="color:var(--paper-text)">9:PM</span></div>
+      <div class="dots" style="grid-template-columns:repeat(6,2px);position:absolute;left:30px;top:118px">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <!-- stacked discs -->
+      <div class="disc" style="position:absolute;left:120px;top:44px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6E6E6E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-emblem"/></svg></div>
+      <div class="disc" style="position:absolute;left:130px;top:158px;width:78px;height:78px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E6E6E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg></div>
+      <div class="disc" style="position:absolute;left:112px;top:256px;width:70px;height:70px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6E6E6E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg></div>
+
+      <div class="emeta" style="position:absolute;left:34px;top:196px">Project<br>Assignment<br><span style="color:var(--paper-text)">58%</span></div>
+
+      <!-- plate button, editorial placement -->
+      <div class="glow plate" style="position:absolute;left:30px;top:330px">
+        <div class="inner">
+          <div class="ring"><div class="chipc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div></div>
+          <span class="lbl">Search</span>
+        </div>
+      </div>
+
+      <!-- ruled tick scrubber -->
+      <div style="position:absolute;left:30px;right:30px;bottom:96px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+          <span class="emeta" style="margin:0">Explore</span>
+        </div>
+        <div class="scrub" style="margin-top:14px">
+          <i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+    </div>
+    <div class="barwrap"><div class="pill">
+      <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+    </div>
+    <div class="fabwrap" style="background:var(--paper-text);color:#fff"><div class="bloom2"></div><div class="bloom1"></div><div class="chipc" style="background:var(--paper-text)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3. ACTION GRID ============ -->
+<div class="slot">
+  <div class="cap">Actions <b>· expanded</b></div>
+  <div class="phone open">
+    <div class="notch"></div>
+    <div class="sb"><span>2:50</span><span class="r"></span></div>
+    <div class="chrome">
+      <div class="ctop">
+        <div class="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg><span class="u">open.spotify.com</span></div>
+        <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>2</span>
+        <span class="chip solid">2</span>
+      </div>
+      <div class="orow">
+        <div class="nb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg></div>
+        <div class="field"><span class="u">https://open.spotify.com/se…</span></div>
+      </div>
+    </div>
+    <div class="page"><div class="wsp"></div>
+      <div class="scrim"></div>
+      <div class="barwrap"><div class="pill">
+        <div class="it hi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div>
+        <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div>
+        <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div>
+      </div>
+      <div class="fabwrap"><div class="bloom2"></div><div class="bloom1"></div><div class="chipc"><svg style="transform:rotate(45deg)" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div></div>
+
+      <div class="panel">
+        <div class="ov">Browser actions</div>
+        <div class="grid">
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div><div class="lb">New tab</div></div>
+          <div class="tile priv"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-incognito"/></svg></div><div class="lb">Private tab</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-star"/></svg></div><div class="lb">Bookmarks</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></div><div class="lb">History</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"/></svg></div><div class="lb">Downloads</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div><div class="lb">Find in page</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div><div class="lb">Share</div></div>
+          <div class="tile on"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-desktop"/></svg></div><div class="lb">Desktop (on)</div></div>
+          <div class="tile acc"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-music"/></svg></div><div class="lb">Media</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-location"/></svg></div><div class="lb">Permissions</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg></div><div class="lb">Data &amp; privacy</div></div>
+          <div class="tile"><div class="box"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-info"/></svg></div><div class="lb">About</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. SHIELDS ============ -->
+<div class="slot">
+  <div class="cap">Shields <b>· editorial meta</b></div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="sb"><span>2:50</span><span class="r"></span></div>
+    <div class="chrome" style="border-radius:0">
+      <div class="ctop">
+        <div class="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg><span class="u">open.spotify.com</span></div>
+        <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>2</span>
+        <span class="chip solid">2</span>
+      </div>
+      <div class="orow"><div class="field"><span class="u">https://open.spotify.com/se…</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-starline"/></svg></div></div>
+    </div>
+    <div class="pad">
+      <div class="row" style="margin-bottom:4px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>
+        <div class="grow"><div style="font-size:16px;font-weight:700;letter-spacing:-.022em">Privacy Shields</div>
+        <div class="emeta" style="letter-spacing:.06em;text-transform:none;font-size:10.5px">open.spotify.com</div></div>
+      </div>
+
+      <div class="card" style="background:var(--surface)">
+        <div class="row"><div class="grow"><h4 style="color:var(--success);margin-bottom:5px">Shields active</h4>
+        <div class="desc">Cross-site trackers and fingerprinters blocked.</div></div><span class="sw ok"></span></div>
+      </div>
+
+      <div class="card" style="flex:1;display:flex;flex-direction:column">
+        <div class="emeta" style="margin-bottom:14px">Requests blocked</div>
+        <div class="row" style="align-items:flex-end;margin-bottom:16px">
+          <!-- editorial numeric: monospace, huge, tabular -->
+          <span class="mono" style="font-size:34px;font-weight:700;letter-spacing:-.05em;line-height:.9">0</span>
+          <span class="emeta" style="padding-bottom:2px">on this page</span>
+        </div>
+        <div class="row" style="justify-content:space-between;padding:9px 0;border-top:1px solid var(--hairline)">
+          <span style="font-size:11.5px;color:var(--text-secondary)">Advertising &amp; analytics</span><span class="mono" style="font-size:12px;color:var(--text-primary)">0</span></div>
+        <div class="row" style="justify-content:space-between;padding:9px 0;border-top:1px solid var(--hairline)">
+          <span style="font-size:11.5px;color:var(--text-secondary)">Cross-site social</span><span class="mono" style="font-size:12px">0</span></div>
+        <div class="row" style="justify-content:space-between;padding:9px 0;border-top:1px solid var(--hairline)">
+          <span style="font-size:11.5px;color:var(--text-secondary)">Cryptomining</span><span class="mono" style="font-size:12px">0</span></div>
+      </div>
+
+      <div class="card"><div class="row"><div class="grow"><h4>AdGuard &amp; System DNS</h4><div class="desc">System default DNS</div></div>
+        <span class="chip">Configure</span></div></div>
+
+      <div class="glow ghost" style="justify-content:center;margin-top:auto">
+        <span class="lbl" style="color:var(--text-secondary);font-size:12.5px">Reload &amp; reset protections</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. BUTTON ANATOMY ============ -->
+<div class="slot">
+  <div class="cap">Button <b>· all variants</b></div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="sb"><span>2:50</span><span class="r"></span></div>
+    <div class="page" style="display:flex;flex-direction:column;justify-content:center;gap:26px;padding:0 24px">
+      <div>
+        <div class="emeta" style="margin-bottom:12px">Hero · on black</div>
+        <div class="glow">
+          <div class="ring"><div class="bloom2"></div><div class="bloom1"></div><div class="chipc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg></div></div>
+          <span class="lbl">Open Browser</span><span class="meta">01</span>
+        </div>
+      </div>
+      <div>
+        <div class="emeta" style="margin-bottom:12px">Plate · double layer</div>
+        <div class="glow plate" style="display:inline-flex">
+          <div class="inner">
+            <div class="ring"><div class="chipc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg></div></div>
+            <span class="lbl">AI Mode</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="emeta" style="margin-bottom:12px">Ghost · secondary</div>
+        <div class="glow ghost" style="justify-content:center;width:100%">
+          <span class="lbl" style="color:var(--text-secondary);font-size:13px">Engine Spike</span>
+        </div>
+      </div>
+      <div>
+        <div class="emeta" style="margin-bottom:12px">Ring · bloom stack</div>
+        <div style="display:flex;gap:22px;align-items:center;padding:22px 18px;background:var(--raised);border:1px solid var(--hairline);border-radius:16px">
+          <div class="ring"><div class="bloom2"></div><div class="bloom1"></div><div class="chipc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div></div>
+          <div class="emeta" style="margin:0">Sweep gradient<br>6 stops<br>Two bloom rings<br>8s rotation</div>
+        </div>
+      </div>
+      <div>
+        <div class="emeta" style="margin-bottom:12px">Editorial · dot matrix + ticks</div>
+        <div style="padding:18px;background:var(--raised);border:1px solid var(--hairline);border-radius:16px">
+          <div class="dots" style="grid-template-columns:repeat(8,2px);margin-bottom:16px">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="scrub"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="key">
+  <div class="kc">
+    <div class="k">Iridescent ring</div><div class="v">One light effect, once per screen</div>
+    <div class="sws"><span style="background:var(--ir-1)"></span><span style="background:var(--ir-2)"></span><span style="background:var(--ir-3)"></span><span style="background:var(--ir-4)"></span><span style="background:var(--ir-5)"></span></div>
+    <p>A <code>Brush.sweepGradient</code> over the chip, plus two larger translucent rings faking bloom. <code>Modifier.blur</code> needs API 31 and Musify supports 26 — the stack is visually identical on OLED and costs two draw calls.</p>
+  </div>
+  <div class="kc">
+    <div class="k">Why it stays monochrome</div><div class="v">A reflection, not a brand colour</div>
+    <p>The ring behaves like light hitting metal, so it reads as hardware rather than decoration. It appears exactly once per screen, so it never competes with the security-semantic colours.</p>
+  </div>
+  <div class="kc">
+    <div class="k">Plate architecture</div><div class="v">Two layers, one hairline</div>
+    <p>The pill sits on a slightly larger plate with a 1px iridescent hairline masked to the border. That is the entire "AI Mode" treatment — a second surface, not a shadow.</p>
+  </div>
+  <div class="kc">
+    <div class="k">Editorial layer</div><div class="v">Machine facts look machine-ish</div>
+    <p>Monospace, uppercase, tracked out, for timestamps, counts and states. Numerals use tabular figures so they never jitter while counting. Dot fields and tick rules fill negative space with intent.</p>
+  </div>
+</div>
+
+</body>
+</html>

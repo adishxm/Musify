@@ -157,3 +157,11 @@ tasks.matching { it.name.contains("Assets") || it.name.startsWith("package") }.c
     }
 }
 
+tasks.matching { it.name == "buildKotlinToolingMetadata" }.configureEach {
+    doNotTrackState("Avoid OneDrive placeholder file snapshot issues on Windows")
+}
+
+tasks.matching { it.name.startsWith("extract") && it.name.endsWith("VersionControlInfo") }.configureEach {
+    enabled = false
+}
+

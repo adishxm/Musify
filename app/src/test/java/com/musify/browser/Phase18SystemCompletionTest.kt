@@ -43,9 +43,9 @@ class Phase18SystemCompletionTest {
     }
 
     @Test
-    fun testWelcomeMatrixMonochromeBloomGuarantees() {
-        val welcomeFile = resolveDir("app/src/main/java/com/musify/browser/ui/screens/WelcomeMatrixScreen.kt")
-        assertTrue("WelcomeMatrixScreen.kt must exist", welcomeFile.exists())
+    fun testWelcomeScreenMonochromeGuarantees() {
+        val welcomeFile = resolveDir("app/src/main/java/com/musify/browser/ui/screens/WelcomeScreen.kt")
+        assertTrue("WelcomeScreen.kt must exist", welcomeFile.exists())
 
         val content = welcomeFile.readText()
 
@@ -54,9 +54,16 @@ class Phase18SystemCompletionTest {
         assertFalse("No neon pink gradient 0xFFFF0055", content.contains("0xFFFF0055"))
         assertFalse("No crimson gradient 0xFFCC0000", content.contains("0xFFCC0000"))
 
-        // Must use Obsidian monochrome tokens
-        assertTrue("Uses Ink token", content.contains("Ink"))
-        assertTrue("Uses Accent token", content.contains("Accent"))
+        // The retired launch screen must be gone, not merely unused
+        assertFalse(
+            "WelcomeMatrixScreen.kt must be deleted",
+            resolveDir("app/src/main/java/com/musify/browser/ui/screens/WelcomeMatrixScreen.kt").exists()
+        )
+
+        // Must use Obsidian monochrome tokens, and no raw colour literals at all
+        assertTrue("Uses WelcomeSurface token", content.contains("WelcomeSurface"))
+        assertTrue("Uses TextPrimary token", content.contains("TextPrimary"))
+        assertFalse("No hardcoded colour literals", content.contains("0xFF"))
     }
 
     @Test

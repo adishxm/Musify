@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Musify — Entry screen · 4 directions</title>
+<style>
+  :root{
+    --ink:#000; --surface:#0A0A0A; --raised:#111; --elevated:#171717; --elevated-high:#1F1F1F;
+    --hairline:#242424; --hairline-strong:#343434;
+    --text-primary:#FAFAFA; --text-secondary:#A3A3A3; --text-muted:#6E6E6E;
+    --accent:#FFF; --on-accent:#0A0A0A;
+    --ir-1:#60A5FA; --ir-2:#C084FC; --ir-3:#F472B6; --ir-4:#FBBF24; --ir-5:#34D399;
+    --paper:#FFF; --paper-surface:#FAFAFA; --paper-elev:#F4F4F5; --paper-hair:#E4E4E7;
+    --paper-text:#09090B; --paper-text-2:#52525B; --paper-muted:#8A8A94;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050505;color:var(--text-primary);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:52px 40px 80px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+  .head{max-width:1460px;margin:0 auto 40px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
+  h1{font-size:40px;font-weight:700;letter-spacing:-.028em;line-height:1.06;margin-bottom:12px}
+  .sub{font-size:15px;color:var(--text-secondary);max-width:720px;line-height:1.6}
+  .sub b{color:var(--text-primary);font-weight:600}
+
+  .rack{display:flex;gap:30px;max-width:1460px;margin:0 auto;flex-wrap:wrap;align-items:flex-start}
+  .slot{width:318px}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);
+       margin-bottom:11px;height:16px;white-space:nowrap}
+  .cap b{color:var(--text-primary);font-weight:700}
+
+  /* 6:11 frames — matches the reference mockup's aspect */
+  .phone{position:relative;width:318px;height:583px;background:var(--ink);
+         border:1px solid var(--hairline);border-radius:34px;overflow:hidden;
+         box-shadow:0 26px 70px -20px rgba(0,0,0,.9)}
+  .phone.paper{background:var(--paper);border-color:var(--paper-hair)}
+  .phone.raw{background:#242424;border-color:#2E2E2E}
+  .sb{height:26px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;font-size:10px;font-weight:600;flex:0 0 auto;opacity:.85}
+  .sb .r{display:flex;gap:4px;color:var(--text-secondary)}
+  .scr{position:relative;height:557px}
+
+  .dots{display:grid;gap:4.5px}
+  .dots i{width:2px;height:2px;border-radius:50%;background:#4A4A4A;display:block}
+  .phone.paper .dots i{background:#C4C4C8}
+  .emeta{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:600;letter-spacing:.14em;
+         text-transform:uppercase;color:var(--text-muted);line-height:1.75}
+  .phone.paper .emeta{color:var(--paper-muted)}
+
+  .scrub{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+  .scrub i{width:2px;background:#3A3A3A;display:block;height:7px}
+  .scrub i.on{background:var(--text-primary);height:13px}
+  .phone.paper .scrub i{background:#D4D4D8}
+  .phone.paper .scrub i.on{background:var(--paper-text)}
+
+  /* the one signature accent */
+  .ring{position:relative;display:flex;align-items:center;justify-content:center}
+  .ring .bloom2{position:absolute;inset:-10px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      filter:blur(10px);opacity:.20;
+      -webkit-mask:radial-gradient(circle,transparent 42%,#000 52%,#000 74%,transparent 84%);
+              mask:radial-gradient(circle,transparent 42%,#000 52%,#000 74%,transparent 84%)}
+  .ring .bloom1{position:absolute;inset:-5px;border-radius:50%;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      opacity:.42;
+      -webkit-mask:radial-gradient(circle,transparent 46%,#000 62%,#000 82%,transparent 92%);
+              mask:radial-gradient(circle,transparent 46%,#000 62%,#000 82%,transparent 92%)}
+  .ring .chipc{position:relative;width:44px;height:44px;border-radius:50%;background:var(--elevated);
+      display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .phone.paper .ring .chipc{background:var(--paper-elev);color:var(--paper-text)}
+  .ring .chipc::after{content:"";position:absolute;inset:0;border-radius:50%;padding:2.2px;
+      background:conic-gradient(from 0deg,var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;opacity:.85}
+
+  /* ---- glow button (hero) ---- */
+  .glow{position:relative;display:inline-flex;align-items:center;gap:11px;border-radius:999px;
+        background:rgba(10,10,10,.96);border:1px solid var(--hairline-strong);padding:5px 19px 5px 5px}
+  .glow .ring .chipc{width:36px;height:36px}
+  .glow .lbl{font-size:14px;font-weight:600;letter-spacing:-.012em;color:var(--text-primary)}
+  .glow .meta{font-size:9.5px;font-weight:600;letter-spacing:.14em;color:var(--text-muted);font-family:ui-monospace,Menlo,monospace}
+  .glow.dark{background:var(--paper-text);border-color:var(--paper-text)}
+  .glow.dark .ring .chipc{background:#1F1F1F;color:#fff}
+  .glow.dark .lbl{color:#fff}
+  .glow.dark .meta{color:#8A8A94}
+
+  .hair{height:1px;background:var(--hairline)}
+  .phone.paper .hair{background:var(--paper-hair)}
+  .phone.raw .hair{background:#333}
+
+  /* key panel */
+  .key{max-width:1460px;margin:56px auto 0;border-top:1px solid var(--hairline);padding-top:30px}
+  .key h2{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px}
+  .kgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 40px;max-width:1180px}
+  .krow{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #141414}
+  .krow .n{width:20px;height:20px;border-radius:50%;background:var(--elevated);border:1px solid var(--hairline);
+           font-size:9.5px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
+  .krow .t{font-size:13.5px;line-height:1.55;color:var(--text-secondary)}
+  .krow .t b{color:var(--text-primary);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div class="eyebrow">Musify · Obsidian</div>
+  <h1>Entry screen — four directions</h1>
+  <p class="sub">
+    The launch screen, redrawn with the same three references as the rest of the app.
+    <b>Frame 01 is your mockup reproduced to the pixel</b> so we're comparing like for like;
+    02–04 are that same composition rebuilt in the system. Nothing here has a colour except the
+    single iridescent ring.
+  </p>
+</div>
+
+<div class="rack">
+
+  <!-- ═══ 01 · AS SENT ═══ -->
+  <div class="slot">
+    <div class="cap">01 · <b>As sent</b> — reference</div>
+    <div class="phone raw">
+      <div class="scr">
+        <div style="position:absolute;left:36px;top:187px">
+          <div style="font-size:18.5px;font-weight:500;letter-spacing:-.02em;line-height:22px;color:#fff">Welcome to</div>
+          <div style="font-size:18.5px;font-weight:500;letter-spacing:-.02em;line-height:22px;color:#fff">Musify</div>
+        </div>
+        <div style="position:absolute;left:0;right:0;top:492px;text-align:center;
+                    font-size:12px;font-weight:500;color:#fff">crafted by adishxm</div>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+      #242424 · two lines at 32% height · one credit line at 84%
+    </div>
+  </div>
+
+  <!-- ═══ 02 · OBSIDIAN MINIMAL ═══ -->
+  <div class="slot">
+    <div class="cap">02 · <b>Obsidian minimal</b></div>
+    <div class="phone">
+      <div class="sb"><span>2:50</span><span class="r">▮▮▮ ⌁ ▰</span></div>
+      <div class="scr">
+        <div style="position:absolute;left:36px;top:26px;display:flex;align-items:flex-start;gap:14px">
+          <div class="dots" style="grid-template-columns:repeat(3,2px);margin-top:3px">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="emeta">SESSION<br>01 — ACTIVE</div>
+        </div>
+
+        <div style="position:absolute;left:36px;top:187px">
+          <div style="font-size:18.5px;font-weight:500;letter-spacing:-.03em;line-height:22px;color:var(--text-primary)">Welcome to</div>
+          <div style="font-size:18.5px;font-weight:500;letter-spacing:-.03em;line-height:22px;color:var(--text-primary)">Musify</div>
+        </div>
+
+        <div class="hair" style="position:absolute;left:36px;right:36px;top:245px;width:76px"></div>
+
+        <div style="position:absolute;left:0;right:0;top:372px;display:flex;justify-content:center">
+          <div class="ring">
+            <div class="bloom2"></div><div class="bloom1"></div>
+            <div class="chipc">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l7 3v5.5c0 4.3-2.9 8-7 9.5-4.1-1.5-7-5.2-7-9.5V6l7-3z"/>
+                <circle cx="12" cy="13.2" r="1.9"/><path d="M12 11.3V8.6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="position:absolute;left:0;right:0;top:440px;text-align:center">
+          <div class="emeta" style="letter-spacing:.22em;font-size:10px">CRAFTED BY ADISHXM</div>
+        </div>
+
+        <div style="position:absolute;left:36px;right:36px;top:502px">
+          <div class="scrub" id="s2"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+      True black, hairline under the title, ring mark, credit set as mono meta
+    </div>
+  </div>
+
+  <!-- ═══ 03 · EDITORIAL PAPER ═══ -->
+  <div class="slot">
+    <div class="cap">03 · <b>Editorial paper</b> — ref 5</div>
+    <div class="phone paper">
+      <div class="sb" style="color:var(--paper-text)"><span>2:50</span><span class="r" style="color:var(--paper-muted)">▮▮▮ ⌁ ▰</span></div>
+      <div class="scr">
+        <div style="position:absolute;left:30px;top:24px;display:flex;gap:26px;align-items:flex-start">
+          <div class="emeta" style="color:var(--paper-text)">MONDAY<br>01 MAY<br>9:PM</div>
+          <div class="dots" style="grid-template-columns:repeat(4,2px);margin-top:4px">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <div style="position:absolute;left:30px;top:158px">
+          <div class="emeta" style="color:var(--paper-muted);margin-bottom:12px">THE BROWSER</div>
+          <div style="font-size:50px;font-weight:700;letter-spacing:-.045em;line-height:52px;color:var(--paper-text)">Musify</div>
+          <div style="font-size:13px;color:var(--paper-text-2);margin-top:14px;line-height:19px">
+            a premium experience<br>of listening musics
+          </div>
+        </div>
+
+        <div class="hair" style="position:absolute;left:30px;right:30px;top:352px"></div>
+
+        <div style="position:absolute;left:30px;top:372px;display:flex;align-items:center;gap:12px">
+          <div class="ring">
+            <div class="bloom2"></div><div class="bloom1"></div>
+            <div class="chipc" style="width:38px;height:38px">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l7 3v5.5c0 4.3-2.9 8-7 9.5-4.1-1.5-7-5.2-7-9.5V6l7-3z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="emeta" style="color:var(--paper-muted)">CRAFTED BY<br>ADISHXM</div>
+        </div>
+
+        <div style="position:absolute;left:30px;top:462px">
+          <div class="glow dark">
+            <div class="ring"><div class="bloom2"></div><div class="bloom1"></div>
+              <div class="chipc" style="width:36px;height:36px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h13M13 6l6 6-6 6"/>
+                </svg>
+              </div>
+            </div>
+            <span class="lbl">Enter Musify</span>
+            <span class="meta">01</span>
+          </div>
+        </div>
+
+        <div style="position:absolute;left:30px;right:30px;top:522px">
+          <div class="scrub" id="s3"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+      Paper light mode, monospace meta, ruled ticks, dot matrix field
+    </div>
+  </div>
+
+  <!-- ═══ 04 · MATRIX RESKIN ═══ -->
+  <div class="slot">
+    <div class="cap">04 · <b>Matrix, de-coloured</b></div>
+    <div class="phone">
+      <div class="sb"><span>2:50</span><span class="r">▮▮▮ ⌁ ▰</span></div>
+      <div class="scr">
+        <div style="position:absolute;left:36px;top:26px;display:flex;align-items:flex-start;gap:14px">
+          <div class="dots" style="grid-template-columns:repeat(3,2px);margin-top:3px">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="emeta">SESSION<br>01 — ACTIVE</div>
+        </div>
+
+        <!-- tilted dashed marquee, de-oranged -->
+        <div style="position:absolute;left:30px;top:150px;width:250px;height:132px;transform:rotate(4.2deg)">
+          <div style="position:absolute;inset:0;border:1.5px dashed #A3A3A3"></div>
+          <div style="position:absolute;left:-5.5px;top:-5.5px;width:11px;height:11px;background:var(--accent)"></div>
+          <div style="position:absolute;right:-5.5px;top:-5.5px;width:11px;height:11px;background:var(--accent)"></div>
+          <div style="position:absolute;left:-5.5px;bottom:-5.5px;width:11px;height:11px;background:var(--accent)"></div>
+          <div style="position:absolute;right:-5.5px;bottom:-5.5px;width:11px;height:11px;background:var(--accent)"></div>
+          <div style="position:absolute;left:20px;top:22px;font-size:18.5px;line-height:24px;color:#fff">
+            a premium experience<br>of listening musics
+          </div>
+          <!-- sticker: inversion instead of hue -->
+          <div style="position:absolute;left:-10px;top:-10px;transform:rotate(-11.5deg);
+                      background:var(--accent);border-radius:4px;padding:3px 9px;
+                      font-size:9.5px;font-weight:800;letter-spacing:.05em;color:var(--on-accent)">TAKE A PREMIUM FEEL</div>
+        </div>
+
+        <div style="position:absolute;left:36px;top:302px">
+          <div style="font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:56px;color:#fff">Musify</div>
+          <svg width="252" height="30" viewBox="0 0 252 30" style="display:block;margin-top:7px;overflow:visible">
+            <text x="0" y="21" font-family="Inter,Helvetica,Arial,sans-serif" font-size="20.5" font-weight="700"
+                  letter-spacing="-.2" fill="none" stroke="#FFFFFF" stroke-width="1">crafted by adishxm</text>
+          </svg>
+          <div class="emeta" style="margin-top:14px;color:var(--text-muted);letter-spacing:.06em;text-transform:none">
+            © Copyright 2026 Musify Contributors<br>github.com/adishxm/Musify
+          </div>
+        </div>
+
+        <div style="position:absolute;left:0;right:0;top:492px;display:flex;justify-content:center">
+          <div class="glow">
+            <div class="ring"><div class="bloom2"></div><div class="bloom1"></div>
+              <div class="chipc" style="width:36px;height:36px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h13M13 6l6 6-6 6"/>
+                </svg>
+              </div>
+            </div>
+            <span class="lbl">Skip the matrix</span>
+            <span class="meta">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+      Your existing layout, keeping the marquee + sticker + outline tagline — hue traded for inversion
+    </div>
+  </div>
+
+</div>
+
+<div class="key">
+  <h2>What changes in each</h2>
+  <div class="kgrid">
+    <div class="krow"><div class="n">02</div><div class="t">
+      <b>Cheapest, most “premium”.</b> Your mockup's composition, moved from #242424 onto true <b>Ink #000</b> and set in
+      <b>Inter</b> instead of the system sans. Adds three things it needs to not read as unfinished: a dot-matrix mark,
+      the <b>ring</b> as the single signature, and a ruled tick scrubber as a bottom edge.</div></div>
+    <div class="krow"><div class="n">03</div><div class="t">
+      <b>Paper mode.</b> Ref 5 taken literally — mono meta block top-left, dot-matrix field, big tight “Musify”,
+      hairline, ring, ruled ticks. Carries the day/date stamp your reference has. Best if you want the app to feel
+      like a magazine rather than a tool.</div></div>
+    <div class="krow"><div class="n">04</div><div class="t">
+      <b>Keeps your current layout.</b> The tilted dashed marquee, corner anchors, sticker badge, distressed
+      “Musify” and outlined tagline all survive — they're just <b>de-oranged</b>: the badge becomes white-on-black
+      inversion, the tagline outline goes white, everything switches to Inter + tokens.</div></div>
+    <div class="krow"><div class="n">01</div><div class="t">
+      <b>The problem.</b> #242424 is <code>Hairline</code> — a border token used as a page colour — and the system
+      sans isn't the app's font. It reads as a placeholder, which is why it feels like the odd one out.</div></div>
+  </div>
+</div>
+
+<script>
+  // fill the two tick scrubbers
+  for (const id of ['s2','s3']) {
+    const el = document.getElementById(id);
+    for (let i = 0; i < 26; i++) {
+      const t = document.createElement('i');
+      if (i % 5 === 0) t.className = 'on';
+      el.appendChild(t);
+    }
+  }
+</script>
+</body>
+</html>

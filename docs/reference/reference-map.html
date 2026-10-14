@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Musify — the five reference pins, and where each one landed</title>
+<style>
+  :root{
+    --ink:#000; --surface:#0A0A0A; --elevated:#171717; --hairline:#242424; --hairline-strong:#343434;
+    --tp:#FAFAFA; --ts:#A3A3A3; --tm:#6E6E6E;
+    --ir-1:#60A5FA; --ir-2:#C084FC; --ir-3:#F472B6; --ir-4:#FBBF24; --ir-5:#34D399;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050505;color:var(--tp);font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased;padding:48px 44px 56px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tm);margin-bottom:13px}
+  h1{font-size:34px;font-weight:700;letter-spacing:-.028em;line-height:1.08;margin-bottom:12px}
+  .sub{font-size:14px;line-height:1.6;color:var(--ts);max-width:720px}
+  .sub b{color:var(--tp);font-weight:600}
+  code{font-family:var(--mono);font-size:.92em;color:var(--tp)}
+
+  .strip{display:flex;gap:22px;margin-top:38px;align-items:stretch}
+  .card{width:288px;background:var(--surface);border:1px solid var(--hairline);border-radius:18px;
+        overflow:hidden;display:flex;flex-direction:column}
+  .shot{height:300px;background:#0E0E0E;display:flex;align-items:center;justify-content:center;
+        border-bottom:1px solid var(--hairline);flex:0 0 auto;padding:10px}
+  .shot img{max-width:100%;max-height:280px;display:block;border-radius:8px}
+  .meta{padding:15px 16px 17px;display:flex;flex-direction:column;gap:0;flex:1}
+  .n{font-family:var(--mono);font-size:10px;color:var(--tm);letter-spacing:.06em}
+  .tag{font-size:14.5px;font-weight:650;letter-spacing:-.02em;margin-top:9px}
+  .desc{font-size:11.5px;color:var(--ts);line-height:1.5;margin-top:7px}
+  .arrow{margin-top:12px;padding-top:12px;border-top:1px solid var(--hairline);
+         font-size:11.5px;color:var(--tm);line-height:1.55}
+  .arrow b{color:var(--tp);font-weight:600}
+  .arrow .lbl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+              text-transform:uppercase;color:#4A4A4A;margin-bottom:5px}
+  .link{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--tm);
+        display:flex;flex-direction:column;gap:2px}
+  .link span:first-child{color:var(--tp)}
+
+  .foot{margin-top:40px;padding-top:24px;border-top:1px solid var(--hairline);max-width:980px}
+  .foot h2{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tm);margin-bottom:16px}
+  .foot ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .foot li{font-size:13px;color:var(--ts);line-height:1.6;padding-left:18px;position:relative}
+  .foot li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--hairline-strong)}
+  .foot b{color:var(--tp);font-weight:600}
+  .ring{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;
+        background:conic-gradient(var(--ir-1),var(--ir-2),var(--ir-3),var(--ir-4),var(--ir-5),var(--ir-1))}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Musify · Obsidian</div>
+<h1>The five reference pins</h1>
+<p class="sub">
+  All five links you sent resolve to pins already in the build — the three from the second batch and
+  the two from the first. <b>Nothing new came through</b>, so nothing new was built. Here's the
+  mapping, newest batch first.
+</p>
+
+<div class="strip">
+
+  <div class="card">
+    <div class="shot"><img src="file:///home/user/refs/ref3.jpg" alt=""></div>
+    <div class="meta">
+      <div class="n">ref 3 · 140806235478500</div>
+      <div class="tag">Liquid-chrome home button</div>
+      <div class="desc">Dark pill, circular icon chip wrapped in an iridescent ring that reads as a caught light.</div>
+      <div class="arrow"><span class="lbl">Became</span>
+        <b>the ring</b> — <code>MusifyGlowChip</code> on the expand control, and the same bloom on the home CTA.</div>
+      <div class="link"><span>pin.it/3EYYTzywN</span><span>/pin/140806235478500</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shot"><img src="file:///home/user/refs/ref4.jpg" alt=""></div>
+    <div class="meta">
+      <div class="n">ref 4 · 685743480805463579</div>
+      <div class="tag">AI Mode pill</div>
+      <div class="desc">White pill sitting on a white plate, hairline border with micro colour at the edges.</div>
+      <div class="arrow"><span class="lbl">Became</span>
+        <b>the plate variant</b> — <code>MusifyGlowButton(Plate)</code>, the DuckDuckGo search CTA on home.</div>
+      <div class="link"><span>pin.it/7uuFhIwqK</span><span>/pin/685743480805463579</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shot"><img src="file:///home/user/refs/ref5.jpg" alt=""></div>
+    <div class="meta">
+      <div class="n">ref 5 · 211174979741990</div>
+      <div class="tag">Brutalist editorial</div>
+      <div class="desc">Monospace meta, dot-matrix fields, stacked photo discs, a ruled tick scrubber.</div>
+      <div class="arrow"><span class="lbl">Became</span>
+        <b>the editorial layer</b> — <code>DotMatrixOrnament</code>, <code>EditorialMeta</code>, <code>TickScrubber</code>.</div>
+      <div class="link"><span>pin.it/2DYLdOkoh</span><span>/pin/211174979741990</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shot"><img src="file:///home/user/refs/ref1.jpg" alt=""></div>
+    <div class="meta">
+      <div class="n">ref 1 · 211174979742009</div>
+      <div class="tag">Collapsed action bar</div>
+      <div class="desc">A pill of four icons, with the add button sitting separately beside it.</div>
+      <div class="arrow"><span class="lbl">Became</span>
+        <b>the action bar</b> — <code>MusifyActionBar.kt</code>, 42dp items, 19dp glyphs, hairline pill.</div>
+      <div class="link"><span>pin.it/6iqmV88nf</span><span>/pin/211174979742009</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shot"><img src="file:///home/user/refs/ref2.jpg" alt=""></div>
+    <div class="meta">
+      <div class="n">ref 2 · 733312751869376670</div>
+      <div class="tag">Expanded action grid</div>
+      <div class="desc">Four columns of rounded icon tiles that open out of the bar.</div>
+      <div class="arrow"><span class="lbl">Became</span>
+        <b>the grid</b> — 14 actions, 48dp tiles at 16dp radius on <code>Elevated</code>.</div>
+      <div class="link"><span>pin.it/16wrIqlTX</span><span>/pin/733312751869376670</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <h2>Where that leaves things</h2>
+  <ul>
+    <li><b>Four of the five are shipped</b> — the action bar, the grid, the ring and the plate CTA are all in the source and compiling.</li>
+    <li><b>One is built but not wired in</b> — the editorial layer from ref 5 (<code>EditorialMeta</code>, <code>DotMatrixOrnament</code>, <code>TickScrubber</code>) exists and is used in the design docs, but no real screen imports it yet.</li>
+    <li><b>The launch screen is deliberately outside this system.</b> You sent back 02–04 and kept your own 01, so <code>WelcomeScreen.kt</code> has no ring, no mono meta and no ticks — the <span class="ring"></span> appears nowhere on it.</li>
+    <li><b>If you meant to send two new pins,</b> they didn't arrive as new — both short links resolve to pins from the first batch. Send the raw <code>pinterest.com/pin/…</code> URLs if the share link is mangling them.</li>
+  </ul>
+</div>
+
+</body>
+</html>
