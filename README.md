@@ -4,7 +4,7 @@
 
 ### The privacy-first Android browser that loves music.
 
-**Zero telemetry. Strict tracker blocking. HTTPS-first. And Spotify Web that actually plays.**
+**Zero telemetry. Strict tracker blocking. HTTPS-first. Real-device compatibility diagnostics.**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?logo=android&logoColor=white)](#-download)
@@ -27,13 +27,13 @@
 
 ## Why Musify?
 
-Most mobile browsers phone home. Musify doesn't. It's an independent, general-purpose Android browser engineered for **transparent, measurable privacy** — no telemetry, no accounts, no cloud sync, no crypto tokens, no news feed. Just a fast, honest browser — that's also been painstakingly tuned so **Spotify Web playback works flawlessly** (Widevine DRM, desktop-mode recovery and all).
+Most mobile browsers phone home. Musify doesn't. It's an independent, general-purpose Android browser engineered for **transparent, measurable privacy** — no telemetry, no accounts, no cloud sync, no crypto tokens, no news feed. Just a fast, honest browser with honest, measured media capabilities and transparent engine diagnostics.
 
 ## ✨ Features
 
 - 🕵️ **Zero telemetry, zero harvesting** — no behavioral analytics, no ad tracking, no cloud profile sync. All browsing data stays strictly on-device.
 - 🛡️ **Privacy Shields** — engine-native strict protection against ad trackers, social trackers, cryptominers & fingerprinters.
-- 🎵 **Spotify Web, uninterrupted** — blocks persistent "Open App" prompts, deep links, and banners; hardware Widevine DRM probing (`MediaDrm`), desktop-mode playback recovery, and measured capability badges.
+- 🎵 **Spotify Web & media diagnostics** — measured hardware Widevine DRM probing (`MediaDrm`), desktop-mode playback recovery, and honest capability badges instead of hardcoded hacks. *Note: Spotify Web compatibility is under device-specific validation; full GeckoView builds are candidates for protected playback. Musify does not bypass DRM.*
 - 🌐 **HTTPS-first** — automatic HTTPS upgrades with an explicit warning before any cleartext HTTP load; cleartext disabled in Network Security Config.
 - 🔒 **Strict TLS** — enforced certificate validation. Zero silent overrides, no blanket "proceed anyway" SSL button.
 - 🗂️ **20-tab architecture** — deterministic tab cap prevents OOM crashes; engine sessions are lazy-allocated and destroyed on tab close.
@@ -50,14 +50,14 @@ Most mobile browsers phone home. Musify doesn't. It's an independent, general-pu
 
 | APK | Architecture / Engine | File Size | Direct Download |
 |---|---|---|---|
-| **[Musify.apk](Musify.apk)** | Universal GeckoView Engine (ARM64, ARMv7, x86_64) | **~153 MB** | [⬇️ Download Universal APK](https://github.com/adishxm/Musify/raw/main/Musify.apk) |
-| **[Musify-ARM64.apk](Musify-ARM64.apk)** | Optimized 64-bit GeckoView Engine (arm64-v8a) | **~84 MB** | [⬇️ Download ARM64 APK](https://github.com/adishxm/Musify/raw/main/Musify-ARM64.apk) |
-| **[Musify-Lite.apk](Musify-Lite.apk)** | **Ultra-Lightweight Edition (18× Smaller!)** · System WebView Engine | **~8.4 MB** | [⬇️ Download Lite APK](https://github.com/adishxm/Musify/raw/main/Musify-Lite.apk) |
+| **[Musify.apk](Musify.apk)** | Universal GeckoView Engine (ARM64, x86_64) | **~153 MB** | [⬇️ Download Universal APK](https://github.com/adishxm/Musify/raw/main/Musify.apk) |
+| **[Musify-ARM64.apk](Musify-ARM64.apk)** | Optimized 64-bit GeckoView Engine (arm64-v8a) · Widevine L1/L3 candidate | **~84 MB** | [⬇️ Download ARM64 APK](https://github.com/adishxm/Musify/raw/main/Musify-ARM64.apk) |
+| **[Musify-Lite.apk](Musify-Lite.apk)** | **Ultra-Lightweight Edition (18× Smaller!)** · System WebView Engine (Standard web, no Widevine DRM) | **~8.4 MB** | [⬇️ Download Lite APK](https://github.com/adishxm/Musify/raw/main/Musify-Lite.apk) |
 
 > 💡 **Which build should I choose?**
-> - **Musify-Lite.apk (~8.4 MB)**: **10× to 30× smaller in size**. Strips heavy native binaries and omni bundles, running on the native Android system WebView with full ad/tracker Shields protection, instant install, and minimal storage/RAM usage.
-> - **Musify-ARM64.apk (~84 MB)**: Best for all modern 64-bit Android smartphones running the dedicated GeckoView privacy engine.
-> - **Musify.apk (~153 MB)**: Universal full build compatible with all devices and emulator architectures.
+> - **Musify-ARM64.apk (~84 MB)**: Best for all modern 64-bit Android smartphones running the dedicated GeckoView privacy engine with hardware Widevine DRM capabilities.
+> - **Musify.apk (~153 MB)**: Universal GeckoView build compatible with all device architectures and emulators.
+> - **Musify-Lite.apk (~8.4 MB)**: **10× to 30× smaller in size**. Strips heavy native binaries and omni bundles, running on the native Android System WebView with full ad/tracker Shields protection, instant install, and minimal storage/RAM usage. *Note: Android System WebView does not bundle Widevine CDM; use GeckoView builds for DRM-protected web media.*
 
 Requires **Android 8.0 (API 26)** or later. Sideload, allow the install, done — no account needed.
 
@@ -99,7 +99,11 @@ Development followed a phased, evidence-based plan — every phase ships with a 
 | 05–06 | Privacy Shields, filter-list pipeline & licensing gate | ✅ Pass |
 | 07–08 | Downloads, permissions, hardening & memory profiling | ✅ Pass |
 | 09 | Beta distribution & release readiness | ✅ Pass |
-| 10 | **Spotify Web compatibility** — Widevine probe, desktop playback recovery, AdGuard DNS layer | ✅ Implementation verified |
+| 10 | **Desktop Content Mode & Playback Recovery** | ⚠️ Implementation verified; real-device validation in progress |
+| 11 | **Build Variant & Capability Transparency** | ✅ Pass |
+| 12 | **Media-Safe Script Sanitization** | 🔄 In Progress |
+| 13 | **Live Engine Policy Isolation** | 🔄 Planned |
+| 14 | **Real-Device Verification & Diagnostic Hardening** | 🔄 Planned |
 
 ## 🤝 Contributing
 

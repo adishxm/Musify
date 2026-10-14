@@ -11,3 +11,7 @@
 - [Phase 08 — Security, privacy, accessibility & performance hardening](PHASE-08.md): 3–4 weeks. Run a structured release-readiness cycle across browser security, data, usability, and device performance.
 - [Phase 09 — Beta, documentation & release decision](PHASE-09.md): 2–4 weeks. Prepare a controlled beta or personal signed build with reproducible evidence; public release is optional and gated.
 - [Phase 10 — Desktop Content Mode, Protected Media & Playback Recovery](PHASE-10.md): 2–3 weeks. Enable desktop content mode, media/DRM capability handling, and scoped playback recovery for web media apps like Spotify.
+- [Phase 11 — Build Variant & Protected Media Capability Transparency](PHASE-11.md): 2–3 days. Provide full transparency on build variant, engine type, and exact Widevine status; correct inflated claims.
+- [Phase 12 — Sanitizing Media Protection & Disabling Invasive Content-Script Hacks](PHASE-12.md): 2–3 days. Eliminate destructive DOM and media tampering, ensuring native media elements are never mutilated.
+- [Phase 13 — Real Engine Policy Isolation & Media-Safe Protection Architecture](PHASE-13.md): 3–5 days. Implement true engine-level policy isolation and media-safe request preservation for EME/license flows.
+- [Phase 14 — Real-Device Spotify Verification & Diagnostic Test Hardening](PHASE-14.md): 3–5 days. Execute end-to-end verification, compile all three APK variants, and harden real-device testing evidence.

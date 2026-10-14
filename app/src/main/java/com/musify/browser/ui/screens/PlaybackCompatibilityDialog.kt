@@ -39,9 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.musify.browser.engine.BuildVariantInfo
 import com.musify.browser.engine.CapabilityStatus
 import com.musify.browser.engine.ContentMode
 import com.musify.browser.engine.DnsProtectionMode
+import com.musify.browser.engine.EngineType
 import com.musify.browser.tabs.TabsViewModel
 import com.musify.browser.ui.theme.AccentCyan
 import com.musify.browser.ui.theme.AccentPurple
@@ -101,13 +103,16 @@ fun PlaybackCompatibilityDialog(
             }
         },
         text = {
+            val activeEngineType = viewModel.getActiveEngineAdapter()?.engineType ?: EngineType.GECKO_VIEW
+            val buildInfo = remember(activeEngineType) { BuildVariantInfo.detect(activeEngineType) }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Honest Engineering Disclosure
+                // Honest Engineering Disclosure & Build Variant
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
@@ -115,19 +120,57 @@ fun PlaybackCompatibilityDialog(
                     border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
-                        Text(
-                            text = "Web Player Diagnostics Guide",
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Installed Build Variant",
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = buildInfo.variant.displayName,
+                                color = AccentCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Services like Spotify Web Player require both Desktop presentation and hardware Widevine CDM support. Statuses below reflect honest, measured capabilities from this Android device.",
+                            text = "${buildInfo.engineVersion} • Android ${buildInfo.androidRelease} (API ${buildInfo.androidApiLevel}, ${buildInfo.primaryAbi})",
                             color = TextSecondary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
                         )
+                    }
+                }
+
+                // If running on Lite/WebView, show prominent Widevine limitation notice
+                if (buildInfo.protectedPlaybackLimitationNotice != null) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = StatusOrange.copy(alpha = 0.12f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, StatusOrange.copy(alpha = 0.4f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(
+                                text = "⚠️ System WebView Limitation",
+                                color = StatusOrange,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = buildInfo.protectedPlaybackLimitationNotice,
+                                color = TextPrimary,
+                                fontSize = 11.sp,
+                                lineHeight = 15.sp
+                            )
+                        }
                     }
                 }
 
