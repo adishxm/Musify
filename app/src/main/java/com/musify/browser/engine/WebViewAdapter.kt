@@ -56,7 +56,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             isDesktopMode = false,
             isPrivateMode = isPrivate,
             isAutoplayAllowed = true,
-            cookiePolicy = "Per-site sandbox",
+            cookiePolicy = "Accept Non-Trackers & Isolate",
             lastMediaFailureReason = "Standard Android WebView does not expose full Widevine CDM to arbitrary web content without custom system integration",
             deviceDrmProvider = "System WebView (Widevine restricted)",
             engineDetails = "System WebView ${Build.VERSION.RELEASE}"
@@ -242,20 +242,31 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         )
                     }
 
-                    // Preserve first-party, top-level main frame, and essential application resources
-                    val currentHost = try { Uri.parse(_navigationState.value.url).host.orEmpty() } catch (_: Exception) { "" }
-                    val isFirstParty = currentHost.isNotEmpty() && (host.equals(currentHost, ignoreCase = true) || host.endsWith(".$currentHost", ignoreCase = true))
+                    if (!_shieldState.value.isProtectionEnabled || _shieldState.value.isOriginException) {
+                        return super.shouldInterceptRequest(view, request)
+                    }
 
-                    if (request?.isForMainFrame == true || isFirstParty) {
+                    // Safeguard: Never block protected media, Widevine DRM licenses, or manifests
+                    if (MediaSafeResourcePolicy.isMediaOrLicenseRequest(requestUrl)) {
+                        return super.shouldInterceptRequest(view, request)
+                    }
+
+                    // Preserve first-party, top-level main frame, and essential application resources
+                    val currentUrl = _navigationState.value.url
+                    if (request?.isForMainFrame == true || MediaSafeResourcePolicy.isFirstPartyOrAuth(requestUrl, currentUrl)) {
                         return super.shouldInterceptRequest(view, request)
                     }
 
                     val matchesTracker = blockedTrackerKeywords.any { host.contains(it, ignoreCase = true) }
                     if (matchesTracker) {
+                        val sanitizedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(requestUrl)
                         _shieldState.value = _shieldState.value.copy(
                             blockedCount = _shieldState.value.blockedCount + 1,
-                            lastBlockedUrl = requestUrl,
+                            lastBlockedUrl = sanitizedUrl,
                             lastBlockCategory = "Known Third-Party Tracker"
+                        )
+                        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+                            liveBlockCategory = "Known Third-Party Tracker"
                         )
                         // Return empty response (204 No Content equivalent)
                         return WebResourceResponse(
@@ -386,6 +397,30 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         }
         _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
             isDesktopMode = isDesktop
+        )
+    }
+
+    override fun setOriginException(isException: Boolean) {
+        _shieldState.value = _shieldState.value.copy(isOriginException = isException)
+        val policyDesc = if (isException) "Permissive Session (Origin Exception)" else "Accept Non-Trackers & Isolate"
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            isOriginExceptionActive = isException,
+            cookiePolicy = policyDesc
+        )
+    }
+
+    override fun resetPageShieldCount() {
+        _shieldState.value = _shieldState.value.copy(
+            blockedCount = 0,
+            lastBlockedUrl = null,
+            lastBlockCategory = null,
+            blockedAds = 0,
+            blockedSocial = 0,
+            blockedCryptominers = 0,
+            blockedFingerprinters = 0
+        )
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            liveBlockCategory = null
         )
     }
 

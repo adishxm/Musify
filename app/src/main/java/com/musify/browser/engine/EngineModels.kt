@@ -39,7 +39,9 @@ data class MediaCapabilityState(
     val cookiePolicy: String = "Accept Non-Trackers & Isolate",
     val lastMediaFailureReason: String? = null,
     val deviceDrmProvider: String? = null,
-    val engineDetails: String? = null
+    val engineDetails: String? = null,
+    val isOriginExceptionActive: Boolean = false,
+    val liveBlockCategory: String? = null
 ) {
     val isEncryptedMediaSupported: Boolean
         get() = encryptedMediaStatus == CapabilityStatus.SUPPORTED

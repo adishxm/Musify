@@ -260,6 +260,21 @@ fun PlaybackCompatibilityDialog(
                             statusText = if (isShieldEnabled) "Shields Active" else "Shields Relaxed for Origin",
                             color = if (isShieldEnabled) StatusGreen else StatusOrange
                         )
+
+                        CapabilityRow(
+                            label = "Session Engine Policy",
+                            statusText = mediaCap.cookiePolicy,
+                            color = if (mediaCap.isOriginExceptionActive) StatusOrange else StatusGreen
+                        )
+
+                        val liveRule = mediaCap.liveBlockCategory
+                        if (!liveRule.isNullOrBlank()) {
+                            CapabilityRow(
+                                label = "Latest Shield Interception",
+                                statusText = liveRule,
+                                color = AccentCyan
+                            )
+                        }
                     }
                 }
 

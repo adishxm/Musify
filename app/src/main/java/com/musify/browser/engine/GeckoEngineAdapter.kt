@@ -286,6 +286,12 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         session.contentBlockingDelegate = object : ContentBlocking.Delegate {
             override fun onContentBlocked(session: GeckoSession, event: ContentBlocking.BlockEvent) {
                 if (_shieldState.value.isProtectionEnabled && !_shieldState.value.isOriginException) {
+                    val uri = event.uri
+                    // Safeguard: Never classify media streaming CDN or Widevine DRM license flows as trackers
+                    if (MediaSafeResourcePolicy.isMediaOrLicenseRequest(uri)) {
+                        return
+                    }
+
                     val count = _shieldState.value.blockedCount + 1
                     var ads = _shieldState.value.blockedAds
                     var social = _shieldState.value.blockedSocial
@@ -315,14 +321,18 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                             "Blocked Tracking Content"
                         }
                     }
+                    val sanitizedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(uri)
                     _shieldState.value = _shieldState.value.copy(
                         blockedCount = count,
-                        lastBlockedUrl = event.uri,
+                        lastBlockedUrl = sanitizedUrl,
                         lastBlockCategory = category,
                         blockedAds = ads,
                         blockedSocial = social,
                         blockedCryptominers = crypto,
                         blockedFingerprinters = finger
+                    )
+                    _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+                        liveBlockCategory = category
                     )
                 }
             }
@@ -417,6 +427,11 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     override fun setOriginException(isException: Boolean) {
         _shieldState.value = _shieldState.value.copy(isOriginException = isException)
+        val policyDesc = if (isException) "Permissive Session (Origin Exception)" else "Accept Non-Trackers & Isolate"
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            isOriginExceptionActive = isException,
+            cookiePolicy = policyDesc
+        )
     }
 
     override fun resetPageShieldCount() {
@@ -428,6 +443,9 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             blockedSocial = 0,
             blockedCryptominers = 0,
             blockedFingerprinters = 0
+        )
+        _mediaCapabilityState.value = _mediaCapabilityState.value.copy(
+            liveBlockCategory = null
         )
     }
 
