@@ -59,9 +59,9 @@
 ## Release Artifacts Summary
 | Artifact Name | Target Architecture / Engine | File Size | SHA256 Checksum |
 |---|---|---|---|
-| `Musify.apk` | Universal Multi-ABI (GeckoView full engine) | 161,708,209 bytes | `272235b20a4edf3816bf2b71e01518b28cafe4b92b636e07a99c20844c520a4f` |
-| `Musify-ARM64.apk` | ARM64-v8a (GeckoView 64-bit optimized) | 89,820,043 bytes | `9c487431ff043095bb00aa4811818cd765f00d51770664e758e8391e4b291920` |
-| `Musify-Lite.apk` | Universal (Android System WebView) | 10,170,983 bytes | `2c5671376ef62af4d062eb54b31158fa96701c6f1df53e510894d4c4bfae1d3b` |
+| `Musify.apk` | Universal Multi-ABI (GeckoView full engine) | 161,707,209 bytes | `593629c01c16d1c710223e505ff71c94478ee20caf4d9cce3aee59f3ff772c81` |
+| `Musify-ARM64.apk` | ARM64-v8a (GeckoView 64-bit optimized) | 89,819,040 bytes | `52024794abdd66f8a90a047cb6ae265e1b62be9b3e083444e13d7f63a248999c` |
+| `Musify-Lite.apk` | Universal (Android System WebView) | 10,170,001 bytes | `60b034b3e835aebc42da5bc8e1332490b54a48f85335c02d50077e5045920da2` |
 
 ## Verification Gate Assessment
 - [x] All 139 automated unit tests pass with zero regressions.
