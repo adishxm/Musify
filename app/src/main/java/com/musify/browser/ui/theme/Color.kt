@@ -58,6 +58,14 @@ val OnAccent = Color(0xFF0A0A0A)
 /** Secondary accent — a soft neutral, used for less prominent emphasis. */
 val AccentMuted = Color(0xFFD4D4D4)
 
+/**
+ * The launch screen's flat field. A soft charcoal one step above Ink, so the
+ * first frame reads as a surface rather than a hole in the screen.
+ * Same hex as [Hairline], but a page colour and a border colour are different
+ * jobs — if the welcome screen's field ever needs to move, it moves here alone.
+ */
+val WelcomeSurface = Color(0xFF242424)
+
 /** Sheet / dialog scrim. */
 val Scrim = Color(0xE6000000)
 

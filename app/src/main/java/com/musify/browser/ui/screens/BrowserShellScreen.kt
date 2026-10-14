@@ -27,8 +27,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -69,6 +67,11 @@ import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.Hairline
 import com.musify.browser.ui.theme.IconLabel
 import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.MusifyAction
+import com.musify.browser.ui.theme.MusifyActionBar
+import com.musify.browser.ui.theme.MusifyActionGrid
+import com.musify.browser.ui.theme.MusifyButtonVariant
+import com.musify.browser.ui.theme.MusifyGlowButton
 import com.musify.browser.ui.theme.MusifyIcon
 import com.musify.browser.ui.theme.MusifyIcons
 import com.musify.browser.ui.theme.Private
@@ -116,6 +119,7 @@ fun BrowserShellScreen(
     var isAddressBarFocused by remember { mutableStateOf(false) }
     var showShieldSheet by remember { mutableStateOf(false) }
     var showPlaybackDialog by remember { mutableStateOf(false) }
+    var showActionGrid by remember { mutableStateOf(false) }
     var isBookmarked by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
@@ -222,6 +226,7 @@ fun BrowserShellScreen(
                 onOpenSpikeDebug = onOpenSpikeDebug,
                 onOpenReleaseInfo = onOpenReleaseInfo,
                 onOpenWelcome = onOpenWelcome,
+                onOpenActionMenu = { showActionGrid = true },
                 onNavigate = { target ->
                     viewModel.navigateActiveTab(target)
                     focusManager.clearFocus()
@@ -290,6 +295,105 @@ fun BrowserShellScreen(
                         onRecover = { viewModel.recoverRenderer() }
                     )
                 }
+
+                // ------------------------------------------------------------------
+                // Floating quick-action bar + expandable action grid
+                // ------------------------------------------------------------------
+                val quickActions = listOf(
+                    MusifyAction("bookmarks", "Bookmarks", MusifyIcons.StarFilled),
+                    MusifyAction("history", "History", MusifyIcons.Clock),
+                    MusifyAction("find", "Find in page", MusifyIcons.Search),
+                    MusifyAction("share", "Share page", MusifyIcons.Link)
+                )
+
+                val gridActions = listOf(
+                    MusifyAction("tab", "New tab", MusifyIcons.Plus),
+                    MusifyAction("privateTab", "Private tab", MusifyIcons.Incognito, tint = Private),
+                    MusifyAction("bookmarks", "Bookmarks", MusifyIcons.StarFilled),
+                    MusifyAction("history", "History", MusifyIcons.Clock),
+                    MusifyAction("downloads", "Downloads", MusifyIcons.Download),
+                    MusifyAction("find", "Find in page", MusifyIcons.Search),
+                    MusifyAction("share", "Share page", MusifyIcons.Link),
+                    MusifyAction(
+                        "desktop",
+                        if (isDesktop) "Desktop (on)" else "Desktop site",
+                        MusifyIcons.Desktop,
+                        tint = if (isDesktop) Accent else TextPrimary
+                    ),
+                    MusifyAction("media", "Media", MusifyIcons.Music, tint = Accent),
+                    MusifyAction("permissions", "Permissions", MusifyIcons.Location),
+                    MusifyAction("privacy", "Data & privacy", MusifyIcons.Shield),
+                    MusifyAction("filterlists", "Filter lists", MusifyIcons.ShieldCheck),
+                    MusifyAction("release", "About Musify", MusifyIcons.Info),
+                    MusifyAction("welcome", "Welcome", MusifyIcons.Bolt)
+                )
+
+                val runAction: (MusifyAction) -> Unit = { action ->
+                    showActionGrid = false
+                    when (action.id) {
+                        "tab" -> {
+                            val created = viewModel.createNewTab(
+                                url = "about:blank",
+                                isPrivate = activeTab?.isPrivate == true,
+                                selectImmediately = true
+                            )
+                            if (created) addressInput = ""
+                        }
+                        "privateTab" -> {
+                            viewModel.createNewTab(
+                                url = "about:blank",
+                                isPrivate = true,
+                                selectImmediately = true
+                            )
+                            addressInput = ""
+                        }
+                        "bookmarks" -> onOpenBookmarks()
+                        "history" -> onOpenHistory()
+                        "find" -> viewModel.findInPageManager.startFind()
+                        "share" -> {
+                            val urlToShare = activeTab?.url
+                            if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
+                                try {
+                                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                        putExtra(Intent.EXTRA_TEXT, urlToShare)
+                                        type = "text/plain"
+                                    }
+                                    context.startActivity(
+                                        Intent.createChooser(sendIntent, "Share Page")
+                                    )
+                                } catch (_: Exception) {
+                                }
+                            }
+                        }
+                        "downloads" -> onOpenDownloads?.invoke()
+                        "desktop" -> viewModel.toggleContentModeCurrentTab()
+                        "media" -> showPlaybackDialog = true
+                        "permissions" -> onOpenSitePermissions?.invoke()
+                        "privacy" -> onOpenDataControl()
+                        "filterlists" -> onOpenFilterLists?.invoke()
+                        "release" -> onOpenReleaseInfo?.invoke()
+                        "welcome" -> onOpenWelcome?.invoke()
+                    }
+                }
+
+                // The bar is mounted first so the scrim, drawn afterwards, covers it.
+                MusifyActionBar(
+                    quickActions = quickActions,
+                    isExpanded = showActionGrid,
+                    onExpandToggle = { showActionGrid = !showActionGrid },
+                    onAction = runAction,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 18.dp)
+                )
+
+                MusifyActionGrid(
+                    actions = gridActions,
+                    isExpanded = showActionGrid,
+                    onDismiss = { showActionGrid = false },
+                    onAction = runAction,
+                    title = "Browser actions"
+                )
             }
         }
     }
@@ -624,9 +728,9 @@ private fun SurfaceDarkHeader(
     onOpenSpikeDebug: (() -> Unit)?,
     onOpenReleaseInfo: (() -> Unit)? = null,
     onOpenWelcome: (() -> Unit)? = null,
+    onOpenActionMenu: () -> Unit,
     onNavigate: (String) -> Unit
 ) {
-    var showOverflowMenu by remember { mutableStateOf(false) }
     val isPrivate = activeTab?.isPrivate == true
     val activeAccent = if (isPrivate) Private else Accent
 
@@ -792,161 +896,20 @@ private fun SurfaceDarkHeader(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // Overflow Menu Button '⋮'
+                // Action Menu Button - opens the floating action grid
                 Box(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
                         .background(Elevated)
-                        .clickable { showOverflowMenu = true }
+                        .clickable(onClick = onOpenActionMenu)
                         .semantics {
-                            contentDescription = "Browser menu options"
+                            contentDescription = "All browser actions"
                             role = androidx.compose.ui.semantics.Role.Button
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("⋮", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-
-                    DropdownMenu(
-                        expanded = showOverflowMenu,
-                        onDismissRequest = { showOverflowMenu = false },
-                        modifier = Modifier.background(Surface)
-                    ) {
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.StarFilled, "Bookmarks", tint = TextPrimary) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onOpenBookmarks()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Clock, "History", tint = TextPrimary) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onOpenHistory()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    IconLabel(
-                                        MusifyIcons.Desktop,
-                                        if (isDesktop) "Desktop Site (Active)" else "Request Desktop Site",
-                                        tint = TextPrimary
-                                    )
-                                    if (isDesktop) {
-                                        MusifyIcon(MusifyIcons.Check, size = 16.dp, tint = Accent)
-                                    }
-                                }
-                            },
-                            onClick = {
-                                showOverflowMenu = false
-                                onToggleDesktopMode()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Music, "Media & Playback Recovery", tint = Accent) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onOpenPlaybackCompatibility()
-                            }
-                        )
-                        if (onOpenDownloads != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Download, "Downloads", tint = TextPrimary) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenDownloads()
-                                }
-                            )
-                        }
-                        if (onOpenSitePermissions != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Location, "Site Permissions", tint = TextPrimary) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenSitePermissions()
-                                }
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Search, "Find in Page", tint = TextPrimary) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onFindInPage()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Link, "Share Page", tint = TextPrimary) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onSharePage()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Shield, "Data & Privacy Controls", tint = TextPrimary) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onOpenDataControl()
-                            }
-                        )
-                        if (onOpenFilterLists != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Shield, "Filter Lists & Licenses", tint = TextPrimary) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenFilterLists()
-                                }
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { IconLabel(MusifyIcons.Incognito, "+ New Private Tab", tint = Private) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onNewPrivateTab()
-                            }
-                        )
-                        if (onOpenRoadmap != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Map, "Roadmap & Architecture", tint = Accent) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenRoadmap()
-                                }
-                            )
-                        }
-                        if (onOpenReleaseInfo != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Info, "About & Privacy Policy", tint = Accent) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenReleaseInfo()
-                                }
-                            )
-                        }
-                        if (onOpenWelcome != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Bolt, "Welcome Matrix", tint = Warning) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenWelcome()
-                                }
-                            )
-                        }
-                        if (onOpenSpikeDebug != null) {
-                            DropdownMenuItem(
-                                text = { IconLabel(MusifyIcons.Flask, "GeckoView Spike Console", tint = TextSecondary) },
-                                onClick = {
-                                    showOverflowMenu = false
-                                    onOpenSpikeDebug()
-                                }
-                            )
-                        }
-                    }
+                    MusifyIcon(MusifyIcons.MoreVertical, size = 15.dp, tint = TextPrimary)
                 }
             }
 
@@ -1141,20 +1104,13 @@ private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) ->
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = { onNavigate("https://duckduckgo.com") },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isPrivate) Private else Accent),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                IconLabel(
-                    MusifyIcons.Search,
-                    "DuckDuckGo Search",
-                    tint = Ink,
-                    iconSize = 16.dp,
-                    spacing = 8.dp,
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
+            MusifyGlowButton(
+                label = "DuckDuckGo Search",
+                icon = MusifyIcons.Search,
+                variant = MusifyButtonVariant.Plate,
+                meta = "SECURE",
+                onClick = { onNavigate("https://duckduckgo.com") }
+            )
         }
     }
 }
