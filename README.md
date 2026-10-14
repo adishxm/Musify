@@ -33,7 +33,7 @@ Most mobile browsers phone home. Musify doesn't. It's an independent, general-pu
 
 - 🕵️ **Zero telemetry, zero harvesting** — no behavioral analytics, no ad tracking, no cloud profile sync. All browsing data stays strictly on-device.
 - 🛡️ **Privacy Shields** — engine-native strict protection against ad trackers, social trackers, cryptominers & fingerprinters.
-- 🎵 **Spotify Web, verified working** — hardware Widevine DRM probing (`MediaDrm`), desktop-mode playback recovery, and measured capability badges instead of hardcoded hacks.
+- 🎵 **Spotify Web, uninterrupted** — blocks persistent "Open App" prompts, deep links, and banners; hardware Widevine DRM probing (`MediaDrm`), desktop-mode playback recovery, and measured capability badges.
 - 🌐 **HTTPS-first** — automatic HTTPS upgrades with an explicit warning before any cleartext HTTP load; cleartext disabled in Network Security Config.
 - 🔒 **Strict TLS** — enforced certificate validation. Zero silent overrides, no blanket "proceed anyway" SSL button.
 - 🗂️ **20-tab architecture** — deterministic tab cap prevents OOM crashes; engine sessions are lazy-allocated and destroyed on tab close.

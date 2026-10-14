@@ -27,7 +27,18 @@
                 #leaderboard,
                 .main-leaderboard-container,
                 .desktop-interstitial,
-                .upsell-banner {
+                .upsell-banner,
+                [data-testid="open-app-button"],
+                [data-testid="smart-banner-pitch"],
+                [data-testid="banner-open-button"],
+                [data-testid="mobile-app-banner"],
+                [data-testid="smart-banner"],
+                [data-testid*="open-app"],
+                [aria-label="Open App"],
+                [aria-label="Open in app"],
+                [aria-label="Open in Spotify"],
+                a[href^="spotify:"],
+                a[href*="spotify.link"] {
                     display: none !important;
                     visibility: hidden !important;
                     opacity: 0 !important;
@@ -35,6 +46,7 @@
                     height: 0 !important;
                     width: 0 !important;
                     max-height: 0 !important;
+                    overflow: hidden !important;
                 }
             `;
             const target = document.head || document.documentElement;
@@ -203,12 +215,89 @@
         });
     }
 
-    // 7. Core Loop: Process media, cards, and buttons continuously
-    function tick() {
-        scanExistingMedia();
-        trackedMedia.forEach(media => processMediaElement(media));
-        suppressAdCards();
+    // 7. Suppress "Open App" / "Open in Spotify" Buttons and Dialogs
+    function suppressOpenAppPrompts() {
+        try {
+            // A. Hide any buttons or links whose text or aria is specifically "Open App"
+            const clickables = document.querySelectorAll('button, a, div[role="button"]');
+            for (let i = 0; i < clickables.length; i++) {
+                const el = clickables[i];
+                const text = (el.textContent || '').trim().toLowerCase();
+                const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+                if (text === 'open app' || text === 'open in app' || text === 'open in spotify' || text === 'get app' || text === 'switch to the app' || aria === 'open app' || aria === 'open in app') {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('pointer-events', 'none', 'important');
+                }
+            }
+
+            // B. Auto-dismiss modal dialogs prompting "Open in App"
+            const dialogs = document.querySelectorAll('div[role="dialog"], [data-testid="modal-container"]');
+            dialogs.forEach(dialog => {
+                const txt = (dialog.innerText || '').toLowerCase();
+                if (txt.includes('open app') || txt.includes('switch to the app') || txt.includes('listen in the spotify app')) {
+                    const closeBtn = dialog.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[title="Close"]');
+                    if (closeBtn) {
+                        try { closeBtn.click(); } catch (_) {}
+                    } else {
+                        dialog.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            });
+        } catch (_) {}
     }
+
+        // 8. Prevent Link Clicks / Deep Links to External Spotify App
+        try {
+            document.addEventListener('click', function(e) {
+                try {
+                    const target = e.target && e.target.closest ? e.target.closest('a, button, div[role="button"]') : null;
+                    if (!target) return;
+                    const href = (target.getAttribute('href') || target.href || '').toString().toLowerCase();
+                    const text = (target.textContent || '').trim().toLowerCase();
+                    const aria = (target.getAttribute('aria-label') || '').toLowerCase();
+
+                    if (
+                        href.startsWith('spotify:') ||
+                        href.startsWith('intent:') ||
+                        href.includes('spotify.link') ||
+                        href.includes('play.google.com/store/apps/details?id=com.spotify.music') ||
+                        text === 'open app' ||
+                        text === 'open in app' ||
+                        text === 'open in spotify' ||
+                        aria.includes('open app') ||
+                        aria.includes('open in app')
+                    ) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+                } catch (_) {}
+            }, true);
+        } catch (_) {}
+
+        // 9. Protect window.open from launching spotify: / intent: schemes
+        try {
+            const origWindowOpen = window.open;
+            window.open = function(url, ...args) {
+                if (typeof url === 'string') {
+                    const low = url.toLowerCase();
+                    if (low.startsWith('spotify:') || low.startsWith('intent:') || low.includes('spotify.link') || low.includes('play.google.com/store/apps/details?id=com.spotify.music')) {
+                        return null;
+                    }
+                }
+                return origWindowOpen ? origWindowOpen.call(window, url, ...args) : null;
+            };
+        } catch (_) {}
+
+        // 10. Core Loop: Process media, cards, open-app elements continuously
+        function tick() {
+            scanExistingMedia();
+            trackedMedia.forEach(media => processMediaElement(media));
+            suppressAdCards();
+            suppressOpenAppPrompts();
+        }
 
     // Execute immediately and periodically
     setInterval(tick, 250);

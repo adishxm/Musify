@@ -175,6 +175,19 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     }
                 }
 
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                    val url = request?.url?.toString()?.lowercase() ?: return false
+                    // Block deep-linking to external Spotify app or app store prompts
+                    if (url.startsWith("spotify:") ||
+                        url.startsWith("intent:") ||
+                        url.contains("spotify.link") ||
+                        url.contains("play.google.com/store/apps/details?id=com.spotify.music")
+                    ) {
+                        return true
+                    }
+                    return super.shouldOverrideUrlLoading(view, request)
+                }
+
                 override fun onReceivedSslError(
                     view: WebView?,
                     handler: SslErrorHandler?,
@@ -464,11 +477,32 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         '#ad-leaderboard',
                         '#leaderboard',
                         '.main-leaderboard-container',
-                        '.desktop-interstitial'
+                        '.desktop-interstitial',
+                        '[data-testid="open-app-button"]',
+                        '[data-testid="smart-banner-pitch"]',
+                        '[data-testid="banner-open-button"]',
+                        '[data-testid="mobile-app-banner"]',
+                        '[data-testid="smart-banner"]',
+                        '[data-testid*="open-app"]',
+                        '[aria-label="Open App"]',
+                        '[aria-label="Open in app"]',
+                        '[aria-label="Open in Spotify"]',
+                        'a[href^="spotify:"]',
+                        'a[href*="spotify.link"]'
                     ];
                     selectors.forEach(function(sel) {
                         var els = document.querySelectorAll(sel);
                         els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
+                    });
+
+                    // Hide any button or link whose text is 'Open App'
+                    var clickables = document.querySelectorAll('button, a, div[role="button"], span');
+                    clickables.forEach(function(el) {
+                        var txt = (el.textContent || '').trim().toLowerCase();
+                        if (txt === 'open app' || txt === 'open in app' || txt === 'open in spotify') {
+                            var target = el.closest('button, a, div[role="button"]') || el;
+                            target.style.setProperty('display', 'none', 'important');
+                        }
                     });
 
                     // 2. Dismiss or close modal dialogues promoting ads / premium

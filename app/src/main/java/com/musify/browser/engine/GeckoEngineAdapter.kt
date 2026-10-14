@@ -9,7 +9,9 @@ import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.ContentBlocking
+import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
 import org.mozilla.geckoview.GeckoSession
@@ -211,6 +213,22 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
             override fun onCanGoForward(session: GeckoSession, canGoForward: Boolean) {
                 _navigationState.value = _navigationState.value.copy(canGoForward = canGoForward)
+            }
+
+            override fun onLoadRequest(
+                session: GeckoSession,
+                request: GeckoSession.NavigationDelegate.LoadRequest
+            ): GeckoResult<AllowOrDeny>? {
+                val uri = request.uri.lowercase()
+                // Block deep-linking to external Spotify app or app store prompts
+                if (uri.startsWith("spotify:") ||
+                    uri.startsWith("intent:") ||
+                    uri.contains("spotify.link") ||
+                    uri.contains("play.google.com/store/apps/details?id=com.spotify.music")
+                ) {
+                    return GeckoResult.fromValue(AllowOrDeny.DENY)
+                }
+                return null // Allow default GeckoView navigation
             }
         }
 
