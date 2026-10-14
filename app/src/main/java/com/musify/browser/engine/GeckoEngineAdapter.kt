@@ -84,7 +84,24 @@ class GeckoEngineAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     )
                     .aboutConfigEnabled(true)
                     .build()
-                sharedRuntime = GeckoRuntime.create(context.applicationContext, settings)
+                val runtime = GeckoRuntime.create(context.applicationContext, settings)
+                try {
+                    runtime.webExtensionController
+                        .ensureBuiltIn("resource://android/assets/musify_adblocker/", "shields@musify.browser")
+                        .accept(
+                            { extension ->
+                                extension?.let {
+                                    runtime.webExtensionController.setAllowedInPrivateBrowsing(it, true)
+                                }
+                            },
+                            { error ->
+                                android.util.Log.e("MusifyGecko", "Shields extension registration error: ${error?.message}")
+                            }
+                        )
+                } catch (t: Throwable) {
+                    android.util.Log.e("MusifyGecko", "Error registering shields extension", t)
+                }
+                sharedRuntime = runtime
             }
             return sharedRuntime!!
         }

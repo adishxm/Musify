@@ -411,6 +411,15 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     }
 
     private fun injectSpotifyAdBlockerScript(view: WebView?) {
+        val assetScript = try {
+            view?.context?.assets?.open("musify_adblocker/spotify_adblock.js")?.bufferedReader()?.use { it.readText() }
+        } catch (_: Throwable) { null }
+
+        if (!assetScript.isNullOrBlank()) {
+            view?.evaluateJavascript(assetScript, null)
+            return
+        }
+
         val js = """
             (function() {
                 if (window.__musifySpotifyBlockerInjected) return;

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Musify Privacy Shields",
+  "version": "1.0",
+  "description": "Native content filtering and Spotify ad bypass engine for Musify Browser",
+  "applications": {
+    "gecko": {
+      "id": "shields@musify.browser"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.spotify.com/*"
+      ],
+      "js": [
+        "spotify_adblock.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

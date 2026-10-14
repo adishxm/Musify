@@ -94,4 +94,12 @@ class Phase01EngineSpikeTest {
         geckoAdapter.setProtectionEnabled(true)
         assertTrue(geckoAdapter.shieldState.value.isProtectionEnabled)
     }
+
+    @Test
+    fun testWebExtensionControllerApi() {
+        val clazz = Class.forName("org.mozilla.geckoview.WebExtensionController")
+        assertNotNull(clazz)
+        val hasEnsureBuiltIn = clazz.methods.any { it.name == "ensureBuiltIn" }
+        assertTrue("GeckoView WebExtensionController must support ensureBuiltIn for native shields", hasEnsureBuiltIn)
+    }
 }
