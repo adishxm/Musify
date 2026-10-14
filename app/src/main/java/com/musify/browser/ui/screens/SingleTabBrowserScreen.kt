@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -60,17 +61,21 @@ import androidx.compose.ui.unit.sp
 import com.musify.browser.browser.BrowserErrorState
 import com.musify.browser.browser.SingleTabViewModel
 import com.musify.browser.engine.EngineView
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
+import com.musify.browser.ui.theme.Warning
 @Composable
 fun SingleTabBrowserScreen(
     viewModel: SingleTabViewModel,
@@ -93,13 +98,13 @@ fun SingleTabBrowserScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
     ) {
         // Top Browser Chrome Header
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark)
+            colors = CardDefaults.cardColors(containerColor = Surface)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
                 // Top Row: Origin & Security Display + Shield Badge + Debug/Roadmap Actions
@@ -124,8 +129,8 @@ fun SingleTabBrowserScreen(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(BackgroundDark)
-                            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                            .background(Ink)
+                            .border(1.dp, Hairline, RoundedCornerShape(12.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                             .semantics {
                                 contentDescription = originDesc
@@ -134,9 +139,9 @@ fun SingleTabBrowserScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         val lockColor = when {
-                            hasTlsError -> Color(0xFFEF4444)
-                            isHttps -> StatusGreen
-                            else -> Color(0xFFF59E0B)
+                            hasTlsError -> Danger
+                            isHttps -> Success
+                            else -> Warning
                         }
 
                         Box(
@@ -158,17 +163,18 @@ fun SingleTabBrowserScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             fontFamily = FontFamily.Monospace,
-                            color = if (hasTlsError) Color(0xFFEF4444) else TextPrimary,
+                            color = if (hasTlsError) Danger else TextPrimary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
 
                         if (tabState.isPunycodeAlert) {
-                            Text(
-                                text = "⚠ IDN",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFF59E0B),
-                                fontWeight = FontWeight.Bold
+                            IconLabel(
+                                MusifyIcons.Warning,
+                                "IDN",
+                                tint = Warning,
+                                iconSize = 11.dp,
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
                     }
@@ -182,8 +188,8 @@ fun SingleTabBrowserScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (tabState.shieldState.isProtectionEnabled) StatusGreen.copy(alpha = 0.15f) else SurfaceLightDark)
-                                .border(1.dp, if (tabState.shieldState.isProtectionEnabled) StatusGreen else CardBorder, RoundedCornerShape(12.dp))
+                                .background(if (tabState.shieldState.isProtectionEnabled) Success.copy(alpha = 0.15f) else Elevated)
+                                .border(1.dp, if (tabState.shieldState.isProtectionEnabled) Success else Hairline, RoundedCornerShape(12.dp))
                                 .clickable { showShieldSheet = !showShieldSheet }
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                                 .semantics {
@@ -191,19 +197,27 @@ fun SingleTabBrowserScreen(
                                     role = Role.Button
                                 }
                         ) {
-                            Text(
-                                text = "🛡 ${tabState.shieldState.blockedCount}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (tabState.shieldState.isProtectionEnabled) StatusGreen else TextMuted,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MusifyIcon(
+                                    MusifyIcons.ShieldCheck,
+                                    size = 12.dp,
+                                    tint = if (tabState.shieldState.isProtectionEnabled) Success else TextMuted
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = "${tabState.shieldState.blockedCount}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (tabState.shieldState.isProtectionEnabled) Success else TextMuted,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
                         if (onOpenRoadmap != null) {
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(SurfaceLightDark)
+                                    .background(Elevated)
                                     .clickable(onClick = onOpenRoadmap)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                     .semantics {
@@ -223,7 +237,7 @@ fun SingleTabBrowserScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(SurfaceLightDark)
+                                    .background(Elevated)
                                     .clickable(onClick = onOpenSpikeDebug)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                     .semantics {
@@ -234,7 +248,7 @@ fun SingleTabBrowserScreen(
                                 Text(
                                     text = "Spike",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = AccentCyan
+                                    color = Accent
                                 )
                             }
                         }
@@ -251,7 +265,7 @@ fun SingleTabBrowserScreen(
                 ) {
                     // Back
                     BrowserButton(
-                        text = "◀",
+                        icon = MusifyIcons.ArrowLeft,
                         contentDescription = "Navigate back",
                         enabled = tabState.canGoBack,
                         onClick = { viewModel.goBack() }
@@ -259,7 +273,7 @@ fun SingleTabBrowserScreen(
 
                     // Forward
                     BrowserButton(
-                        text = "▶",
+                        icon = MusifyIcons.ArrowRight,
                         contentDescription = "Navigate forward",
                         enabled = tabState.canGoForward,
                         onClick = { viewModel.goForward() }
@@ -286,11 +300,11 @@ fun SingleTabBrowserScreen(
                         },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = BackgroundDark,
-                            unfocusedContainerColor = BackgroundDark,
+                            focusedContainerColor = Ink,
+                            unfocusedContainerColor = Ink,
                             focusedTextColor = TextPrimary,
                             unfocusedTextColor = TextPrimary,
-                            focusedIndicatorColor = AccentCyan,
+                            focusedIndicatorColor = Accent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         shape = RoundedCornerShape(24.dp),
@@ -307,7 +321,7 @@ fun SingleTabBrowserScreen(
 
                     // Reload / Stop
                     BrowserButton(
-                        text = if (tabState.isLoading) "✕" else "↻",
+                        icon = if (tabState.isLoading) MusifyIcons.Close else MusifyIcons.Reload,
                         contentDescription = if (tabState.isLoading) "Stop loading page" else "Reload page",
                         enabled = true,
                         onClick = {
@@ -324,19 +338,19 @@ fun SingleTabBrowserScreen(
                             .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        QuickChip(label = "🧪 Fixture") {
+                        QuickChip(label = "Fixture", icon = MusifyIcons.Flask) {
                             viewModel.loadTestFixture()
                             focusManager.clearFocus()
                         }
-                        QuickChip(label = "🔒 Wikipedia") {
+                        QuickChip(label = "Wikipedia", icon = MusifyIcons.Lock) {
                             viewModel.navigate("https://en.wikipedia.org")
                             focusManager.clearFocus()
                         }
-                        QuickChip(label = "🦊 Mozilla") {
+                        QuickChip(label = "Mozilla", icon = MusifyIcons.Globe) {
                             viewModel.navigate("https://www.mozilla.org")
                             focusManager.clearFocus()
                         }
-                        QuickChip(label = "🛑 BadSSL Expired") {
+                        QuickChip(label = "BadSSL Expired", icon = MusifyIcons.Blocked) {
                             viewModel.navigate("https://expired.badssl.com")
                             focusManager.clearFocus()
                         }
@@ -350,7 +364,7 @@ fun SingleTabBrowserScreen(
                             .fillMaxWidth()
                             .padding(top = 10.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = BackgroundDark),
+                        colors = CardDefaults.cardColors(containerColor = Ink),
                         border = CardDefaults.outlinedCardBorder()
                     ) {
                         Column(
@@ -371,15 +385,15 @@ fun SingleTabBrowserScreen(
                                     checked = tabState.shieldState.isProtectionEnabled,
                                     onCheckedChange = { viewModel.toggleShields(it) },
                                     colors = SwitchDefaults.colors(
-                                        checkedThumbColor = BackgroundDark,
-                                        checkedTrackColor = StatusGreen
+                                        checkedThumbColor = Ink,
+                                        checkedTrackColor = Success
                                     )
                                 )
                             }
                             Text(
                                 text = "${tabState.shieldState.blockedCount} requests blocked by this app",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = StatusGreen,
+                                color = Success,
                                 fontWeight = FontWeight.SemiBold
                             )
                             tabState.shieldState.lastBlockedUrl?.let { url ->
@@ -404,8 +418,8 @@ fun SingleTabBrowserScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(3.dp),
-                color = AccentCyan,
-                trackColor = SurfaceDark
+                color = Accent,
+                trackColor = Surface
             )
         }
 
@@ -444,19 +458,19 @@ private fun BrowserErrorOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark.copy(alpha = 0.95f))
+            .background(Ink.copy(alpha = 0.95f))
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+            colors = CardDefaults.cardColors(containerColor = Surface),
             border = CardDefaults.outlinedCardBorder().copy(
                 brush = androidx.compose.ui.graphics.Brush.linearGradient(
                     listOf(
-                        if (error.isTlsError) Color(0xFFEF4444) else CardBorder,
-                        SurfaceLightDark
+                        if (error.isTlsError) Danger else Hairline,
+                        Elevated
                     )
                 )
             )
@@ -471,13 +485,14 @@ private fun BrowserErrorOverlay(
                         .size(48.dp)
                         .clip(CircleShape)
                         .background(
-                            if (error.isTlsError) Color(0x33EF4444) else Color(0x33F59E0B)
+                            if (error.isTlsError) Danger.copy(alpha = 0.20f) else Warning.copy(alpha = 0.20f)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (error.isTlsError) "🔒" else "⚠",
-                        fontSize = 22.sp
+                    MusifyIcon(
+                        imageVector = if (error.isTlsError) MusifyIcons.Lock else MusifyIcons.Warning,
+                        size = 22.dp,
+                        tint = if (error.isTlsError) Danger else Warning
                     )
                 }
 
@@ -512,7 +527,7 @@ private fun BrowserErrorOverlay(
                     Text(
                         text = "Musify strictly enforces TLS security to protect your privacy. This connection has been terminated to safeguard against interception. No bypass is permitted.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFFEF4444),
+                        color = Danger,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -525,16 +540,16 @@ private fun BrowserErrorOverlay(
                     if (error.canRetry) {
                         Button(
                             onClick = onRetry,
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentCyan)
+                            colors = ButtonDefaults.buttonColors(containerColor = Accent)
                         ) {
-                            Text(text = "Retry", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                            Text(text = "Retry", color = Ink, fontWeight = FontWeight.Bold)
                         }
                     }
 
                     if (error.title == "Render Process Lost") {
                         Button(
                             onClick = onRecover,
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
+                            colors = ButtonDefaults.buttonColors(containerColor = Private)
                         ) {
                             Text(text = "Recover Tab", color = TextPrimary, fontWeight = FontWeight.Bold)
                         }
@@ -551,7 +566,7 @@ private fun BrowserErrorOverlay(
 
 @Composable
 private fun BrowserButton(
-    text: String,
+    icon: ImageVector,
     contentDescription: String,
     enabled: Boolean,
     onClick: () -> Unit
@@ -561,7 +576,7 @@ private fun BrowserButton(
         modifier = Modifier
             .size(38.dp)
             .clip(CircleShape)
-            .background(if (enabled) SurfaceLightDark else BackgroundDark)
+            .background(if (enabled) Elevated else Ink)
             .clickable(enabled = enabled, onClick = onClick)
             .semantics {
                 this.contentDescription = buttonDesc
@@ -569,11 +584,10 @@ private fun BrowserButton(
             },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = if (enabled) TextPrimary else TextMuted,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
+        MusifyIcon(
+            imageVector = icon,
+            size = 16.dp,
+            tint = if (enabled) TextPrimary else TextMuted
         )
     }
 }
@@ -581,13 +595,14 @@ private fun BrowserButton(
 @Composable
 private fun QuickChip(
     label: String,
+    icon: ImageVector? = null,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(BackgroundDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+            .background(Ink)
+            .border(1.dp, Hairline, RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .semantics {
@@ -595,10 +610,16 @@ private fun QuickChip(
                 role = Role.Button
             }
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = AccentCyan
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                MusifyIcon(icon, size = 11.dp, tint = Accent)
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = Accent
+            )
+        }
     }
 }

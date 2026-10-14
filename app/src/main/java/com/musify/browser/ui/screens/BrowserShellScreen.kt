@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -62,18 +63,21 @@ import com.musify.browser.permissions.SitePermissionPromptRequest
 import com.musify.browser.safety.FindInPageState
 import com.musify.browser.safety.SchemeDecision
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
+import com.musify.browser.ui.theme.Warning
 
 /**
  * BrowserShellScreen hosts the multi-tab navigation chrome, Omnibar,
@@ -149,7 +153,7 @@ fun BrowserShellScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(BackgroundDark)
+                .background(Ink)
         ) {
             // Omnibar Top Chrome
             SurfaceDarkHeader(
@@ -242,8 +246,8 @@ fun BrowserShellScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(3.dp),
-                    color = if (activeTab.isPrivate) AccentPurple else AccentCyan,
-                    trackColor = BackgroundDark
+                    color = if (activeTab.isPrivate) Private else Accent,
+                    trackColor = Ink
                 )
             }
 
@@ -296,10 +300,15 @@ fun BrowserShellScreen(
             onDismissRequest = { viewModel.dismissHttpFallback() },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("⚠", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    MusifyIcon(
+                    MusifyIcons.Warning,
+                    size = 20.dp,
+                    tint = Warning,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                     Text(
                         text = "Insecure Connection Warning",
-                        color = StatusOrange,
+                        color = Warning,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -324,7 +333,7 @@ fun BrowserShellScreen(
             confirmButton = {
                 Button(
                     onClick = { viewModel.confirmHttpFallback() },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Proceed Insecurely", color = Color.White, fontWeight = FontWeight.Bold)
@@ -333,13 +342,13 @@ fun BrowserShellScreen(
             dismissButton = {
                 Button(
                     onClick = { viewModel.dismissHttpFallback() },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Cancel", color = TextPrimary)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 
@@ -350,7 +359,12 @@ fun BrowserShellScreen(
             onDismissRequest = { viewModel.dismissDownloadPrompt() },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("📥", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    MusifyIcon(
+                    MusifyIcons.Download,
+                    size = 20.dp,
+                    tint = Accent,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                     Text(
                         text = "Download File",
                         color = TextPrimary,
@@ -363,7 +377,7 @@ fun BrowserShellScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = req.suggestedFileName,
-                        color = AccentCyan,
+                        color = Accent,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -379,16 +393,17 @@ fun BrowserShellScreen(
                     )
                     if (req.isExecutableWarning) {
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = StatusRed.copy(alpha = 0.15f)),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, StatusRed),
+                            colors = CardDefaults.cardColors(containerColor = Danger.copy(alpha = 0.15f)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Danger),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Column(modifier = Modifier.padding(8.dp)) {
                                 Text(
-                                    text = "⚠ Executable File Warning",
-                                    color = StatusRed,
+                                    text = "Executable File Warning",
+                                    color = Danger,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    letterSpacing = 0.3.sp
                                 )
                                 Text(
                                     text = "This file type can execute code on your device. Musify will not automatically run or install this file.",
@@ -408,22 +423,22 @@ fun BrowserShellScreen(
             confirmButton = {
                 Button(
                     onClick = { viewModel.confirmDownload(req) },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Download", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                    Text("Download", color = Ink, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 Button(
                     onClick = { viewModel.dismissDownloadPrompt() },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Cancel", color = TextPrimary)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 
@@ -434,7 +449,12 @@ fun BrowserShellScreen(
             onDismissRequest = { viewModel.dismissSitePermission() },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("📍", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    MusifyIcon(
+                    MusifyIcons.Location,
+                    size = 20.dp,
+                    tint = Accent,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                     Text(
                         text = "Site Permission Prompt",
                         color = TextPrimary,
@@ -447,7 +467,7 @@ fun BrowserShellScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = perm.origin,
-                        color = AccentCyan,
+                        color = Accent,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -466,7 +486,7 @@ fun BrowserShellScreen(
             confirmButton = {
                 Button(
                     onClick = { viewModel.grantSitePermission(perm) },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = Success),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Allow", color = Color.White, fontWeight = FontWeight.Bold)
@@ -475,13 +495,13 @@ fun BrowserShellScreen(
             dismissButton = {
                 Button(
                     onClick = { viewModel.denySitePermission(perm) },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Deny", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 
@@ -492,7 +512,12 @@ fun BrowserShellScreen(
             onDismissRequest = { viewModel.dismissExternalScheme() },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("↗", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                    MusifyIcon(
+                    MusifyIcons.ExternalLink,
+                    size = 20.dp,
+                    tint = Accent,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                     Text(
                         text = "Open External App?",
                         color = TextPrimary,
@@ -505,7 +530,7 @@ fun BrowserShellScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "External Scheme: ${scheme.scheme}",
-                        color = AccentCyan,
+                        color = Accent,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -535,22 +560,22 @@ fun BrowserShellScreen(
                         } catch (_: Exception) {
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Open App", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                    Text("Open App", color = Ink, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 Button(
                     onClick = { viewModel.dismissExternalScheme() },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Cancel", color = TextPrimary)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 
@@ -603,13 +628,13 @@ private fun SurfaceDarkHeader(
 ) {
     var showOverflowMenu by remember { mutableStateOf(false) }
     val isPrivate = activeTab?.isPrivate == true
-    val activeAccent = if (isPrivate) AccentPurple else AccentCyan
+    val activeAccent = if (isPrivate) Private else Accent
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             // Top Row: Origin Security Status + Private Badge + Shields + Tab Switcher Badge + Menu
@@ -627,34 +652,44 @@ private fun SurfaceDarkHeader(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(AccentPurple.copy(alpha = 0.2f))
-                                .border(1.dp, AccentPurple, RoundedCornerShape(8.dp))
+                                .background(Private.copy(alpha = 0.2f))
+                                .border(1.dp, Private, RoundedCornerShape(8.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                 .semantics {
                                     contentDescription = "Private browsing mode active"
                                 }
                         ) {
-                            Text(
-                                text = "🕶 Private",
-                                color = AccentPurple,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MusifyIcon(
+                                    MusifyIcons.Incognito,
+                                    size = 11.dp,
+                                    tint = Private
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text(
+                                    text = "Private",
+                                    color = Private,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.width(6.dp))
                     }
 
-                    Text(
-                        text = if (activeTab?.isSecure == true) "🔒" else "⚠",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(end = 4.dp)
+                    MusifyIcon(
+                        imageVector = if (activeTab?.isSecure == true) MusifyIcons.Lock else MusifyIcons.LockOpen,
+                        size = 12.dp,
+                        tint = if (activeTab?.isSecure == true) Success else Warning,
+                        modifier = Modifier.padding(end = 5.dp)
                     )
                     Text(
                         text = when {
                             activeTab == null || activeTab.url == "about:blank" -> "musify://home"
                             else -> activeTab.origin
                         },
-                        color = if (activeTab?.isSecure == true) StatusGreen else StatusOrange,
+                        color = if (activeTab?.isSecure == true) Success else Warning,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -666,10 +701,10 @@ private fun SurfaceDarkHeader(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (!isShieldEnabled) StatusOrange.copy(alpha = 0.15f) else SurfaceLightDark)
+                        .background(if (!isShieldEnabled) Warning.copy(alpha = 0.15f) else Elevated)
                         .border(
                             1.dp,
-                            if (!isShieldEnabled) StatusOrange else StatusGreen.copy(alpha = 0.5f),
+                            if (!isShieldEnabled) Warning else Success.copy(alpha = 0.5f),
                             RoundedCornerShape(10.dp)
                         )
                         .clickable(onClick = onToggleShield)
@@ -679,12 +714,22 @@ private fun SurfaceDarkHeader(
                             role = androidx.compose.ui.semantics.Role.Button
                         }
                 ) {
-                    Text(
-                        text = if (!isShieldEnabled) "🛡 Off" else if (shieldBlockedCount > 0) "🛡 $shieldBlockedCount" else "🛡 Shields",
-                        color = if (!isShieldEnabled) StatusOrange else StatusGreen,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        MusifyIcon(
+                            imageVector = if (!isShieldEnabled) MusifyIcons.ShieldOff else MusifyIcons.ShieldCheck,
+                            size = 12.dp,
+                            tint = if (!isShieldEnabled) Warning else Success
+                        )
+                        Spacer(Modifier.width(5.dp))
+                        Text(
+                            text = if (!isShieldEnabled) "Off"
+                            else if (shieldBlockedCount > 0) "$shieldBlockedCount"
+                            else "Shields",
+                            color = if (!isShieldEnabled) Warning else Success,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(6.dp))
@@ -693,10 +738,10 @@ private fun SurfaceDarkHeader(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isDesktop) AccentCyan.copy(alpha = 0.2f) else SurfaceLightDark)
+                        .background(if (isDesktop) Accent.copy(alpha = 0.2f) else Elevated)
                         .border(
                             1.dp,
-                            if (isDesktop) AccentCyan else CardBorder,
+                            if (isDesktop) Accent else Hairline,
                             RoundedCornerShape(10.dp)
                         )
                         .clickable(onClick = onToggleDesktopMode)
@@ -706,12 +751,20 @@ private fun SurfaceDarkHeader(
                             role = androidx.compose.ui.semantics.Role.Button
                         }
                 ) {
-                    Text(
-                        text = if (isDesktop) "🖥️ Desktop" else "📱 Mobile",
-                        color = if (isDesktop) AccentCyan else TextSecondary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        MusifyIcon(
+                            imageVector = if (isDesktop) MusifyIcons.Desktop else MusifyIcons.Mobile,
+                            size = 12.dp,
+                            tint = if (isDesktop) Accent else TextSecondary
+                        )
+                        Spacer(Modifier.width(5.dp))
+                        Text(
+                            text = if (isDesktop) "Desktop" else "Mobile",
+                            color = if (isDesktop) Accent else TextSecondary,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(6.dp))
@@ -720,7 +773,7 @@ private fun SurfaceDarkHeader(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .border(1.dp, activeAccent, RoundedCornerShape(10.dp))
                         .clickable(onClick = onOpenTabSwitcher)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -744,7 +797,7 @@ private fun SurfaceDarkHeader(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .clickable { showOverflowMenu = true }
                         .semantics {
                             contentDescription = "Browser menu options"
@@ -757,17 +810,17 @@ private fun SurfaceDarkHeader(
                     DropdownMenu(
                         expanded = showOverflowMenu,
                         onDismissRequest = { showOverflowMenu = false },
-                        modifier = Modifier.background(SurfaceDark)
+                        modifier = Modifier.background(Surface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("★ Bookmarks", color = TextPrimary) },
+                            text = { IconLabel(MusifyIcons.StarFilled, "Bookmarks", tint = TextPrimary) },
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenBookmarks()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("🕒 History", color = TextPrimary) },
+                            text = { IconLabel(MusifyIcons.Clock, "History", tint = TextPrimary) },
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenHistory()
@@ -780,9 +833,13 @@ private fun SurfaceDarkHeader(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(if (isDesktop) "🖥️ Desktop Site (Active)" else "🖥️ Request Desktop Site", color = TextPrimary)
+                                    IconLabel(
+                                        MusifyIcons.Desktop,
+                                        if (isDesktop) "Desktop Site (Active)" else "Request Desktop Site",
+                                        tint = TextPrimary
+                                    )
                                     if (isDesktop) {
-                                        Text("✓", color = AccentCyan, fontWeight = FontWeight.Bold)
+                                        MusifyIcon(MusifyIcons.Check, size = 16.dp, tint = Accent)
                                     }
                                 }
                             },
@@ -792,7 +849,7 @@ private fun SurfaceDarkHeader(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("🎵 Media & Playback Recovery", color = AccentCyan) },
+                            text = { IconLabel(MusifyIcons.Music, "Media & Playback Recovery", tint = Accent) },
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenPlaybackCompatibility()
@@ -800,7 +857,7 @@ private fun SurfaceDarkHeader(
                         )
                         if (onOpenDownloads != null) {
                             DropdownMenuItem(
-                                text = { Text("📥 Downloads", color = TextPrimary) },
+                                text = { IconLabel(MusifyIcons.Download, "Downloads", tint = TextPrimary) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenDownloads()
@@ -809,7 +866,7 @@ private fun SurfaceDarkHeader(
                         }
                         if (onOpenSitePermissions != null) {
                             DropdownMenuItem(
-                                text = { Text("📍 Site Permissions", color = TextPrimary) },
+                                text = { IconLabel(MusifyIcons.Location, "Site Permissions", tint = TextPrimary) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenSitePermissions()
@@ -817,21 +874,21 @@ private fun SurfaceDarkHeader(
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text("🔍 Find in Page", color = TextPrimary) },
+                            text = { IconLabel(MusifyIcons.Search, "Find in Page", tint = TextPrimary) },
                             onClick = {
                                 showOverflowMenu = false
                                 onFindInPage()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("🔗 Share Page", color = TextPrimary) },
+                            text = { IconLabel(MusifyIcons.Link, "Share Page", tint = TextPrimary) },
                             onClick = {
                                 showOverflowMenu = false
                                 onSharePage()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("🛡 Data & Privacy Controls", color = TextPrimary) },
+                            text = { IconLabel(MusifyIcons.Shield, "Data & Privacy Controls", tint = TextPrimary) },
                             onClick = {
                                 showOverflowMenu = false
                                 onOpenDataControl()
@@ -839,7 +896,7 @@ private fun SurfaceDarkHeader(
                         )
                         if (onOpenFilterLists != null) {
                             DropdownMenuItem(
-                                text = { Text("🛡 Filter Lists & Licenses", color = TextPrimary) },
+                                text = { IconLabel(MusifyIcons.Shield, "Filter Lists & Licenses", tint = TextPrimary) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenFilterLists()
@@ -847,7 +904,7 @@ private fun SurfaceDarkHeader(
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text("🕶 + New Private Tab", color = AccentPurple) },
+                            text = { IconLabel(MusifyIcons.Incognito, "+ New Private Tab", tint = Private) },
                             onClick = {
                                 showOverflowMenu = false
                                 onNewPrivateTab()
@@ -855,7 +912,7 @@ private fun SurfaceDarkHeader(
                         )
                         if (onOpenRoadmap != null) {
                             DropdownMenuItem(
-                                text = { Text("🗺 Roadmap & Architecture", color = AccentCyan) },
+                                text = { IconLabel(MusifyIcons.Map, "Roadmap & Architecture", tint = Accent) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenRoadmap()
@@ -864,7 +921,7 @@ private fun SurfaceDarkHeader(
                         }
                         if (onOpenReleaseInfo != null) {
                             DropdownMenuItem(
-                                text = { Text("ℹ About & Privacy Policy", color = AccentCyan) },
+                                text = { IconLabel(MusifyIcons.Info, "About & Privacy Policy", tint = Accent) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenReleaseInfo()
@@ -873,7 +930,7 @@ private fun SurfaceDarkHeader(
                         }
                         if (onOpenWelcome != null) {
                             DropdownMenuItem(
-                                text = { Text("⚡ Welcome Matrix", color = StatusOrange) },
+                                text = { IconLabel(MusifyIcons.Bolt, "Welcome Matrix", tint = Warning) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenWelcome()
@@ -882,7 +939,7 @@ private fun SurfaceDarkHeader(
                         }
                         if (onOpenSpikeDebug != null) {
                             DropdownMenuItem(
-                                text = { Text("🧪 GeckoView Spike Console", color = TextSecondary) },
+                                text = { IconLabel(MusifyIcons.Flask, "GeckoView Spike Console", tint = TextSecondary) },
                                 onClick = {
                                     showOverflowMenu = false
                                     onOpenSpikeDebug()
@@ -903,7 +960,7 @@ private fun SurfaceDarkHeader(
             ) {
                 // Back Button
                 NavCircleButton(
-                    symbol = "◀",
+                    icon = MusifyIcons.ArrowLeft,
                     contentDescription = "Navigate back",
                     enabled = activeTab?.canGoBack == true,
                     onClick = onGoBack
@@ -911,7 +968,7 @@ private fun SurfaceDarkHeader(
 
                 // Forward Button
                 NavCircleButton(
-                    symbol = "▶",
+                    icon = MusifyIcons.ArrowRight,
                     contentDescription = "Navigate forward",
                     enabled = activeTab?.canGoForward == true,
                     onClick = onGoForward
@@ -938,10 +995,10 @@ private fun SurfaceDarkHeader(
                     trailingIcon = {
                         // Bookmark Star Button
                         if (activeTab != null && activeTab.url.isNotBlank() && activeTab.url != "about:blank") {
-                            Text(
-                                text = if (isBookmarked) "★" else "☆",
-                                color = if (isBookmarked) Color(0xFFFBBF24) else TextMuted,
-                                fontSize = 16.sp,
+                            MusifyIcon(
+                                imageVector = if (isBookmarked) MusifyIcons.StarFilled else MusifyIcons.StarOutline,
+                                size = 16.dp,
+                                tint = if (isBookmarked) Accent else TextMuted,
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .clickable(onClick = onToggleBookmark)
@@ -959,10 +1016,10 @@ private fun SurfaceDarkHeader(
                     ),
                     keyboardActions = KeyboardActions(onGo = { onSubmit() }),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = BackgroundDark,
-                        unfocusedContainerColor = BackgroundDark,
+                        focusedContainerColor = Ink,
+                        unfocusedContainerColor = Ink,
                         focusedBorderColor = activeAccent,
-                        unfocusedBorderColor = CardBorder,
+                        unfocusedBorderColor = Hairline,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary
                     ),
@@ -971,7 +1028,7 @@ private fun SurfaceDarkHeader(
 
                 // Reload / Stop Button
                 NavCircleButton(
-                    symbol = if (activeTab?.isLoading == true) "✕" else "↻",
+                    icon = if (activeTab?.isLoading == true) MusifyIcons.Close else MusifyIcons.Reload,
                     contentDescription = if (activeTab?.isLoading == true) "Stop loading" else "Reload page",
                     enabled = true,
                     onClick = onReloadOrStop
@@ -986,10 +1043,10 @@ private fun SurfaceDarkHeader(
                         .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    QuickChip("🧪 Fixture", activeAccent) { onNavigate("file:///android_asset/test_fixture.html") }
-                    QuickChip("🔒 Wikipedia", activeAccent) { onNavigate("https://en.wikipedia.org") }
-                    QuickChip("🦊 Mozilla", activeAccent) { onNavigate("https://www.mozilla.org") }
-                    QuickChip("🛑 BadSSL", activeAccent) { onNavigate("https://expired.badssl.com") }
+                    QuickChip("Fixture", activeAccent, MusifyIcons.Flask) { onNavigate("file:///android_asset/test_fixture.html") }
+                    QuickChip("Wikipedia", activeAccent, MusifyIcons.Lock) { onNavigate("https://en.wikipedia.org") }
+                    QuickChip("Mozilla", activeAccent, MusifyIcons.Globe) { onNavigate("https://www.mozilla.org") }
+                    QuickChip("BadSSL", activeAccent, MusifyIcons.Blocked) { onNavigate("https://expired.badssl.com") }
                 }
             }
         }
@@ -998,7 +1055,7 @@ private fun SurfaceDarkHeader(
 
 @Composable
 private fun NavCircleButton(
-    symbol: String,
+    icon: ImageVector,
     contentDescription: String,
     enabled: Boolean,
     onClick: () -> Unit
@@ -1007,7 +1064,7 @@ private fun NavCircleButton(
         modifier = Modifier
             .size(40.dp)
             .clip(CircleShape)
-            .background(if (enabled) SurfaceLightDark else BackgroundDark)
+            .background(if (enabled) Elevated else Ink)
             .clickable(enabled = enabled, onClick = onClick)
             .semantics {
                 this.contentDescription = contentDescription
@@ -1015,22 +1072,26 @@ private fun NavCircleButton(
             },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = symbol,
-            color = if (enabled) TextPrimary else TextSecondary.copy(alpha = 0.4f),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp
+        MusifyIcon(
+            imageVector = icon,
+            size = 17.dp,
+            tint = if (enabled) TextPrimary else TextSecondary.copy(alpha = 0.4f)
         )
     }
 }
 
 @Composable
-private fun QuickChip(label: String, accentColor: Color = AccentCyan, onClick: () -> Unit) {
+private fun QuickChip(
+    label: String,
+    accentColor: Color = Accent,
+    icon: ImageVector? = null,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(BackgroundDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+            .background(Ink)
+            .border(1.dp, Hairline, RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .semantics {
@@ -1038,7 +1099,13 @@ private fun QuickChip(label: String, accentColor: Color = AccentCyan, onClick: (
                 this.role = androidx.compose.ui.semantics.Role.Button
             }
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = accentColor)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                MusifyIcon(icon, size = 11.dp, tint = accentColor)
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = accentColor)
+        }
     }
 }
 
@@ -1047,12 +1114,16 @@ private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) ->
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = if (isPrivate) "🕶" else "🛡", fontSize = 48.sp)
+            MusifyIcon(
+                imageVector = if (isPrivate) MusifyIcons.Incognito else MusifyIcons.Emblem,
+                size = 64.dp,
+                tint = if (isPrivate) Private else TextPrimary
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = if (isPrivate) "Musify Private Tab" else "Musify Browser",
@@ -1072,10 +1143,17 @@ private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) ->
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = { onNavigate("https://duckduckgo.com") },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isPrivate) AccentPurple else AccentCyan),
+                colors = ButtonDefaults.buttonColors(containerColor = if (isPrivate) Private else Accent),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("🦆 DuckDuckGo Search", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                IconLabel(
+                    MusifyIcons.Search,
+                    "DuckDuckGo Search",
+                    tint = Ink,
+                    iconSize = 16.dp,
+                    spacing = 8.dp,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
@@ -1086,14 +1164,14 @@ private fun RendererCrashOverlay(onRecover: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("⚠", fontSize = 48.sp)
+            MusifyIcon(MusifyIcons.Warning, size = 48.dp, tint = Warning)
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Web Renderer Process Lost", color = StatusRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("Web Renderer Process Lost", color = Danger, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 "The web content process was terminated. The browser shell protected your session.",
@@ -1103,10 +1181,17 @@ private fun RendererCrashOverlay(onRecover: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = onRecover,
-                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                colors = ButtonDefaults.buttonColors(containerColor = Accent),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("↻ Recover Tab", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                IconLabel(
+                    MusifyIcons.Reload,
+                    "Recover Tab",
+                    tint = Ink,
+                    iconSize = 16.dp,
+                    spacing = 8.dp,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
@@ -1125,8 +1210,8 @@ private fun FindInPageBar(
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
     ) {
         Row(
             modifier = Modifier
@@ -1135,7 +1220,7 @@ private fun FindInPageBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("🔍", fontSize = 14.sp)
+            MusifyIcon(MusifyIcons.Search, size = 15.dp, tint = TextMuted)
             OutlinedTextField(
                 value = state.query,
                 onValueChange = onQueryChange,
@@ -1143,10 +1228,10 @@ private fun FindInPageBar(
                 placeholder = { Text("Find in page...", color = TextMuted, fontSize = 12.sp) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = BackgroundDark,
-                    unfocusedContainerColor = BackgroundDark,
-                    focusedBorderColor = AccentCyan,
-                    unfocusedBorderColor = CardBorder,
+                    focusedContainerColor = Ink,
+                    unfocusedContainerColor = Ink,
+                    focusedBorderColor = Accent,
+                    unfocusedBorderColor = Hairline,
                     focusedTextColor = TextPrimary,
                     unfocusedTextColor = TextPrimary
                 ),
@@ -1163,21 +1248,21 @@ private fun FindInPageBar(
             }
 
             NavCircleButton(
-                symbol = "▲",
+                icon = MusifyIcons.ChevronUp,
                 contentDescription = "Previous match",
                 enabled = state.totalMatches > 0,
                 onClick = onPrevious
             )
 
             NavCircleButton(
-                symbol = "▼",
+                icon = MusifyIcons.ChevronDown,
                 contentDescription = "Next match",
                 enabled = state.totalMatches > 0,
                 onClick = onNext
             )
 
             NavCircleButton(
-                symbol = "✕",
+                icon = MusifyIcons.Close,
                 contentDescription = "Close find in page",
                 enabled = true,
                 onClick = onClose

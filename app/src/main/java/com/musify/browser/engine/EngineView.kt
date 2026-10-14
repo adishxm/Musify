@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.SurfaceDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Surface
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
 
@@ -41,14 +41,14 @@ fun EngineView(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BackgroundDark)
+                    .background(Ink)
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(SurfaceDark)
+                        .background(Surface)
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -67,9 +67,9 @@ fun EngineView(
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = { adapter.recoverRenderer() },
-                        colors = ButtonDefaults.buttonColors(containerColor = AccentCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent)
                     ) {
-                        Text(text = "Recover Tab & Reload", color = BackgroundDark)
+                        Text(text = "Recover Tab & Reload", color = Ink)
                     }
                 }
             }

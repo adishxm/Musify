@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -57,16 +58,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.tabs.TabSession
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
+import com.musify.browser.ui.theme.Warning
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabSwitcherScreen(
@@ -84,7 +90,7 @@ fun TabSwitcherScreen(
     val isPrivateView = selectedModeTab == 1
     val currentModeTabs = if (isPrivateView) privateTabs else normalTabs
 
-    val activeAccent = if (isPrivateView) AccentPurple else AccentCyan
+    val activeAccent = if (isPrivateView) Private else Accent
 
     BackHandler {
         onCloseSwitcher()
@@ -92,9 +98,9 @@ fun TabSwitcherScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = BackgroundDark,
+        containerColor = Ink,
         topBar = {
-            Column(modifier = Modifier.background(BackgroundDark)) {
+            Column(modifier = Modifier.background(Ink)) {
                 TopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -108,12 +114,12 @@ fun TabSwitcherScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(SurfaceLightDark)
+                                    .background(Elevated)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "${tabsState.tabCount}/${tabsState.maxTabs}",
-                                    color = if (tabsState.isAtMaxCapacity) StatusRed else activeAccent,
+                                    color = if (tabsState.isAtMaxCapacity) Danger else activeAccent,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -124,7 +130,7 @@ fun TabSwitcherScreen(
                         if (isPrivateView && privateTabs.isNotEmpty()) {
                             Text(
                                 text = "Close All Private",
-                                color = StatusRed,
+                                color = Danger,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier
@@ -139,7 +145,7 @@ fun TabSwitcherScreen(
                         } else if (!isPrivateView && normalTabs.size > 1) {
                             Text(
                                 text = "Close All",
-                                color = StatusRed,
+                                color = Danger,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier
@@ -168,13 +174,13 @@ fun TabSwitcherScreen(
                                 }
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundDark)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Ink)
                 )
 
                 // Tab Mode Selector: Normal Tabs | Private Tabs
                 TabRow(
                     selectedTabIndex = selectedModeTab,
-                    containerColor = BackgroundDark,
+                    containerColor = Ink,
                     contentColor = activeAccent,
                     indicator = { tabPositions ->
                         TabRowDefaults.SecondaryIndicator(
@@ -189,7 +195,7 @@ fun TabSwitcherScreen(
                         text = {
                             Text(
                                 text = "Normal (${normalTabs.size})",
-                                color = if (selectedModeTab == 0) AccentCyan else TextSecondary,
+                                color = if (selectedModeTab == 0) Accent else TextSecondary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
@@ -199,11 +205,12 @@ fun TabSwitcherScreen(
                         selected = selectedModeTab == 1,
                         onClick = { selectedModeTab = 1 },
                         text = {
-                            Text(
-                                text = "🕶 Private (${privateTabs.size})",
-                                color = if (selectedModeTab == 1) AccentPurple else TextSecondary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
+                            IconLabel(
+                                MusifyIcons.Incognito,
+                                "Private (${privateTabs.size})",
+                                tint = if (selectedModeTab == 1) Private else TextSecondary,
+                                iconSize = 14.dp,
+                                style = MaterialTheme.typography.labelLarge
                             )
                         }
                     )
@@ -214,8 +221,8 @@ fun TabSwitcherScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BackgroundDark)
-                    .border(1.dp, CardBorder, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(Ink)
+                    .border(1.dp, Hairline, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .padding(16.dp)
             ) {
                 Button(
@@ -232,7 +239,7 @@ fun TabSwitcherScreen(
                     enabled = !tabsState.isAtMaxCapacity,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = activeAccent,
-                        disabledContainerColor = SurfaceLightDark
+                        disabledContainerColor = Elevated
                     ),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
@@ -250,11 +257,11 @@ fun TabSwitcherScreen(
                 ) {
                     Text(
                         text = when {
-                            tabsState.isAtMaxCapacity -> "⚠ Max 20 Tabs Limit Reached"
-                            isPrivateView -> "+ New Private Tab 🕶"
+                            tabsState.isAtMaxCapacity -> "Max 20 Tabs Limit Reached"
+                            isPrivateView -> "+ New Private Tab"
                             else -> "+ New Tab"
                         },
-                        color = if (tabsState.isAtMaxCapacity) TextSecondary else BackgroundDark,
+                        color = if (tabsState.isAtMaxCapacity) TextSecondary else Ink,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     )
@@ -274,13 +281,13 @@ fun TabSwitcherScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(StatusRed.copy(alpha = 0.15f))
-                        .border(1.dp, StatusRed.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                        .background(Danger.copy(alpha = 0.15f))
+                        .border(1.dp, Danger.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
                         .padding(10.dp)
                 ) {
                     Text(
                         text = "Memory Cap Active: Tab limit reached (${tabsState.maxTabs} tabs). Close tabs before opening new ones.",
-                        color = StatusRed,
+                        color = Danger,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -294,12 +301,12 @@ fun TabSwitcherScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(AccentPurple.copy(alpha = 0.15f))
-                        .border(1.dp, AccentPurple.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        .background(Private.copy(alpha = 0.15f))
+                        .border(1.dp, Private.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "🕶 Private Browsing: Tabs, history, and cookies are kept in memory only and permanently erased when closed.",
+                        text = "Private Browsing: Tabs, history, and cookies are kept in memory only and permanently erased when closed.",
                         color = TextPrimary,
                         fontSize = 12.sp,
                         lineHeight = 16.sp
@@ -316,9 +323,10 @@ fun TabSwitcherScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = if (isPrivateView) "🕶" else "🌐",
-                            fontSize = 44.sp
+                        MusifyIcon(
+                            imageVector = if (isPrivateView) MusifyIcons.Incognito else MusifyIcons.Globe,
+                            size = 44.dp,
+                            tint = if (isPrivateView) Private else TextMuted
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
@@ -352,7 +360,7 @@ fun TabSwitcherScreen(
                         ) {
                             Text(
                                 text = if (isPrivateView) "Open Private Tab" else "Open New Tab",
-                                color = BackgroundDark,
+                                color = Ink,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -397,7 +405,7 @@ fun TabSwitcherScreen(
                         viewModel.closeAllTabs()
                         onCloseSwitcher()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed)
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger)
                 ) {
                     Text("Close All", color = Color.White)
                 }
@@ -405,12 +413,12 @@ fun TabSwitcherScreen(
             dismissButton = {
                 Button(
                     onClick = { showCloseAllConfirm = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark)
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated)
                 ) {
                     Text("Cancel", color = TextPrimary)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 }
@@ -423,7 +431,7 @@ private fun TabCard(
     onSelect: () -> Unit,
     onClose: () -> Unit
 ) {
-    val borderColor = if (isSelected) accentColor else CardBorder
+    val borderColor = if (isSelected) accentColor else Hairline
     val borderWidth = if (isSelected) 2.dp else 1.dp
 
     Card(
@@ -437,7 +445,7 @@ private fun TabCard(
                         if (isSelected) " (Active)" else ""
                 role = androidx.compose.ui.semantics.Role.Button
             },
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        colors = CardDefaults.cardColors(containerColor = Surface),
         shape = RoundedCornerShape(14.dp)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
@@ -451,10 +459,19 @@ private fun TabCard(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = if (tab.isPrivate) "🕶 " else if (tab.isSecure) "🔒 " else "⚠ ",
-                        fontSize = 11.sp,
-                        modifier = Modifier.padding(end = 2.dp)
+                    MusifyIcon(
+                        imageVector = when {
+                            tab.isPrivate -> MusifyIcons.Incognito
+                            tab.isSecure -> MusifyIcons.Lock
+                            else -> MusifyIcons.LockOpen
+                        },
+                        size = 11.dp,
+                        tint = when {
+                            tab.isPrivate -> Private
+                            tab.isSecure -> Success
+                            else -> Warning
+                        },
+                        modifier = Modifier.padding(end = 5.dp)
                     )
                     Text(
                         text = if (tab.url == "about:blank") "New Tab" else tab.title,
@@ -471,7 +488,7 @@ private fun TabCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .clickable(onClick = onClose)
                         .semantics {
                             contentDescription = "Close tab: ${tab.title}"
@@ -479,11 +496,10 @@ private fun TabCard(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "✕",
-                        color = TextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                    MusifyIcon(
+                        MusifyIcons.Close,
+                        size = 13.dp,
+                        tint = TextSecondary
                     )
                 }
             }
@@ -496,15 +512,20 @@ private fun TabCard(
                     .fillMaxWidth()
                     .aspectRatio(1.2f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(BackgroundDark)
-                    .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+                    .background(Ink)
+                    .border(1.dp, Hairline, RoundedCornerShape(8.dp))
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = if (tab.isPrivate) "🕶" else if (tab.url == "about:blank") "🌐" else "📄",
-                        fontSize = 24.sp
+                    MusifyIcon(
+                        imageVector = when {
+                            tab.isPrivate -> MusifyIcons.Incognito
+                            tab.url == "about:blank" -> MusifyIcons.Globe
+                            else -> MusifyIcons.Document
+                        },
+                        size = 24.dp,
+                        tint = if (tab.isPrivate) Private else TextMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -516,11 +537,12 @@ private fun TabCard(
                     )
                     if (tab.isRendererCrashed) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "⚠ Crashed",
-                            color = StatusRed,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                        IconLabel(
+                            MusifyIcons.Warning,
+                            "Crashed",
+                            tint = Danger,
+                            iconSize = 10.dp,
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
