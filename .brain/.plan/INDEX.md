@@ -5,7 +5,7 @@ This folder is the planning and evidence workspace for building **Musify**, a na
 ## How to use
 
 1. Keep `.brain/` at the root of the Android Git repository.
-2. Work through `.plan/PHASE-00.md` to `.plan/PHASE-14.md` in order.
+2. Work through `.plan/PHASE-00.md` to `.plan/PHASE-18.md` in order.
 3. At phase start, have Antigravity inspect the current repo and implement only that phase. Android Studio remains available for SDK/emulator setup, Gradle sync, profiler and device tests.
 4. Run every listed phase test. Record commands, environment, expected/actual results, evidence, defects and final status in the matching `.report/PHASE-XX-REPORT.md`.
 5. **Only when all mandatory checks pass and the report is complete**, create a focused Git commit and push the phase branch. If any required test fails, mark FAIL/BLOCKED, fix and rerun; do not push a phase as complete.

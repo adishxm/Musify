@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_80">#D0BCFF</color>
-    <color name="purple_grey_80">#CCC2DC</color>
-    <color name="pink_80">#EFB8C8</color>
-
-    <color name="purple_40">#6650a4</color>
-    <color name="purple_grey_40">#625b71</color>
-    <color name="pink_40">#7D5260</color>
+    <!--
+      Mirrors of the Kotlin design tokens in ui/theme/Color.kt, for the handful
+      of places the platform needs a colour before Compose starts (window
+      background, launcher icon, status bar).
+    -->
+    <color name="musify_ink">#FF000000</color>
+    <color name="musify_surface">#FF0A0A0A</color>
+    <color name="musify_elevated">#FF171717</color>
+    <color name="musify_hairline">#FF242424</color>
+    <color name="musify_text_primary">#FFFAFAFA</color>
+    <color name="musify_text_secondary">#FFA3A3A3</color>
+    <color name="musify_accent">#FFFFFFFF</color>
 </resources>

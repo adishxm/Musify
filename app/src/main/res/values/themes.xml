@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Musify" parent="android:Theme.Material.Light.NoActionBar">
+    <!--
+      Window-level theme. Compose owns everything inside the window; this exists
+      so that the very first frame (before setContent) is already black rather
+      than flashing the platform's default white.
+    -->
+    <style name="Theme.Musify" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/musify_ink</item>
+        <item name="android:colorBackground">@color/musify_ink</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 
     <style name="skip_the_ma">
         <item name="android:textSize">30sp</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@color/musify_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 </resources>

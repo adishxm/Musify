@@ -15,3 +15,7 @@
 - [Phase 12 — Sanitizing Media Protection & Disabling Invasive Content-Script Hacks](PHASE-12.md): 2–3 days. Eliminate destructive DOM and media tampering, ensuring native media elements are never mutilated.
 - [Phase 13 — Real Engine Policy Isolation & Media-Safe Protection Architecture](PHASE-13.md): 3–5 days. Implement true engine-level policy isolation and media-safe request preservation for EME/license flows.
 - [Phase 14 — Real-Device Spotify Verification & Diagnostic Test Hardening](PHASE-14.md): 3–5 days. Execute end-to-end verification, compile all three APK variants, and harden real-device testing evidence.
+- [Phase 15 — Obsidian Design System Foundation, Inter Typography & Vector Iconography](PHASE-15.md): 2–3 days. Establish monochrome token ladder, Inter variable font integration, 44 custom vector icons, shared primitives, and black launch window theme.
+- [Phase 16 — Core Browser Chrome, Omnibar & Tab Switcher Obsidian Redesign](PHASE-16.md): 2–3 days. Redesign top Omnibar, navigation toolbar, security status indicator, overflow menu, and tab switcher cards.
+- [Phase 17 — Privacy Shields, Playback Diagnostics & Security Sheets Redesign](PHASE-17.md): 2–3 days. Redesign privacy shields, DNS modal, permissions sheets, and playback compatibility diagnostics while preserving all Phase 11-13 features.
+- [Phase 18 — App Screens, Monochrome Welcome Matrix, Assets & Release Packaging](PHASE-18.md): 2–3 days. Complete redesign of home, history, downloads, and welcome bloom, verify test suite, and package all three release APKs.
