@@ -479,27 +479,42 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         '.main-leaderboard-container',
                         '.desktop-interstitial',
                         '[data-testid="open-app-button"]',
+                        '[data-testid="install-app-button"]',
                         '[data-testid="smart-banner-pitch"]',
                         '[data-testid="banner-open-button"]',
                         '[data-testid="mobile-app-banner"]',
                         '[data-testid="smart-banner"]',
                         '[data-testid*="open-app"]',
+                        '[data-testid*="install-app"]',
                         '[aria-label="Open App"]',
                         '[aria-label="Open in app"]',
                         '[aria-label="Open in Spotify"]',
+                        '[aria-label="Install App"]',
+                        '[aria-label*="Install the app"]',
+                        '[aria-label*="Install Spotify"]',
                         'a[href^="spotify:"]',
-                        'a[href*="spotify.link"]'
+                        'a[href*="spotify.link"]',
+                        'a[href*="spotify.com/download"]'
                     ];
                     selectors.forEach(function(sel) {
                         var els = document.querySelectorAll(sel);
                         els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
                     });
 
-                    // Hide any button or link whose text is 'Open App'
+                    // Hide any button or link whose text is 'Open App', 'Install App', 'Get the app'
                     var clickables = document.querySelectorAll('button, a, div[role="button"], span');
                     clickables.forEach(function(el) {
                         var txt = (el.textContent || '').trim().toLowerCase();
-                        if (txt === 'open app' || txt === 'open in app' || txt === 'open in spotify') {
+                        if (
+                            txt === 'open app' ||
+                            txt === 'open in app' ||
+                            txt === 'open in spotify' ||
+                            txt === 'install app' ||
+                            txt === 'install spotify' ||
+                            txt === 'get the app' ||
+                            txt === 'get app' ||
+                            txt === 'switch to the app'
+                        ) {
                             var target = el.closest('button, a, div[role="button"]') || el;
                             target.style.setProperty('display', 'none', 'important');
                         }

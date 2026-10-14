@@ -29,16 +29,22 @@
                 .desktop-interstitial,
                 .upsell-banner,
                 [data-testid="open-app-button"],
+                [data-testid="install-app-button"],
                 [data-testid="smart-banner-pitch"],
                 [data-testid="banner-open-button"],
                 [data-testid="mobile-app-banner"],
                 [data-testid="smart-banner"],
                 [data-testid*="open-app"],
+                [data-testid*="install-app"],
                 [aria-label="Open App"],
                 [aria-label="Open in app"],
                 [aria-label="Open in Spotify"],
+                [aria-label="Install App"],
+                [aria-label*="Install the app"],
+                [aria-label*="Install Spotify"],
                 a[href^="spotify:"],
-                a[href*="spotify.link"] {
+                a[href*="spotify.link"],
+                a[href*="spotify.com/download"] {
                     display: none !important;
                     visibility: hidden !important;
                     opacity: 0 !important;
@@ -218,24 +224,37 @@
     // 7. Suppress "Open App" / "Open in Spotify" Buttons and Dialogs
     function suppressOpenAppPrompts() {
         try {
-            // A. Hide any buttons or links whose text or aria is specifically "Open App"
+            // A. Hide any buttons or links whose text or aria is specifically "Open App", "Install App", or "Get the app"
             const clickables = document.querySelectorAll('button, a, div[role="button"]');
             for (let i = 0; i < clickables.length; i++) {
                 const el = clickables[i];
                 const text = (el.textContent || '').trim().toLowerCase();
                 const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-                if (text === 'open app' || text === 'open in app' || text === 'open in spotify' || text === 'get app' || text === 'switch to the app' || aria === 'open app' || aria === 'open in app') {
+                if (
+                    text === 'open app' ||
+                    text === 'open in app' ||
+                    text === 'open in spotify' ||
+                    text === 'install app' ||
+                    text === 'install spotify' ||
+                    text === 'get the app' ||
+                    text === 'get app' ||
+                    text === 'switch to the app' ||
+                    aria === 'open app' ||
+                    aria === 'open in app' ||
+                    aria === 'install app' ||
+                    aria.includes('install app')
+                ) {
                     el.style.setProperty('display', 'none', 'important');
                     el.style.setProperty('visibility', 'hidden', 'important');
                     el.style.setProperty('pointer-events', 'none', 'important');
                 }
             }
 
-            // B. Auto-dismiss modal dialogs prompting "Open in App"
+            // B. Auto-dismiss modal dialogs prompting "Open in App" or "Install"
             const dialogs = document.querySelectorAll('div[role="dialog"], [data-testid="modal-container"]');
             dialogs.forEach(dialog => {
                 const txt = (dialog.innerText || '').toLowerCase();
-                if (txt.includes('open app') || txt.includes('switch to the app') || txt.includes('listen in the spotify app')) {
+                if (txt.includes('open app') || txt.includes('switch to the app') || txt.includes('listen in the spotify app') || txt.includes('install app')) {
                     const closeBtn = dialog.querySelector('button[aria-label="Close"], button[aria-label="Dismiss"], button[title="Close"]');
                     if (closeBtn) {
                         try { closeBtn.click(); } catch (_) {}
@@ -247,7 +266,7 @@
         } catch (_) {}
     }
 
-        // 8. Prevent Link Clicks / Deep Links to External Spotify App
+        // 8. Prevent Link Clicks / Deep Links to External Spotify App or Downloads
         try {
             document.addEventListener('click', function(e) {
                 try {
@@ -262,11 +281,17 @@
                         href.startsWith('intent:') ||
                         href.includes('spotify.link') ||
                         href.includes('play.google.com/store/apps/details?id=com.spotify.music') ||
+                        href.includes('spotify.com/download') ||
                         text === 'open app' ||
                         text === 'open in app' ||
                         text === 'open in spotify' ||
+                        text === 'install app' ||
+                        text === 'install spotify' ||
+                        text === 'get the app' ||
+                        text === 'get app' ||
                         aria.includes('open app') ||
-                        aria.includes('open in app')
+                        aria.includes('open in app') ||
+                        aria.includes('install app')
                     ) {
                         e.preventDefault();
                         e.stopPropagation();
