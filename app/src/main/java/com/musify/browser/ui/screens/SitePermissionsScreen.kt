@@ -35,15 +35,16 @@ import androidx.compose.ui.unit.sp
 import com.musify.browser.permissions.SitePermission
 import com.musify.browser.permissions.SitePermissionDecision
 import com.musify.browser.permissions.SitePermissionRepository
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 @Composable
 fun SitePermissionsScreen(
     repository: SitePermissionRepository,
@@ -55,7 +56,7 @@ fun SitePermissionsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
             .padding(16.dp)
     ) {
         // Header
@@ -70,9 +71,9 @@ fun SitePermissionsScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(SurfaceDark)
+                        .background(Surface)
                 ) {
-                    Text("←", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    MusifyIcon(MusifyIcons.ArrowLeft, size = 20.dp, tint = TextPrimary)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -94,9 +95,9 @@ fun SitePermissionsScreen(
                 OutlinedButton(
                     onClick = { repository.clearAll() },
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, CardBorder)
+                    border = BorderStroke(1.dp, Hairline)
                 ) {
-                    Text("Clear All", color = StatusRed, fontSize = 12.sp)
+                    Text("Clear All", color = Danger, fontSize = 12.sp)
                 }
             }
         }
@@ -111,7 +112,7 @@ fun SitePermissionsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🔒", fontSize = 48.sp)
+                    MusifyIcon(MusifyIcons.Lock, size = 48.dp, tint = TextMuted)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "No Site Permissions Stored",
@@ -149,14 +150,14 @@ private fun SitePermissionCard(
     onRevoke: () -> Unit
 ) {
     val isGranted = permission.decision == SitePermissionDecision.GRANTED
-    val badgeColor = if (isGranted) StatusGreen else StatusRed
+    val badgeColor = if (isGranted) Success else Danger
     val badgeText = if (isGranted) "Granted" else "Denied"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = BorderStroke(1.dp, Hairline)
     ) {
         Row(
             modifier = Modifier
@@ -201,9 +202,9 @@ private fun SitePermissionCard(
                 OutlinedButton(
                     onClick = onRevoke,
                     shape = RoundedCornerShape(6.dp),
-                    border = BorderStroke(1.dp, CardBorder)
+                    border = BorderStroke(1.dp, Hairline)
                 ) {
-                    Text("Revoke", color = StatusRed, fontSize = 11.sp)
+                    Text("Revoke", color = Danger, fontSize = 11.sp)
                 }
             }
         }

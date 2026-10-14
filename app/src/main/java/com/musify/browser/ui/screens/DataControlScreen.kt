@@ -27,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -48,19 +49,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.storage.TimeRange
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 /**
  * DataControlScreen provides granular controls to erase local browsing data,
  * clear session state, and review transparent privacy boundary disclosures.
@@ -85,7 +88,7 @@ fun DataControlScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = BackgroundDark,
+        containerColor = Ink,
         topBar = {
             TopAppBar(
                 title = {
@@ -97,11 +100,12 @@ fun DataControlScreen(
                     )
                 },
                 navigationIcon = {
-                    Text(
-                        text = "◀ Back",
-                        color = AccentCyan,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
+                    IconLabel(
+                        MusifyIcons.ArrowLeft,
+                        "Back",
+                        tint = Accent,
+                        iconSize = 14.dp,
+                        style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .clickable(onClick = onClose)
@@ -112,7 +116,7 @@ fun DataControlScreen(
                             }
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceDark)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Surface)
             )
         }
     ) { innerPadding ->
@@ -128,12 +132,17 @@ fun DataControlScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🛡", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                        MusifyIcon(
+                        MusifyIcons.Shield,
+                        size = 20.dp,
+                        tint = TextPrimary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
                         Text(
                             text = "Transparent Privacy Boundaries",
                             color = TextPrimary,
@@ -158,8 +167,8 @@ fun DataControlScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -183,10 +192,10 @@ fun DataControlScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) AccentCyan.copy(alpha = 0.2f) else BackgroundDark)
+                                    .background(if (isSelected) Accent.copy(alpha = 0.2f) else Ink)
                                     .border(
                                         1.dp,
-                                        if (isSelected) AccentCyan else CardBorder,
+                                        if (isSelected) Accent else Hairline,
                                         RoundedCornerShape(8.dp)
                                     )
                                     .clickable { selectedTimeRange = range }
@@ -200,7 +209,7 @@ fun DataControlScreen(
                                         TimeRange.LAST_7_DAYS -> "7 Days"
                                         TimeRange.ALL_TIME -> "All Time"
                                     },
-                                    color = if (isSelected) AccentCyan else TextSecondary,
+                                    color = if (isSelected) Accent else TextSecondary,
                                     fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -252,8 +261,8 @@ fun DataControlScreen(
                         onClick = { showConfirmDialog = true },
                         enabled = clearHistory || clearBookmarks || clearTabs || clearDownloads || clearSitePermissions,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = StatusRed,
-                            disabledContainerColor = SurfaceLightDark
+                            containerColor = Danger,
+                            disabledContainerColor = Elevated
                         ),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -270,7 +279,7 @@ fun DataControlScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = actionFeedbackMessage ?: "",
-                            color = StatusGreen,
+                            color = Success,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -282,12 +291,17 @@ fun DataControlScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, AccentPurple.copy(alpha = 0.5f))
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Private.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🕶", fontSize = 18.sp, modifier = Modifier.padding(end = 8.dp))
+                        MusifyIcon(
+                                    MusifyIcons.Incognito,
+                                    size = 18.dp,
+                                    tint = Private,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
                         Text(
                             text = "Private Tabs Memory Disposal",
                             color = TextPrimary,
@@ -307,7 +321,7 @@ fun DataControlScreen(
                             viewModel.closeAllPrivateTabs()
                             actionFeedbackMessage = "All private tabs closed and memory purged."
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = AccentPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = Private),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -348,7 +362,7 @@ fun DataControlScreen(
                         )
                         actionFeedbackMessage = "Selected browsing data successfully cleared."
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed)
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger)
                 ) {
                     Text("Clear Now", color = Color.White, fontWeight = FontWeight.Bold)
                 }
@@ -356,12 +370,12 @@ fun DataControlScreen(
             dismissButton = {
                 Button(
                     onClick = { showConfirmDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark)
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated)
                 ) {
                     Text("Cancel", color = TextPrimary)
                 }
             },
-            containerColor = SurfaceDark
+            containerColor = Surface
         )
     }
 }
@@ -385,9 +399,9 @@ private fun DataOptionCheckbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(
-                checkedColor = AccentCyan,
+                checkedColor = Accent,
                 uncheckedColor = TextSecondary,
-                checkmarkColor = BackgroundDark
+                checkmarkColor = Ink
             )
         )
         Spacer(modifier = Modifier.width(8.dp))

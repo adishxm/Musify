@@ -45,19 +45,33 @@ import com.musify.browser.engine.ContentMode
 import com.musify.browser.engine.DnsProtectionMode
 import com.musify.browser.engine.EngineType
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.MusifyCard
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.MusifyShapes
+import com.musify.browser.ui.theme.MusifyTypography_Mono
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Space
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.SurfaceRaised
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.mediumTint
+import com.musify.browser.ui.theme.softTint
 
+/**
+ * PlaybackCompatibilityDialog provides real-time media pipeline observability,
+ * build variant disclosures, Widevine CDM hardware probes, and origin shield controls.
+ */
 @Composable
 fun PlaybackCompatibilityDialog(
     viewModel: TabsViewModel,
@@ -82,20 +96,27 @@ fun PlaybackCompatibilityDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = Surface,
+        shape = MusifyShapes.xl,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🎵", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                MusifyIcon(
+                    MusifyIcons.Music,
+                    size = 20.dp,
+                    tint = Accent,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                 Column {
                     Text(
                         text = "Playback & Media Diagnostics",
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Text(
                         text = currentOrigin,
-                        color = AccentCyan,
-                        fontSize = 12.sp,
+                        color = TextSecondary,
+                        style = MusifyTypography_Mono,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -113,13 +134,13 @@ fun PlaybackCompatibilityDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // Honest Engineering Disclosure & Build Variant
-                Card(
+                MusifyCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    containerColor = SurfaceRaised,
+                    borderColor = Hairline,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(Space.md)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,72 +150,74 @@ fun PlaybackCompatibilityDialog(
                                 text = "Installed Build Variant",
                                 color = TextPrimary,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                style = MaterialTheme.typography.labelLarge
                             )
                             Text(
                                 text = buildInfo.variant.displayName,
-                                color = AccentCyan,
+                                color = Accent,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                style = MaterialTheme.typography.labelLarge
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "${buildInfo.engineVersion} • Android ${buildInfo.androidRelease} (API ${buildInfo.androidApiLevel}, ${buildInfo.primaryAbi})",
                             color = TextSecondary,
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
 
                 // If running on Lite/WebView, show prominent Widevine limitation notice
                 if (buildInfo.protectedPlaybackLimitationNotice != null) {
-                    Card(
+                    MusifyCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = StatusOrange.copy(alpha = 0.12f)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, StatusOrange.copy(alpha = 0.4f))
+                        containerColor = Warning.softTint(),
+                        borderColor = Warning.mediumTint(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(Space.md)
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text(
-                                text = "⚠️ System WebView Limitation",
-                                color = StatusOrange,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
-                            )
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MusifyIcon(MusifyIcons.Warning, size = 15.dp, tint = Warning)
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = "System WebView Limitation",
+                                    color = Warning,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = buildInfo.protectedPlaybackLimitationNotice,
                                 color = TextPrimary,
-                                fontSize = 11.sp,
-                                lineHeight = 15.sp
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
                 }
 
                 // Measured Capability Breakdown
-                Card(
+                MusifyCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    containerColor = SurfaceRaised,
+                    borderColor = Hairline,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(Space.md)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        CapabilityRow(
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ObsidianCapabilityRow(
                             label = "Content Presentation",
-                            statusText = if (isDesktop) "Desktop 🖥️" else "Mobile 📱 (May block player)",
-                            color = if (isDesktop) StatusGreen else StatusOrange
+                            statusText = if (isDesktop) "Desktop" else "Mobile (May block player)",
+                            color = if (isDesktop) Success else Warning
                         )
 
                         val widevineStatusColor = when (mediaCap.widevineStatus) {
-                            CapabilityStatus.SUPPORTED -> StatusGreen
-                            CapabilityStatus.UNSUPPORTED -> StatusRed
-                            CapabilityStatus.FAILED -> StatusRed
-                            CapabilityStatus.UNKNOWN -> StatusOrange
+                            CapabilityStatus.SUPPORTED -> Success
+                            CapabilityStatus.UNSUPPORTED -> Danger
+                            CapabilityStatus.FAILED -> Danger
+                            CapabilityStatus.UNKNOWN -> Warning
                         }
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Device Widevine CDM",
                             statusText = when (mediaCap.widevineStatus) {
                                 CapabilityStatus.SUPPORTED -> "Supported (OS Verified)"
@@ -206,12 +229,12 @@ fun PlaybackCompatibilityDialog(
                         )
 
                         val emeStatusColor = when (mediaCap.encryptedMediaStatus) {
-                            CapabilityStatus.SUPPORTED -> StatusGreen
-                            CapabilityStatus.UNSUPPORTED -> StatusRed
-                            CapabilityStatus.FAILED -> StatusRed
-                            CapabilityStatus.UNKNOWN -> StatusOrange
+                            CapabilityStatus.SUPPORTED -> Success
+                            CapabilityStatus.UNSUPPORTED -> Danger
+                            CapabilityStatus.FAILED -> Danger
+                            CapabilityStatus.UNKNOWN -> Warning
                         }
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Encrypted Media (EME)",
                             statusText = when (mediaCap.encryptedMediaStatus) {
                                 CapabilityStatus.SUPPORTED -> "Granted & Active"
@@ -224,55 +247,55 @@ fun PlaybackCompatibilityDialog(
 
                         val drmProvider = mediaCap.deviceDrmProvider
                         if (!drmProvider.isNullOrBlank()) {
-                            CapabilityRow(
+                            ObsidianCapabilityRow(
                                 label = "DRM Provider",
                                 statusText = drmProvider,
                                 color = TextSecondary
                             )
                         }
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Browser Engine",
                             statusText = mediaCap.engineDetails ?: "GeckoView 135",
                             color = TextSecondary
                         )
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Audio Autoplay",
                             statusText = if (mediaCap.isAutoplayAllowed) "Allowed" else "Blocked",
-                            color = if (mediaCap.isAutoplayAllowed) StatusGreen else StatusOrange
+                            color = if (mediaCap.isAutoplayAllowed) Success else Warning
                         )
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Privacy Profile",
                             statusText = if (isPrivate) "Private Mode (Ephemeral)" else "Normal Mode (Persistent)",
-                            color = if (!isPrivate) StatusGreen else StatusOrange
+                            color = if (!isPrivate) Success else Private
                         )
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "DNS Resolution Layer",
                             statusText = if (dnsState.mode == DnsProtectionMode.ADGUARD_PRIVATE_DNS) "AdGuard Private DNS" else "System DNS",
-                            color = if (dnsState.mode == DnsProtectionMode.ADGUARD_PRIVATE_DNS) StatusGreen else TextSecondary
+                            color = if (dnsState.mode == DnsProtectionMode.ADGUARD_PRIVATE_DNS) Success else TextSecondary
                         )
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "In-Page Shields",
                             statusText = if (isShieldEnabled) "Shields Active" else "Shields Relaxed for Origin",
-                            color = if (isShieldEnabled) StatusGreen else StatusOrange
+                            color = if (isShieldEnabled) Success else Warning
                         )
 
-                        CapabilityRow(
+                        ObsidianCapabilityRow(
                             label = "Session Engine Policy",
                             statusText = mediaCap.cookiePolicy,
-                            color = if (mediaCap.isOriginExceptionActive) StatusOrange else StatusGreen
+                            color = if (mediaCap.isOriginExceptionActive) Warning else Success
                         )
 
                         val liveRule = mediaCap.liveBlockCategory
                         if (!liveRule.isNullOrBlank()) {
-                            CapabilityRow(
+                            ObsidianCapabilityRow(
                                 label = "Latest Shield Interception",
                                 statusText = liveRule,
-                                color = AccentCyan
+                                color = Accent
                             )
                         }
                     }
@@ -281,120 +304,146 @@ fun PlaybackCompatibilityDialog(
                 // Error Callout if any failure occurred
                 val failureReason = mediaCap.lastMediaFailureReason
                 if (!failureReason.isNullOrBlank()) {
-                    Card(
+                    MusifyCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = StatusRed.copy(alpha = 0.12f)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, StatusRed.copy(alpha = 0.4f))
+                        containerColor = Danger.softTint(),
+                        borderColor = Danger.mediumTint(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(Space.md)
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column {
                             Text(
                                 text = "Playback Limitation Reason",
-                                color = StatusRed,
+                                color = Danger,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
+                                style = MaterialTheme.typography.labelLarge
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = failureReason,
                                 color = TextPrimary,
-                                fontSize = 11.sp
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
                 }
 
-                // Desktop Mode Toggle Card
-                Card(
+                // Quick Action Cards
+                MusifyCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDesktop) StatusGreen.copy(alpha = 0.12f) else SurfaceLightDark
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        if (isDesktop) StatusGreen.copy(alpha = 0.4f) else CardBorder
-                    )
+                    containerColor = SurfaceRaised,
+                    borderColor = Hairline,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(Space.md)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Request Desktop Site",
-                                color = TextPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                text = if (isDesktop) "Desktop viewport and user-agent active." else "Switch to desktop view for open.spotify.com",
-                                color = TextSecondary,
-                                fontSize = 11.sp
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Relax Shields for Origin",
+                                    color = TextPrimary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Allows cross-origin media tokens & DRM auth",
+                                    color = TextMuted,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Switch(
+                                checked = !isShieldEnabled,
+                                onCheckedChange = {
+                                    viewModel.toggleShieldForCurrentOrigin()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Accent,
+                                    checkedTrackColor = Elevated,
+                                    uncheckedThumbColor = TextMuted,
+                                    uncheckedTrackColor = Surface
+                                )
                             )
                         }
-                        Switch(
-                            checked = isDesktop,
-                            onCheckedChange = {
-                                viewModel.toggleContentModeCurrentTab()
-                            },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = StatusGreen,
-                                checkedTrackColor = StatusGreen.copy(alpha = 0.4f),
-                                uncheckedThumbColor = TextMuted,
-                                uncheckedTrackColor = SurfaceDark
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Request Desktop Site",
+                                    color = TextPrimary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Bypasses mobile app download interstitials",
+                                    color = TextMuted,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Switch(
+                                checked = isDesktop,
+                                onCheckedChange = {
+                                    viewModel.toggleContentModeCurrentTab()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Accent,
+                                    checkedTrackColor = Elevated,
+                                    uncheckedThumbColor = TextMuted,
+                                    uncheckedTrackColor = Surface
+                                )
                             )
-                        )
+                        }
+
+                        Button(
+                            onClick = { showDnsSettingsDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Elevated),
+                            shape = MusifyShapes.sm
+                        ) {
+                            IconLabel(
+                                MusifyIcons.Bolt,
+                                "DNS Shielding Quick Settings",
+                                tint = TextPrimary,
+                                iconSize = 14.dp,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.optimizePlaybackForCurrentSite()
+                                onDismiss()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                            shape = MusifyShapes.sm
+                        ) {
+                            IconLabel(
+                                MusifyIcons.Reload,
+                                "Apply Settings & Reload Tab",
+                                tint = Ink,
+                                iconSize = 14.dp,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
                     }
-                }
-
-                // AdGuard DNS Guidance Button
-                Button(
-                    onClick = { showDnsSettingsDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "🛡️ Configure AdGuard / System DNS",
-                        color = TextPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                // One-Tap Optimize Button
-                Button(
-                    onClick = {
-                        viewModel.optimizePlaybackForCurrentSite()
-                        onDismiss()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = StatusGreen),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "⚡ Apply Desktop Mode & Relax Shields",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
                 }
             }
         },
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
-                shape = RoundedCornerShape(10.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = Elevated),
+                shape = MusifyShapes.sm
             ) {
-                Text("Close", color = TextPrimary)
+                Text("Dismiss", color = TextPrimary, style = MaterialTheme.typography.labelMedium)
             }
-        },
-        containerColor = SurfaceDark
+        }
     )
 
     if (showDnsSettingsDialog) {
@@ -406,18 +455,35 @@ fun PlaybackCompatibilityDialog(
 }
 
 @Composable
-private fun CapabilityRow(label: String, statusText: String, color: Color) {
+private fun ObsidianCapabilityRow(
+    label: String,
+    statusText: String,
+    color: Color
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, color = TextSecondary, fontSize = 11.sp)
         Text(
-            text = statusText,
-            color = color,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold
+            text = label,
+            color = TextSecondary,
+            style = MaterialTheme.typography.bodySmall
         )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(color)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = statusText,
+                color = color,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
     }
 }

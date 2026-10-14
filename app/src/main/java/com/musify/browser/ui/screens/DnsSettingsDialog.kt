@@ -49,17 +49,19 @@ import androidx.compose.ui.unit.sp
 import com.musify.browser.engine.DnsProtectionMode
 import com.musify.browser.storage.DnsSettingsRepository
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 @Composable
 fun DnsSettingsDialog(
     viewModel: TabsViewModel,
@@ -96,7 +98,12 @@ fun DnsSettingsDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🛡️", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                MusifyIcon(
+                    MusifyIcons.Shield,
+                    size = 20.dp,
+                    tint = Accent,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                 Column {
                     Text(
                         text = "AdGuard & System DNS",
@@ -106,7 +113,7 @@ fun DnsSettingsDialog(
                     )
                     Text(
                         text = "Operating-system level network resolution layer",
-                        color = AccentCyan,
+                        color = Accent,
                         fontSize = 11.sp
                     )
                 }
@@ -123,8 +130,8 @@ fun DnsSettingsDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Ink),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         Text(
@@ -147,8 +154,8 @@ fun DnsSettingsDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceLightDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Elevated),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
@@ -173,7 +180,7 @@ fun DnsSettingsDialog(
                                     selectedMode = DnsProtectionMode.ADGUARD_PRIVATE_DNS
                                     viewModel.setDnsMode(DnsProtectionMode.ADGUARD_PRIVATE_DNS)
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = StatusGreen)
+                                colors = RadioButtonDefaults.colors(selectedColor = Success)
                             )
                             Column(modifier = Modifier.padding(start = 4.dp)) {
                                 Text("AdGuard Private DNS (Recommended)", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -196,7 +203,7 @@ fun DnsSettingsDialog(
                                     selectedMode = DnsProtectionMode.SYSTEM_DEFAULT
                                     viewModel.setDnsMode(DnsProtectionMode.SYSTEM_DEFAULT)
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = StatusGreen)
+                                colors = RadioButtonDefaults.colors(selectedColor = Success)
                             )
                             Column(modifier = Modifier.padding(start = 4.dp)) {
                                 Text("System Default / Automatic", color = TextPrimary, fontSize = 12.sp)
@@ -210,8 +217,8 @@ fun DnsSettingsDialog(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Ink),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -238,13 +245,13 @@ fun DnsSettingsDialog(
                 // Android Setup Instructions & Intent Button
                 Button(
                     onClick = { openAndroidPrivateDnsSettings() },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "⚙️ Open Android Private DNS Settings",
-                        color = BackgroundDark,
+                        text = "Open Android Private DNS Settings",
+                        color = Ink,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
@@ -261,13 +268,13 @@ fun DnsSettingsDialog(
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Done", color = TextPrimary)
             }
         },
-        containerColor = SurfaceDark
+        containerColor = Surface
     )
 }
 
@@ -281,7 +288,7 @@ private fun DnsHostCopyRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(SurfaceDark)
+            .background(Surface)
             .padding(8.dp)
     ) {
         Text(text = title, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
@@ -291,11 +298,11 @@ private fun DnsHostCopyRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = host, color = AccentCyan, fontSize = 11.sp)
+            Text(text = host, color = Accent, fontSize = 11.sp)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(SurfaceLightDark)
+                    .background(Elevated)
                     .clickable(onClick = onCopy)
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {

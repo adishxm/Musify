@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -42,18 +43,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.tabs.TabsViewModel
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 /**
  * PrivacyShieldSheet presents live privacy protections, per-origin exception toggles,
  * accurate category counters, and transparent decision reporting.
@@ -88,10 +91,10 @@ fun PrivacyShieldSheet(
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        colors = CardDefaults.cardColors(containerColor = Surface),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            if (isShieldEnabled) StatusGreen.copy(alpha = 0.5f) else StatusOrange.copy(alpha = 0.5f)
+            if (isShieldEnabled) Success.copy(alpha = 0.5f) else Warning.copy(alpha = 0.5f)
         )
     ) {
         Column(
@@ -107,9 +110,10 @@ fun PrivacyShieldSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if (isShieldEnabled) "🛡" else "⚠",
-                        fontSize = 20.sp,
+                    MusifyIcon(
+                        imageVector = if (isShieldEnabled) MusifyIcons.ShieldCheck else MusifyIcons.Warning,
+                        size = 20.dp,
+                        tint = if (isShieldEnabled) Success else Warning,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Column {
@@ -133,7 +137,7 @@ fun PrivacyShieldSheet(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .clickable(onClick = onClose)
                         .semantics {
                             contentDescription = "Close privacy shields panel"
@@ -141,7 +145,7 @@ fun PrivacyShieldSheet(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("✕", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    MusifyIcon(MusifyIcons.Close, size = 15.dp, tint = TextSecondary)
                 }
             }
 
@@ -150,11 +154,11 @@ fun PrivacyShieldSheet(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isShieldEnabled) StatusGreen.copy(alpha = 0.1f) else StatusOrange.copy(alpha = 0.1f)
+                    containerColor = if (isShieldEnabled) Success.copy(alpha = 0.1f) else Warning.copy(alpha = 0.1f)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
-                    if (isShieldEnabled) StatusGreen.copy(alpha = 0.3f) else StatusOrange.copy(alpha = 0.3f)
+                    if (isShieldEnabled) Success.copy(alpha = 0.3f) else Warning.copy(alpha = 0.3f)
                 )
             ) {
                 Row(
@@ -167,7 +171,7 @@ fun PrivacyShieldSheet(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = if (isShieldEnabled) "Shields Active on this Site" else "Shields Disabled on this Site",
-                            color = if (isShieldEnabled) StatusGreen else StatusOrange,
+                            color = if (isShieldEnabled) Success else Warning,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -188,10 +192,10 @@ fun PrivacyShieldSheet(
                             isShieldEnabled = viewModel.toggleShieldForCurrentOrigin()
                         },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = StatusGreen,
-                            checkedTrackColor = StatusGreen.copy(alpha = 0.4f),
-                            uncheckedThumbColor = StatusOrange,
-                            uncheckedTrackColor = SurfaceLightDark
+                            checkedThumbColor = Success,
+                            checkedTrackColor = Success.copy(alpha = 0.4f),
+                            uncheckedThumbColor = Warning,
+                            uncheckedTrackColor = Elevated
                         )
                     )
                 }
@@ -202,11 +206,11 @@ fun PrivacyShieldSheet(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDesktop) AccentCyan.copy(alpha = 0.1f) else SurfaceLightDark
+                    containerColor = if (isDesktop) Accent.copy(alpha = 0.1f) else Elevated
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
-                    if (isDesktop) AccentCyan.copy(alpha = 0.4f) else CardBorder
+                    if (isDesktop) Accent.copy(alpha = 0.4f) else Hairline
                 )
             ) {
                 Row(
@@ -217,11 +221,12 @@ fun PrivacyShieldSheet(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (isDesktop) "Desktop Site Active 🖥️" else "Mobile Site Active 📱",
-                            color = if (isDesktop) AccentCyan else TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                        IconLabel(
+                            imageVector = if (isDesktop) MusifyIcons.Desktop else MusifyIcons.Mobile,
+                            text = if (isDesktop) "Desktop Site Active" else "Mobile Site Active",
+                            tint = if (isDesktop) Accent else TextPrimary,
+                            iconSize = 15.dp,
+                            style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -240,10 +245,10 @@ fun PrivacyShieldSheet(
                             viewModel.toggleContentModeCurrentTab()
                         },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = AccentCyan,
-                            checkedTrackColor = AccentCyan.copy(alpha = 0.4f),
+                            checkedThumbColor = Accent,
+                            checkedTrackColor = Accent.copy(alpha = 0.4f),
                             uncheckedThumbColor = TextMuted,
-                            uncheckedTrackColor = SurfaceDark
+                            uncheckedTrackColor = Surface
                         )
                     )
                 }
@@ -253,8 +258,8 @@ fun PrivacyShieldSheet(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Ink),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Row(
@@ -271,12 +276,12 @@ fun PrivacyShieldSheet(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (shieldState.blockedCount > 0) StatusGreen.copy(alpha = 0.2f) else SurfaceLightDark)
+                                .background(if (shieldState.blockedCount > 0) Success.copy(alpha = 0.2f) else Elevated)
                                 .padding(horizontal = 10.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = "${shieldState.blockedCount}",
-                                color = if (shieldState.blockedCount > 0) StatusGreen else TextSecondary,
+                                color = if (shieldState.blockedCount > 0) Success else TextSecondary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
@@ -298,8 +303,8 @@ fun PrivacyShieldSheet(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Ink),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
@@ -311,7 +316,7 @@ fun PrivacyShieldSheet(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Category: ${shieldState.lastBlockCategory ?: "Tracker"}",
-                            color = AccentCyan,
+                            color = Accent,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -331,8 +336,8 @@ fun PrivacyShieldSheet(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = BackgroundDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Ink),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Row(
                     modifier = Modifier
@@ -358,11 +363,17 @@ fun PrivacyShieldSheet(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(SurfaceLightDark)
+                            .background(Elevated)
                             .clickable { showDnsSettingsDialog = true }
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
-                        Text("Configure ⚙️", color = AccentCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        IconLabel(
+                            MusifyIcons.Settings,
+                            "Configure",
+                            tint = Accent,
+                            iconSize = 12.dp,
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
             }
@@ -370,15 +381,16 @@ fun PrivacyShieldSheet(
             // Playback Compatibility & Recovery Action
             Button(
                 onClick = { showPlaybackDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan.copy(alpha = 0.2f)),
+                colors = ButtonDefaults.buttonColors(containerColor = Accent.copy(alpha = 0.2f)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "🎵 Web Playback & Media Diagnostics",
-                    color = AccentCyan,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
+                IconLabel(
+                    MusifyIcons.Music,
+                    "Web Playback & Media Diagnostics",
+                    tint = Accent,
+                    iconSize = 15.dp,
+                    style = MaterialTheme.typography.labelLarge
                 )
             }
 
@@ -388,22 +400,26 @@ fun PrivacyShieldSheet(
                     viewModel.reload()
                     showClearCookiesNotice = true
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "↻ Reload & Reset Page Protections",
-                    color = TextPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                IconLabel(
+                    MusifyIcons.Reload,
+                    "Reload & Reset Page Protections",
+                    tint = TextPrimary,
+                    iconSize = 15.dp,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
                 )
             }
 
             if (showClearCookiesNotice) {
                 Text(
                     text = "Page reloaded. Active protections and counters synchronized.",
-                    color = StatusGreen,
+                    color = Success,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -446,7 +462,7 @@ private fun CategoryCounterRow(label: String, count: Int) {
         Text(text = label, color = TextSecondary, fontSize = 12.sp)
         Text(
             text = "$count",
-            color = if (count > 0) StatusGreen else TextMuted,
+            color = if (count > 0) Success else TextMuted,
             fontSize = 12.sp,
             fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal
         )
