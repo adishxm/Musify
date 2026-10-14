@@ -52,23 +52,26 @@ import com.musify.browser.filterlist.FilterListMetadata
 import com.musify.browser.filterlist.FilterListRegistry
 import com.musify.browser.filterlist.FilterListUpdater
 import com.musify.browser.filterlist.UpdateResult
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
-import com.musify.browser.ui.theme.TextMuted
-import com.musify.browser.ui.theme.TextPrimary
-import com.musify.browser.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.TextMuted
+import com.musify.browser.ui.theme.TextPrimary
+import com.musify.browser.ui.theme.TextSecondary
 @Composable
 fun FilterListScreen(
     filterEngine: FilterEngine,
@@ -84,7 +87,7 @@ fun FilterListScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
             .padding(16.dp)
     ) {
         // Header
@@ -99,9 +102,9 @@ fun FilterListScreen(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(SurfaceDark)
+                        .background(Surface)
                 ) {
-                    Text("←", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    MusifyIcon(MusifyIcons.ArrowLeft, size = 20.dp, tint = TextPrimary)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -131,17 +134,17 @@ fun FilterListScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                    border = BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Surface),
+                    border = BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🛡", fontSize = 18.sp)
+                            MusifyIcon(MusifyIcons.Shield, size = 18.dp, tint = Accent)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Engine Architecture & Defense Model",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = AccentCyan,
+                                color = Accent,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -164,8 +167,8 @@ fun FilterListScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = SurfaceLightDark),
-                        border = BorderStroke(1.dp, AccentCyan.copy(alpha = 0.5f))
+                        colors = CardDefaults.cardColors(containerColor = Elevated),
+                        border = BorderStroke(1.dp, Accent.copy(alpha = 0.5f))
                     ) {
                         Text(
                             text = updateStatusMessage ?: "",
@@ -215,15 +218,16 @@ fun FilterListScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                    border = BorderStroke(1.dp, CardBorder)
+                    colors = CardDefaults.cardColors(containerColor = Surface),
+                    border = BorderStroke(1.dp, Hairline)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "📜 Licensing Compliance & Attribution",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = AccentPurple,
-                            fontWeight = FontWeight.Bold
+                        IconLabel(
+                            MusifyIcons.Document,
+                            "Licensing Compliance & Attribution",
+                            tint = Private,
+                            iconSize = 16.dp,
+                            style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -274,7 +278,7 @@ fun FilterListScreen(
                     }
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                colors = ButtonDefaults.buttonColors(containerColor = Accent),
                 shape = RoundedCornerShape(8.dp),
                 enabled = !isUpdating
             ) {
@@ -294,7 +298,7 @@ fun FilterListScreen(
             OutlinedButton(
                 onClick = onClose,
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, CardBorder)
+                border = BorderStroke(1.dp, Hairline)
             ) {
                 Text("Close", color = TextPrimary)
             }
@@ -316,8 +320,8 @@ private fun FilterListCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = BorderStroke(1.dp, Hairline)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -342,14 +346,14 @@ private fun FilterListCard(
                     checked = metadata.isEnabled,
                     onCheckedChange = onToggleEnabled,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = AccentCyan,
-                        checkedTrackColor = AccentCyan.copy(alpha = 0.3f)
+                        checkedThumbColor = Accent,
+                        checkedTrackColor = Accent.copy(alpha = 0.3f)
                     )
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+            HorizontalDivider(color = Hairline, thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
             // Transparent Rule Counters (Honest No False Parity Disclosures)
@@ -366,7 +370,7 @@ private fun FilterListCard(
                     Text(
                         text = "${metadata.supportedNetworkRules}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = StatusGreen,
+                        color = Success,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -380,7 +384,7 @@ private fun FilterListCard(
                     Text(
                         text = "${metadata.supportedExceptionRules}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = AccentPurple,
+                        color = Private,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -394,7 +398,7 @@ private fun FilterListCard(
                     Text(
                         text = "${metadata.unsupportedCosmeticRules}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = StatusOrange,
+                        color = Warning,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -407,7 +411,7 @@ private fun FilterListCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(

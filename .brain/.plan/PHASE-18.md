@@ -1,6 +1,6 @@
 # Phase 18 — App Screens, Monochrome Welcome Matrix, Assets & Release Packaging
 
-**Status:** PLANNED  
+**Status:** COMPLETED  
 **Planning duration:** 2–3 days  
 **Goal:** Complete the remaining application screens under the Obsidian design system, transform the intro/welcome matrix into a refined monochrome bloom aesthetic, integrate design documentation and visual assets, verify the full test suite, assemble the three release APK variants, and push the final package to the repository.
 
@@ -28,16 +28,16 @@
    - Push commit to GitHub `origin/main`.
 
 ## Required tests (run at phase end)
-- [ ] `./gradlew testDebugUnitTest` runs with 100% pass rate across the entire test suite.
-- [ ] Assembly of all 3 release APK variants succeeds without errors.
-- [ ] Verification of APK checksums, sizes, and file structures.
+- [x] `./gradlew testDebugUnitTest` runs with 100% pass rate across the entire test suite.
+- [x] Assembly of all 3 release APK variants succeeds without errors.
+- [x] Verification of APK checksums, sizes, and file structures.
 
 ## Verification Gate
-- [ ] Every single user-facing screen conforms to the Obsidian Design System.
-- [ ] Zero emojis remain in the production codebase.
-- [ ] All three release APKs are updated, verified, and ready for deployment.
-- [ ] Comprehensive `.brain/.report/PHASE-18-REPORT.md` generated with detailed evidence.
-- [ ] Final commit pushed cleanly to GitHub `origin/main`.
+- [x] Every single user-facing screen conforms to the Obsidian Design System.
+- [x] Zero emojis remain in the production codebase.
+- [x] All three release APKs are updated, verified, and ready for deployment.
+- [x] Comprehensive `.brain/.report/PHASE-18-REPORT.md` generated with detailed evidence.
+- [x] Final commit pushed cleanly to GitHub `origin/main`.
 
 ## Deliverables
 - Fully redesigned application screens: `LandingScreen.kt`, `DownloadsScreen.kt`, `HistoryBookmarksScreen.kt`, `FilterListScreen.kt`, `ReleaseInfoScreen.kt`, `OnboardingDialog.kt`, `WelcomeMatrixScreen.kt`.

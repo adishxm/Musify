@@ -54,6 +54,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.R
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.HairlineStrong
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.TextSecondary
 
 /**
  * WelcomeMatrixScreen presents the official launch branding interface:
@@ -103,7 +107,7 @@ fun WelcomeMatrixScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF242424))
+            .background(Ink)
     ) {
         // Atmospheric warm burnt-orange / amber gradient in the lower portion
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -113,14 +117,14 @@ fun WelcomeMatrixScreen(
             // Vertical linear glow
             val verticalBrush = Brush.verticalGradient(
                 colorStops = arrayOf(
-                    0.00f to Color(0xFF242424),
-                    0.50f to Color(0xFF242424),
-                    0.64f to Color(0xFF38190D),
-                    0.74f to Color(0xFF5A1E06),
-                    0.84f to Color(0xFF942C03),
-                    0.92f to Color(0xFFBA3802),
-                    0.97f to Color(0xFF781E02),
-                    1.00f to Color(0xFF421000)
+                    0.00f to Ink,
+                    0.50f to Ink,
+                    0.64f to Color(0xFF0A0A0A),
+                    0.74f to Color(0xFF141414),
+                    0.84f to Color(0xFF1F1F1F),
+                    0.92f to Color(0xFF2E2E2E),
+                    0.97f to Color(0xFF1A1A1A),
+                    1.00f to Color(0xFF0A0A0A)
                 ),
                 startY = 0f,
                 endY = height
@@ -130,8 +134,8 @@ fun WelcomeMatrixScreen(
             // Dynamic ambient radial glow centered at bottom
             val radialBrush = Brush.radialGradient(
                 colors = listOf(
-                    Color(0xFFFF5000).copy(alpha = 0.28f * glowPulse),
-                    Color(0xFFB83A00).copy(alpha = 0.16f * glowPulse),
+                    Accent.copy(alpha = 0.07f * glowPulse),
+                    Accent.copy(alpha = 0.04f * glowPulse),
                     Color.Transparent
                 ),
                 center = Offset(width * 0.5f, height * 0.88f),
@@ -169,7 +173,7 @@ fun WelcomeMatrixScreen(
 
                     // Dashed rectangular marquee frame
                     drawRect(
-                        color = Color(0xFFD6D6D6),
+                        color = TextSecondary,
                         topLeft = Offset(0f, 0f),
                         size = Size(w, h),
                         style = Stroke(
@@ -181,7 +185,7 @@ fun WelcomeMatrixScreen(
                     // 4 Solid corner handles
                     val handleSizePx = 11.dp.toPx()
                     val halfHandle = handleSizePx / 2f
-                    val handleColor = Color(0xFFD9D9D9)
+                    val handleColor = Accent
 
                     val corners = listOf(
                         Offset(0f, 0f),
@@ -228,7 +232,7 @@ fun WelcomeMatrixScreen(
                         .offset(x = (-12).dp, y = (-12).dp)
                         .rotate(-11.5f)
                         .background(
-                            color = Color(0xFFFF4500),
+                            color = Accent,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 9.dp, vertical = 3.dp)
@@ -277,7 +281,7 @@ fun WelcomeMatrixScreen(
                     Text(
                         text = stringResource(R.string.welcome_crafted_by),
                         style = TextStyle(
-                            color = Color(0xFFFF5500),
+                            color = Accent,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.SansSerif,
@@ -290,7 +294,7 @@ fun WelcomeMatrixScreen(
                     // Faint translucent fill for rich letterform interior
                     Text(
                         text = stringResource(R.string.welcome_crafted_by),
-                        color = Color(0xFFFF5500).copy(alpha = 0.12f),
+                        color = Accent.copy(alpha = 0.10f),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.SansSerif
@@ -302,14 +306,14 @@ fun WelcomeMatrixScreen(
                 // Copyright & GitHub Repository info
                 Text(
                     text = stringResource(R.string.welcome_copyright),
-                    color = Color(0xFFD6D6D6).copy(alpha = 0.85f),
+                    color = TextSecondary.copy(alpha = 0.85f),
                     fontSize = 10.5.sp,
                     lineHeight = 15.sp,
                     fontFamily = FontFamily.SansSerif
                 )
                 Text(
                     text = stringResource(R.string.welcome_github),
-                    color = Color(0xFFD6D6D6).copy(alpha = 0.85f),
+                    color = TextSecondary.copy(alpha = 0.85f),
                     fontSize = 10.5.sp,
                     lineHeight = 15.sp,
                     fontFamily = FontFamily.SansSerif
@@ -376,7 +380,7 @@ private fun DistressedTextureOverlay(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-        val speckColor = Color(0xFF242424)
+        val speckColor = HairlineStrong
 
         // Deterministic pseudo-random seed points for consistent distressed texture
         val specks = listOf(

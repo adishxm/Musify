@@ -44,21 +44,23 @@ import com.musify.browser.downloads.DownloadItem
 import com.musify.browser.downloads.DownloadRepository
 import com.musify.browser.downloads.DownloadStatus
 import com.musify.browser.downloads.MusifyDownloadManager
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
-import com.musify.browser.ui.theme.TextMuted
-import com.musify.browser.ui.theme.TextPrimary
-import com.musify.browser.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.TextMuted
+import com.musify.browser.ui.theme.TextPrimary
+import com.musify.browser.ui.theme.TextSecondary
 
 @Composable
 fun DownloadsScreen(
@@ -73,7 +75,7 @@ fun DownloadsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
             .padding(16.dp)
     ) {
         // Top Header
@@ -88,9 +90,9 @@ fun DownloadsScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(SurfaceDark)
+                        .background(Surface)
                 ) {
-                    Text("←", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    MusifyIcon(MusifyIcons.ArrowLeft, size = 20.dp, tint = TextPrimary)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -112,9 +114,9 @@ fun DownloadsScreen(
                 OutlinedButton(
                     onClick = { downloadRepository.clearAll() },
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, CardBorder)
+                    border = BorderStroke(1.dp, Hairline)
                 ) {
-                    Text("Clear All", color = StatusRed, fontSize = 12.sp)
+                    Text("Clear All", color = Danger, fontSize = 12.sp)
                 }
             }
         }
@@ -129,7 +131,7 @@ fun DownloadsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("📥", fontSize = 48.sp)
+                    MusifyIcon(MusifyIcons.Download, size = 48.dp, tint = TextMuted)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "No Downloads Yet",
@@ -178,8 +180,8 @@ private fun DownloadItemCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = BorderStroke(1.dp, Hairline)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -214,8 +216,8 @@ private fun DownloadItemCard(
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = AccentCyan,
-                    trackColor = SurfaceLightDark
+                    color = Accent,
+                    trackColor = Elevated
                 )
             }
 
@@ -224,12 +226,12 @@ private fun DownloadItemCard(
                 Text(
                     text = "Error: ${item.errorMessage}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = StatusRed
+                    color = Danger
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+            HorizontalDivider(color = Hairline, thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
             // Action row
@@ -242,9 +244,9 @@ private fun DownloadItemCard(
                     OutlinedButton(
                         onClick = onCancel,
                         shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, StatusRed)
+                        border = BorderStroke(1.dp, Danger)
                     ) {
-                        Text("Cancel", color = StatusRed, fontSize = 12.sp)
+                        Text("Cancel", color = Danger, fontSize = 12.sp)
                     }
                 } else if (item.status == DownloadStatus.COMPLETED) {
                     Button(
@@ -256,10 +258,10 @@ private fun DownloadItemCard(
                                 } catch (_: Exception) {}
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent),
                         shape = RoundedCornerShape(6.dp)
                     ) {
-                        Text("Open", color = BackgroundDark, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Open", color = Ink, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedButton(
@@ -272,7 +274,7 @@ private fun DownloadItemCard(
                             }
                         },
                         shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, CardBorder)
+                        border = BorderStroke(1.dp, Hairline)
                     ) {
                         Text("Share", color = TextPrimary, fontSize = 12.sp)
                     }
@@ -280,7 +282,7 @@ private fun DownloadItemCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = onRemove, modifier = Modifier.size(32.dp)) {
-                    Text("🗑", fontSize = 14.sp)
+                    MusifyIcon(MusifyIcons.Trash, size = 15.dp, tint = TextSecondary)
                 }
             }
         }
@@ -290,12 +292,12 @@ private fun DownloadItemCard(
 @Composable
 private fun StatusBadge(status: DownloadStatus) {
     val (color, text) = when (status) {
-        DownloadStatus.COMPLETED -> StatusGreen to "Done"
-        DownloadStatus.DOWNLOADING -> AccentCyan to "Downloading"
-        DownloadStatus.CANCELLED -> StatusOrange to "Cancelled"
-        DownloadStatus.FAILED -> StatusRed to "Failed"
-        DownloadStatus.PENDING_CONFIRMATION -> AccentPurple to "Pending"
-        DownloadStatus.PAUSED -> StatusOrange to "Paused"
+        DownloadStatus.COMPLETED -> Success to "Done"
+        DownloadStatus.DOWNLOADING -> Accent to "Downloading"
+        DownloadStatus.CANCELLED -> Warning to "Cancelled"
+        DownloadStatus.FAILED -> Danger to "Failed"
+        DownloadStatus.PENDING_CONFIRMATION -> Private to "Pending"
+        DownloadStatus.PAUSED -> Warning to "Paused"
     }
 
     Box(

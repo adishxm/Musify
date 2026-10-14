@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -50,17 +51,19 @@ import com.musify.browser.engine.EngineType
 import com.musify.browser.engine.EngineView
 import com.musify.browser.engine.GeckoEngineAdapter
 import com.musify.browser.engine.WebViewAdapter
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 @Composable
 fun EngineSpikeScreen(
     modifier: Modifier = Modifier
@@ -95,13 +98,13 @@ fun EngineSpikeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(Ink)
     ) {
         // Top Toolbar
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark)
+            colors = CardDefaults.cardColors(containerColor = Surface)
         ) {
             Column(
                 modifier = Modifier
@@ -123,7 +126,7 @@ fun EngineSpikeScreen(
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(CircleShape)
-                                .background(if (selectedEngineType == EngineType.GECKO_VIEW) AccentCyan else AccentPurple)
+                                .background(if (selectedEngineType == EngineType.GECKO_VIEW) Accent else Private)
                         )
                         Text(
                             text = if (selectedEngineType == EngineType.GECKO_VIEW) "GeckoView Stable (Candidate)" else "WebView (Fallback Spike)",
@@ -148,10 +151,10 @@ fun EngineSpikeScreen(
                                 selectedEngineType = if (isGecko) EngineType.GECKO_VIEW else EngineType.WEB_VIEW
                             },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = BackgroundDark,
-                                checkedTrackColor = AccentCyan,
+                                checkedThumbColor = Ink,
+                                checkedTrackColor = Accent,
                                 uncheckedThumbColor = TextPrimary,
-                                uncheckedTrackColor = SurfaceLightDark
+                                uncheckedTrackColor = Elevated
                             )
                         )
                     }
@@ -165,14 +168,14 @@ fun EngineSpikeScreen(
                 ) {
                     // Back
                     NavIconButton(
-                        text = "◀",
+                        icon = MusifyIcons.ArrowLeft,
                         enabled = navState.canGoBack,
                         onClick = { currentAdapter.goBack() }
                     )
 
                     // Forward
                     NavIconButton(
-                        text = "▶",
+                        icon = MusifyIcons.ArrowRight,
                         enabled = navState.canGoForward,
                         onClick = { currentAdapter.goForward() }
                     )
@@ -187,11 +190,11 @@ fun EngineSpikeScreen(
                         placeholder = { Text("Search or type HTTPS address...", color = TextMuted, fontSize = 13.sp) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = BackgroundDark,
-                            unfocusedContainerColor = BackgroundDark,
+                            focusedContainerColor = Ink,
+                            unfocusedContainerColor = Ink,
                             focusedTextColor = TextPrimary,
                             unfocusedTextColor = TextPrimary,
-                            focusedIndicatorColor = AccentCyan,
+                            focusedIndicatorColor = Accent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         shape = RoundedCornerShape(24.dp),
@@ -208,7 +211,7 @@ fun EngineSpikeScreen(
 
                     // Reload
                     NavIconButton(
-                        text = if (navState.isLoading) "✕" else "↻",
+                        icon = if (navState.isLoading) MusifyIcons.Close else MusifyIcons.Reload,
                         enabled = true,
                         onClick = {
                             if (navState.isLoading) currentAdapter.stop() else currentAdapter.reload()
@@ -244,8 +247,8 @@ fun EngineSpikeScreen(
             LinearProgressIndicator(
                 progress = { navState.progress / 100f },
                 modifier = Modifier.fillMaxWidth().height(3.dp),
-                color = AccentCyan,
-                trackColor = SurfaceDark
+                color = Accent,
+                trackColor = Surface
             )
         }
 
@@ -265,7 +268,7 @@ fun EngineSpikeScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark)
+            colors = CardDefaults.cardColors(containerColor = Surface)
         ) {
             Column(
                 modifier = Modifier
@@ -285,36 +288,52 @@ fun EngineSpikeScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (shieldState.isProtectionEnabled) StatusGreen.copy(alpha = 0.2f) else SurfaceLightDark)
-                                .border(1.dp, if (shieldState.isProtectionEnabled) StatusGreen else CardBorder, RoundedCornerShape(12.dp))
+                                .background(if (shieldState.isProtectionEnabled) Success.copy(alpha = 0.2f) else Elevated)
+                                .border(1.dp, if (shieldState.isProtectionEnabled) Success else Hairline, RoundedCornerShape(12.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(
-                                text = "🛡 ${shieldState.blockedCount} requests blocked by this app",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (shieldState.isProtectionEnabled) StatusGreen else TextMuted
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MusifyIcon(
+                                    MusifyIcons.ShieldCheck,
+                                    size = 12.dp,
+                                    tint = if (shieldState.isProtectionEnabled) Success else TextMuted
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text(
+                                    text = "${shieldState.blockedCount} requests blocked by this app",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (shieldState.isProtectionEnabled) Success else TextMuted
+                                )
+                            }
                         }
 
                         // TLS Badge
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (secState.isSecure) AccentCyan.copy(alpha = 0.15f) else Color(0x33EF4444))
+                                .background(if (secState.isSecure) Accent.copy(alpha = 0.15f) else Danger.copy(alpha = 0.20f))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(
-                                text = if (secState.isSecure) "🔒 ${secState.protocol}" else "⚠ ${secState.tlsError ?: "Insecure"}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (secState.isSecure) AccentCyan else Color(0xFFEF4444)
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MusifyIcon(
+                                    imageVector = if (secState.isSecure) MusifyIcons.Lock else MusifyIcons.LockOpen,
+                                    size = 12.dp,
+                                    tint = if (secState.isSecure) Accent else Danger
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text(
+                                    text = if (secState.isSecure) secState.protocol else (secState.tlsError ?: "Insecure"),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (secState.isSecure) Accent else Danger
+                                )
+                            }
                         }
                     }
 
                     Text(
                         text = if (showDiagnostics) "Hide HUD" else "Show HUD",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentCyan,
+                        color = Accent,
                         modifier = Modifier.clickable { showDiagnostics = !showDiagnostics }
                     )
                 }
@@ -340,12 +359,12 @@ fun EngineSpikeScreen(
                             Text(
                                 text = "Renderer State: ${if (procState.isHealthy) "Healthy" else "Crashed"}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = if (procState.isHealthy) StatusGreen else Color(0xFFEF4444)
+                                color = if (procState.isHealthy) Success else Danger
                             )
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(SurfaceLightDark)
+                                    .background(Elevated)
                                     .clickable { currentAdapter.simulateRendererLoss() }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
@@ -365,7 +384,7 @@ fun EngineSpikeScreen(
 
 @Composable
 private fun NavIconButton(
-    text: String,
+    icon: ImageVector,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
@@ -373,14 +392,14 @@ private fun NavIconButton(
         modifier = Modifier
             .size(36.dp)
             .clip(CircleShape)
-            .background(if (enabled) SurfaceLightDark else BackgroundDark)
+            .background(if (enabled) Elevated else Ink)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = if (enabled) TextPrimary else TextMuted,
-            fontSize = 14.sp
+        MusifyIcon(
+            imageVector = icon,
+            size = 16.dp,
+            tint = if (enabled) TextPrimary else TextMuted
         )
     }
 }
@@ -393,8 +412,8 @@ private fun QuickPill(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(BackgroundDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .background(Ink)
+            .border(1.dp, Hairline, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {

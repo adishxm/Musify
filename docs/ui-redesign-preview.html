@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Musify — Obsidian UI Redesign</title>
+<style>
+  :root{
+    /* ==== Musify "Obsidian" tokens — mirrors ui/theme/Color.kt ==== */
+    --ink:#000000;
+    --surface:#0A0A0A;
+    --raised:#111111;
+    --elevated:#171717;
+    --elevated-high:#1F1F1F;
+    --hairline:#242424;
+    --hairline-strong:#343434;
+    --text-primary:#FAFAFA;
+    --text-secondary:#A3A3A3;
+    --text-muted:#6E6E6E;
+    --accent:#FFFFFF;
+    --on-accent:#0A0A0A;
+
+    /* security semantics — the only chroma in the product */
+    --success:#4FCB92;
+    --warning:#DFB356;
+    --danger:#E0645B;
+    --private:#B0A0F0;
+
+    /* toggleable: strict monochrome mode remaps semantics to greys */
+    --s-success:var(--success);
+    --s-warning:var(--warning);
+    --s-danger:var(--danger);
+    --s-private:var(--private);
+  }
+  body.mono-only{
+    --s-success:#C9C9C9;
+    --s-warning:#9A9A9A;
+    --s-danger:#E8E8E8;
+    --s-private:#B4B4B4;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  body{
+    background:#050505;
+    color:var(--text-primary);
+    font-family:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:56px 32px 96px;
+    min-height:100vh;
+  }
+
+  /* ---------------- page chrome ---------------- */
+  .page-head{max-width:1400px;margin:0 auto 44px}
+  .eyebrow{
+    font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--text-muted);margin-bottom:14px;
+  }
+  h1{
+    font-size:40px;font-weight:700;letter-spacing:-.026em;line-height:1.08;
+    margin-bottom:12px;
+  }
+  .sub{font-size:15px;line-height:1.55;color:var(--text-secondary);max-width:620px;letter-spacing:.005em}
+
+  .controls{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap;align-items:center}
+  .toggle{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--elevated);border:1px solid var(--hairline);
+    border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:600;
+    color:var(--text-secondary);cursor:pointer;user-select:none;
+    transition:background .18s cubic-bezier(.2,0,0,1),color .18s cubic-bezier(.2,0,0,1);
+  }
+  .toggle:hover{background:var(--elevated-high);color:var(--text-primary)}
+  .toggle .dot{width:7px;height:7px;border-radius:50%;background:var(--hairline-strong);transition:background .18s}
+  .toggle.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .toggle.on .dot{background:var(--on-accent)}
+
+  /* ---------------- phone row ---------------- */
+  .rack{
+    display:flex;gap:30px;max-width:1400px;margin:0 auto;
+    overflow-x:auto;padding-bottom:26px;scrollbar-width:thin;
+  }
+  .rack::-webkit-scrollbar{height:8px}
+  .rack::-webkit-scrollbar-thumb{background:var(--hairline);border-radius:99px}
+
+  .slot{flex:0 0 auto;width:308px}
+  .slot h2{
+    font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--text-muted);margin-bottom:13px;
+  }
+
+  .phone{
+    position:relative;width:308px;height:752px;
+    background:var(--ink);
+    border:1px solid var(--hairline);
+    border-radius:38px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,.02), 0 26px 70px -20px rgba(0,0,0,.9);
+    display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:74px;height:5px;border-radius:99px;background:#1c1c1c;z-index:20;
+  }
+  .statusbar{
+    height:30px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:11px;font-weight:600;color:var(--text-primary);
+    letter-spacing:.01em;
+  }
+  .statusbar .right{display:flex;gap:5px;align-items:center;color:var(--text-secondary)}
+  .screen{flex:1 1 auto;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+  /* ---------------- browser chrome ---------------- */
+  .chrome{
+    background:var(--surface);
+    border-bottom:1px solid var(--hairline);
+    border-radius:0 0 16px 16px;
+    padding:9px 11px 10px;
+    flex:0 0 auto;
+  }
+  .chrome-top{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+  .origin{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+  .origin .url{
+    font-size:11.5px;font-weight:600;letter-spacing:-.005em;
+    color:var(--s-success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .origin.warn .url{color:var(--s-warning)}
+
+  .chip{
+    display:inline-flex;align-items:center;gap:5px;
+    background:var(--elevated);border:1px solid var(--hairline);
+    border-radius:9px;padding:4px 8px;font-size:9.5px;font-weight:700;
+    letter-spacing:.045em;color:var(--text-secondary);white-space:nowrap;
+  }
+  .chip.ok{color:var(--s-success);border-color:color-mix(in srgb,var(--s-success) 42%,transparent)}
+  .chip.warn{color:var(--s-warning);border-color:color-mix(in srgb,var(--s-warning) 42%,transparent)}
+  .chip.priv{color:var(--s-private);border-color:color-mix(in srgb,var(--s-private) 42%,transparent);background:color-mix(in srgb,var(--s-private) 12%,transparent)}
+  .chip.solid{background:var(--accent);border-color:var(--accent);color:var(--on-accent);padding:4px 9px}
+
+  .omnibar-row{display:flex;align-items:center;gap:7px}
+  .navbtn{
+    width:36px;height:36px;flex:0 0 auto;border-radius:50%;
+    background:var(--elevated);border:1px solid transparent;
+    display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
+  }
+  .navbtn.on{color:var(--text-primary)}
+  .field{
+    flex:1;min-width:0;height:36px;border-radius:11px;
+    background:var(--ink);border:1px solid var(--hairline);
+    display:flex;align-items:center;gap:8px;padding:0 10px;
+  }
+  .field:focus-within{border-color:var(--hairline-strong)}
+  .field .ph{font-size:12px;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .field .val{font-size:12px;color:var(--text-primary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .quickrow{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .q{
+    display:inline-flex;align-items:center;gap:5px;
+    background:var(--ink);border:1px solid var(--hairline);border-radius:8px;
+    padding:5px 9px;font-size:9.5px;font-weight:700;letter-spacing:.04em;
+    color:var(--text-secondary);
+  }
+
+  /* ---------------- home / new tab ---------------- */
+  .home{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:0;padding:0 30px;background:var(--ink);
+  }
+  .emblem{color:var(--text-primary);margin-bottom:20px}
+  .home h3{font-size:22px;font-weight:700;letter-spacing:-.028em;margin-bottom:9px}
+  .home .tag{
+    font-size:12px;color:var(--text-secondary);text-align:center;line-height:1.65;
+    letter-spacing:.002em;margin-bottom:26px;
+    text-wrap:balance;max-width:280px;
+  }
+  .cta{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--accent);color:var(--on-accent);
+    border-radius:11px;padding:13px 22px;font-size:13.5px;font-weight:700;
+    letter-spacing:-.005em;
+  }
+  .cta.ghost{
+    background:transparent;color:var(--text-primary);
+    border:1px solid var(--hairline-strong);padding:12px 21px;
+  }
+
+  /* ---------------- generic sheet content ---------------- */
+  .pad{padding:15px;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+
+  .sheethead{display:flex;align-items:flex-start;gap:11px;margin-bottom:4px}
+  .sheethead .ico{color:var(--text-primary);margin-top:2px}
+  .sheethead h3{font-size:16px;font-weight:700;letter-spacing:-.022em;line-height:1.25}
+  .sheethead p{font-size:11.5px;color:var(--text-muted);margin-top:3px;letter-spacing:.005em}
+  .x{
+    margin-left:auto;width:26px;height:26px;border-radius:50%;
+    background:var(--elevated);display:flex;align-items:center;justify-content:center;
+    color:var(--text-secondary);flex:0 0 auto;
+  }
+
+  .card{
+    background:var(--raised);border:1px solid var(--hairline);
+    border-radius:14px;padding:13px 14px;
+  }
+  .card.flat{background:var(--surface)}
+
+  .row{display:flex;align-items:center;gap:11px}
+  .row .grow{flex:1;min-width:0}
+  .card h4{font-size:13.5px;font-weight:600;letter-spacing:-.012em;margin-bottom:4px}
+  .card .desc{font-size:11px;color:var(--text-muted);line-height:1.5;letter-spacing:.004em}
+
+  .overline{
+    font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--text-muted);
+  }
+
+  .switch{
+    width:42px;height:24px;border-radius:99px;background:var(--elevated-high);
+    border:1px solid var(--hairline-strong);position:relative;flex:0 0 auto;
+    transition:background .18s,border-color .18s;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--text-muted);transition:transform .2s cubic-bezier(.2,0,0,1),background .18s;
+  }
+  .switch.on{background:var(--accent);border-color:var(--accent)}
+  .switch.on::after{transform:translateX(18px);background:var(--on-accent)}
+  .switch.ok{background:color-mix(in srgb,var(--s-success) 24%,transparent);border-color:color-mix(in srgb,var(--s-success) 55%,transparent)}
+  .switch.ok::after{transform:translateX(18px);background:var(--s-success)}
+
+  .stat{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+  .stat + .stat{border-top:1px solid var(--hairline)}
+  .stat .k{font-size:11.5px;color:var(--text-secondary)}
+  .stat .v{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+  .num{
+    font-size:30px;font-weight:700;letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;line-height:1;
+  }
+
+  .btnrow{display:flex;gap:9px;margin-top:auto}
+  .btn{
+    flex:1;height:44px;border-radius:12px;display:flex;align-items:center;
+    justify-content:center;gap:8px;font-size:12.5px;font-weight:600;
+    letter-spacing:-.002em;
+  }
+  .btn.primary{background:var(--accent);color:var(--on-accent);font-weight:700}
+  .btn.secondary{background:var(--elevated);color:var(--text-primary);border:1px solid var(--hairline)}
+
+  /* ---------------- tab switcher ---------------- */
+  .tabs-mode{
+    display:flex;background:var(--elevated);border:1px solid var(--hairline);
+    border-radius:11px;padding:3px;gap:3px;margin-bottom:12px;
+  }
+  .tabs-mode span{
+    flex:1;text-align:center;padding:8px 0;border-radius:8px;
+    font-size:11.5px;font-weight:700;color:var(--text-secondary);
+    display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .tabs-mode span.active{background:var(--accent);color:var(--on-accent)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;flex:1;align-content:start}
+  .tile{
+    background:var(--raised);border:1px solid var(--hairline);border-radius:12px;
+    padding:11px;display:flex;flex-direction:column;gap:9px;min-height:102px;
+    position:relative;
+  }
+  .tile .top{display:flex;align-items:flex-start;justify-content:space-between}
+  .tile .ico{color:var(--s-success)}
+  .tile .ico.p{color:var(--s-private)}
+  .tile .ico.m{color:var(--text-muted)}
+  .tile .ico.w{color:var(--s-warning)}
+  .tile .ttl{font-size:11px;font-weight:600;color:var(--text-primary);letter-spacing:-.005em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .host{font-size:9.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .kill{color:var(--text-muted)}
+
+  .bottombar{border-top:1px solid var(--hairline);background:var(--surface);padding:11px 16px 14px;flex:0 0 auto}
+
+  .notice{
+    display:flex;gap:9px;background:color-mix(in srgb,var(--s-private) 12%,transparent);
+    border:1px solid color-mix(in srgb,var(--s-private) 32%,transparent);
+    border-radius:11px;padding:11px;font-size:10.5px;line-height:1.5;
+    color:var(--text-primary);letter-spacing:.004em;
+  }
+  .notice .ico{color:var(--s-private);flex:0 0 auto;margin-top:1px}
+
+  /* ---------------- settings list ---------------- */
+  .list{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
+  .lrow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--hairline)}
+  .lrow:last-child{border-bottom:none}
+  .lrow .ico{color:var(--text-secondary);flex:0 0 auto}
+  .lrow .lt{font-size:12.5px;font-weight:600;letter-spacing:-.008em}
+  .lrow .ls{font-size:10.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.004em}
+  .lrow .chev{color:var(--hairline-strong);margin-left:auto;flex:0 0 auto}
+
+  .legend{
+    max-width:1400px;margin:44px auto 0;display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px;
+  }
+  .lg{background:var(--raised);border:1px solid var(--hairline);border-radius:14px;padding:15px}
+  .lg .lab{font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+  .swatches{display:flex;gap:6px;flex-wrap:wrap}
+  .sw{width:38px;height:38px;border-radius:9px;border:1px solid var(--hairline)}
+  .lg p{font-size:11px;color:var(--text-secondary);line-height:1.55;margin-top:11px;letter-spacing:.004em}
+  .footer{max-width:1400px;margin:38px auto 0;font-size:11.5px;color:var(--text-muted);line-height:1.7}
+  .footer code{color:var(--text-secondary);font-size:11px}
+</style>
+</head>
+<body>
+
+<!-- ===================== ICON SPRITE ===================== -->
+<!-- Same geometry as MusifyIcons.kt: 24dp viewport, 1.7 stroke, round caps -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-shield"><path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/></g>
+    <g id="i-shieldcheck">
+      <path d="M12 2.6 20 5.9v5.9c0 4.9-3.4 8.5-8 9.8-4.6-1.3-8-4.9-8-9.8V5.9Z"/>
+      <path d="M8.9 11.9 11.2 14.3 15.5 9.3"/>
+    </g>
+    <g id="i-lock">
+      <path d="M8 10.4V7.6C8 5.2 9.7 3.6 12 3.6s4 1.6 4 4v2.8"/>
+      <path d="M5.6 10.4h12.8V20H5.6Z"/>
+    </g>
+    <g id="i-lockopen">
+      <path d="M8 10.4V7.6C8 5.2 9.7 3.6 12 3.6s4 1.6 4 4.2"/>
+      <path d="M5.6 10.4h12.8V20H5.6Z"/>
+    </g>
+    <g id="i-warning">
+      <path d="M12 3.4 21.2 19.6H2.8Z"/>
+      <path d="M12 9.4v4.6"/>
+      <path d="M12 16.7v.05"/>
+    </g>
+    <g id="i-incognito">
+      <path d="M2.6 12c2.3-4 5.6-5.9 9.4-5.9S19.1 8 21.4 12c-2.3 4-5.6 5.9-9.4 5.9S4.9 16 2.6 12Z"/>
+      <circle cx="12" cy="12" r="2.5"/>
+      <path d="M4.4 4.4 19.6 19.6"/>
+    </g>
+    <g id="i-globe">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M3 12h18"/>
+      <path d="M12 3c-3.3 0-3.3 18 0 18"/>
+      <path d="M12 3c3.3 0 3.3 18 0 18"/>
+    </g>
+    <g id="i-search">
+      <circle cx="10.8" cy="10.8" r="7.2"/>
+      <path d="M16.2 16.2 21 21"/>
+    </g>
+    <g id="i-clock">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 6.8v5.4l3.9 2.3"/>
+    </g>
+    <g id="i-star"><path d="M12 3.5 14.12 9.59 20.56 9.72 15.42 13.61 17.29 19.78 12 16.1 6.71 19.78 8.58 13.61 3.44 9.72 9.88 9.59Z" fill="currentColor" stroke="none"/></g>
+    <g id="i-starline"><path d="M12 3.5 14.12 9.59 20.56 9.72 15.42 13.61 17.29 19.78 12 16.1 6.71 19.78 8.58 13.61 3.44 9.72 9.88 9.59Z"/></g>
+    <g id="i-arrowleft"><path d="M19.4 12H4.8"/><path d="M11 5.6 4.8 12l6.2 6.4"/></g>
+    <g id="i-arrowright"><path d="M4.6 12h14.6"/><path d="M13 5.6 19.2 12 13 18.4"/></g>
+    <g id="i-close"><path d="M6.4 6.4 17.6 17.6"/><path d="M17.6 6.4 6.4 17.6"/></g>
+    <g id="i-plus"><path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/></g>
+    <g id="i-more"><circle cx="12" cy="5.4" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="18.6" r="1.1" fill="currentColor" stroke="none"/></g>
+    <g id="i-tabs"><path d="M8.4 8.4V3.4h12.2v12.2h-5"/><path d="M3.4 8.4h12.2v12.2H3.4Z"/></g>
+    <g id="i-reload"><path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 16.22 7.78L13 11h7V4Z" fill="currentColor" stroke="none"/></g>
+    <g id="i-desktop"><path d="M2.8 4.4h18.4v11.8H2.8Z"/><path d="M12 16.2v3.4"/><path d="M9 19.6h6"/></g>
+    <g id="i-mobile"><path d="M7 2.8h10v18.4H7Z"/><path d="M10.6 18.4h2.8"/></g>
+    <g id="i-download"><path d="M12 3.2v12"/><path d="M7.4 10.6 12 15.2l4.6-4.6"/><path d="M4 17.2v3.2h16v-3.2"/></g>
+    <g id="i-trash"><path d="M4.4 6.6h15.2"/><path d="M9.4 6.6V4.2h5.2v2.4"/><path d="M6.6 6.6 7.8 20.4h8.4l1.2-13.8"/></g>
+    <g id="i-document"><path d="M6.2 2.8h8.2l4.2 4.2v14.2H6.2Z"/><path d="M14.4 2.8V7h4.2"/><path d="M9.4 11.6h6"/><path d="M9.4 15.4h6"/></g>
+    <g id="i-music"><path d="M10.9 16.6V5.4L20 3.4v11.2"/><circle cx="8.3" cy="16.6" r="2.6"/><circle cx="17.4" cy="14.6" r="2.6"/></g>
+    <g id="i-settings"><path d="M3.6 7.4h16.8"/><path d="M3.6 16.6h16.8"/><circle cx="9.4" cy="7.4" r="2.4"/><circle cx="15.2" cy="16.6" r="2.4"/></g>
+    <g id="i-check"><path d="M4.8 12.6 9.6 17.4 19.2 6.6"/></g>
+    <g id="i-bolt"><path d="M13.4 2.6 5.2 13.4h6l-.6 8 8.2-10.8h-6Z" fill="currentColor" stroke="none"/></g>
+    <g id="i-flask"><path d="M9.4 2.8h5.2"/><path d="M10.6 2.8v6.6l-6.2 9.8c-.6 1.2.2 2 1.4 2h12.4c1.2 0 2-.8 1.4-2l-6.2-9.8V2.8"/><path d="M7.4 15.4h9.2"/></g>
+    <g id="i-blocked"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6 18.4 18.4"/></g>
+    <g id="i-location"><path d="M12 21.4s7-6.8 7-11.8A7 7 0 0 0 5 9.6c0 5 7 11.8 7 11.8Z"/><circle cx="12" cy="9.6" r="2.6"/></g>
+    <g id="i-link"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1H11V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12ZM8 13h8v-2H8v2Zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10Z" fill="currentColor" stroke="none"/></g>
+    <g id="i-external"><path d="M13.4 3.6h7v7"/><path d="M20.4 3.6 11.2 12.8"/><path d="M17.2 14.2v5.6H4.4V7h5.6"/></g>
+    <g id="i-map"><path d="M2.8 6.2 9 3.4l6 2.8 6.2-2.8v14.4L15 20.6l-6-2.8-6.2 2.8Z"/><path d="M9 3.4v14.4"/><path d="M15 6.2v14.4"/></g>
+    <g id="i-info"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5.4"/><path d="M12 7.6v.05"/></g>
+    <g id="i-help"><circle cx="12" cy="12" r="9"/><path d="M9.4 9.4c0-2 1.2-3 2.6-3s2.6 1 2.6 2.5c0 2-2.6 2.3-2.6 4.5"/><path d="M12 16.4v.05"/></g>
+    <g id="i-emblem">
+      <path d="M12 1.8 21.2 5.5V12c0 5.6-3.9 9.7-9.2 11.2C6.7 21.7 2.8 17.6 2.8 12V5.5Z" stroke-width="1.5"/>
+      <path d="M11.1 16.2V9.2l4.3-.9" stroke-width="1.5"/>
+      <circle cx="9.6" cy="16.2" r="1.5" stroke-width="1.5"/>
+    </g>
+  </defs>
+</svg>
+
+<header class="page-head">
+  <div class="eyebrow">Musify · UI Redesign</div>
+  <h1>Obsidian — a strictly monochrome Musify.</h1>
+  <p class="sub">
+    True black canvas, white as the single accent, and a short ladder of neutral greys
+    carrying all hierarchy. Emoji replaced with a consistent 1.7-stroke vector icon set;
+    Inter bundled for the type.
+  </p>
+  <div class="controls">
+    <div class="toggle on" id="semToggle">
+      <span class="dot"></span><span id="semLabel">Security colour: on</span>
+    </div>
+    <div class="toggle" onclick="document.body.classList.toggle('dense')">
+      <span class="dot"></span><span>Tip: scroll the row →</span>
+    </div>
+  </div>
+</header>
+
+<div class="rack">
+
+  <!-- ============ 1. HOME / NEW TAB ============ -->
+  <div class="slot">
+    <h2>New Tab · Omnibar</h2>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>2:50</span><span class="right">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/><path d="M3 14h2M8 12h2M13 9h2M18 6h2" opacity=".55"/></svg>
+      </span></div>
+      <div class="screen">
+        <div class="chrome">
+          <div class="chrome-top">
+            <div class="origin">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--s-success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+              <span class="url">musify://home</span>
+            </div>
+            <span class="chip ok">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>
+              Shields
+            </span>
+            <span class="chip">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-mobile"/></svg>
+              Mobile
+            </span>
+            <span class="chip solid">1</span>
+            <span class="chip" style="padding:4px 6px">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-more"/></svg>
+            </span>
+          </div>
+          <div class="omnibar-row">
+            <div class="navbtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg>
+            </div>
+            <div class="navbtn on">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg>
+            </div>
+            <div class="field">
+              <span class="ph">Search DuckDuckGo or enter URL…</span>
+            </div>
+            <div class="navbtn on">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-reload"/></svg>
+            </div>
+          </div>
+          <div class="quickrow">
+            <span class="q"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flask"/></svg>Fixture</span>
+            <span class="q"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>Wikipedia</span>
+            <span class="q"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg>Mozilla</span>
+            <span class="q"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-blocked"/></svg>BadSSL</span>
+          </div>
+        </div>
+
+        <div class="home">
+          <div class="emblem">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-emblem"/></svg>
+          </div>
+          <h3>Musify Browser</h3>
+          <div class="tag">Zero Telemetry · Multi-Tab Isolation · Strict TLS</div>
+          <div class="cta">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search"/></svg>
+            DuckDuckGo Search
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. PRIVACY SHIELDS ============ -->
+  <div class="slot">
+    <h2>Privacy Shields</h2>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>2:50</span><span class="right">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="screen">
+        <div class="chrome" style="border-radius:0">
+          <div class="chrome-top">
+            <div class="origin">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--s-success)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+              <span class="url">open.spotify.com</span>
+            </div>
+            <span class="chip ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>2</span>
+            <span class="chip solid">2</span>
+          </div>
+          <div class="omnibar-row">
+            <div class="field"><span class="val">https://open.spotify.com/se…</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-starline"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pad">
+          <div class="sheethead">
+            <div class="ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg>
+            </div>
+            <div>
+              <h3>Privacy Shields</h3>
+              <p>https://open.spotify.com</p>
+            </div>
+            <div class="x">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg>
+            </div>
+          </div>
+
+          <div class="card flat">
+            <div class="row">
+              <div class="grow">
+                <h4 style="color:var(--s-success);margin-bottom:5px">Shields active on this site</h4>
+                <div class="desc">Cross-site trackers and fingerprinters blocked.</div>
+              </div>
+              <span class="switch ok"></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="row">
+              <div class="grow">
+                <h4>Mobile site active</h4>
+                <div class="desc">Request desktop site for web apps needing full layout.</div>
+              </div>
+              <span class="switch"></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="overline" style="margin-bottom:12px">Requests blocked</div>
+            <div class="row" style="align-items:flex-end;margin-bottom:14px">
+              <span class="num">0</span>
+              <span style="font-size:10.5px;color:var(--text-muted);padding-bottom:3px">on this page</span>
+            </div>
+            <div class="stat"><span class="k">Advertising &amp; analytics</span><span class="v">0</span></div>
+            <div class="stat"><span class="k">Cross-site social trackers</span><span class="v">0</span></div>
+            <div class="stat" style="border-bottom:none"><span class="k">Cryptomining scripts</span><span class="v">0</span></div>
+          </div>
+
+          <div class="card flat">
+            <div class="row">
+              <div class="grow">
+                <h4>AdGuard &amp; System DNS</h4>
+                <div class="desc">System default DNS</div>
+              </div>
+              <span class="chip">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-settings"/></svg>
+                Configure
+              </span>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:auto">
+            <div class="btn secondary" style="font-size:11.5px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-reload"/></svg>
+              Reset protections
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3. TAB SWITCHER ============ -->
+  <div class="slot">
+    <h2>Tab Switcher</h2>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>2:50</span><span class="right">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="screen">
+        <div class="pad" style="padding-top:20px">
+          <div class="tabs-mode">
+            <span class="active">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg>
+              Tabs (6)
+            </span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-incognito"/></svg>
+              Private (2)
+            </span>
+          </div>
+
+          <div class="grid">
+            <div class="tile">
+              <div class="top">
+                <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">Spotify — Web Player</div><div class="host">open.spotify.com</div></div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <div class="ico p"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-incognito"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">Private Search</div><div class="host">duckduckgo.com</div></div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">GeckoView Docs</div><div class="host">mozilla.org</div></div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <div class="ico m"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">Musify Home</div><div class="host">musify://home</div></div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">Wikipedia — GeckoView</div><div class="host">en.wikipedia.org</div></div>
+            </div>
+            <div class="tile">
+              <div class="top">
+                <div class="ico w"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lockopen"/></svg></div>
+                <div class="kill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-close"/></svg></div>
+              </div>
+              <div><div class="ttl">Expired TLS Test</div><div class="host">expired.badssl.com</div></div>
+            </div>
+          </div>
+
+          <div class="notice">
+            <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-incognito"/></svg></div>
+            Private Browsing: tabs, history and cookies are kept in memory only and permanently erased when closed.
+          </div>
+        </div>
+
+        <div class="bottombar">
+          <div class="btn primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg>
+            New Tab
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 4. ONBOARDING ============ -->
+  <div class="slot">
+    <h2>Onboarding</h2>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>2:50</span><span class="right">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="screen">
+        <div class="pad" style="padding-top:26px">
+          <div class="emblem" style="text-align:center;color:var(--text-primary)">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-emblem"/></svg>
+          </div>
+
+          <div style="text-align:center;margin-bottom:10px">
+            <h3 style="font-size:21px;font-weight:700;letter-spacing:-.03em;margin-bottom:9px">Welcome to Musify</h3>
+            <div class="desc" style="font-size:11.5px;color:var(--text-secondary);line-height:1.6">
+              A privacy-first browser built on Mozilla GeckoView. No accounts, no telemetry, no remote browsing surveillance.
+            </div>
+          </div>
+
+          <div class="card" style="display:flex;flex-direction:column;gap:15px;margin-top:6px">
+            <div class="row" style="align-items:flex-start">
+              <span style="width:30px;height:30px;border-radius:50%;background:var(--ink);border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;color:var(--text-primary);flex:0 0 auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg>
+              </span>
+              <div class="grow">
+                <h4>Zero telemetry</h4>
+                <div class="desc">No trackers, crash beacons or profile analytics. What you browse stays on your device.</div>
+              </div>
+            </div>
+            <div class="row" style="align-items:flex-start">
+              <span style="width:30px;height:30px;border-radius:50%;background:var(--ink);border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;color:var(--text-primary);flex:0 0 auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-blocked"/></svg>
+              </span>
+              <div class="grow">
+                <h4>Ad &amp; tracker blocking</h4>
+                <div class="desc">A bundled offline filter engine stops surveillance networks before they load.</div>
+              </div>
+            </div>
+            <div class="row" style="align-items:flex-start">
+              <span style="width:30px;height:30px;border-radius:50%;background:var(--ink);border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;color:var(--text-primary);flex:0 0 auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+              </span>
+              <div class="grow">
+                <h4>Deny-by-default security</h4>
+                <div class="desc">Exact-origin isolation, strict HTTPS checks and sandboxed downloads.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btnrow">
+            <div class="btn secondary" style="font-size:11.5px">Learn more</div>
+            <div class="btn primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg>
+              Start browsing
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 5. SETTINGS ============ -->
+  <div class="slot">
+    <h2>Data &amp; Privacy Controls</h2>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>2:50</span><span class="right">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h2M8 18h2M13 18h2M18 18h2" opacity=".9"/></svg>
+      </span></div>
+      <div class="screen">
+        <div class="pad" style="padding-top:18px">
+          <div class="row" style="margin-bottom:6px">
+            <span class="chip" style="padding:6px 8px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowleft"/></svg>
+              Back
+            </span>
+          </div>
+          <div style="margin-bottom:4px">
+            <h3 style="font-size:19px;font-weight:700;letter-spacing:-.028em">Data &amp; Privacy</h3>
+            <div class="desc" style="font-size:11px;color:var(--text-muted);margin-top:5px">Everything on this device. Nothing leaves it.</div>
+          </div>
+
+          <div class="list" style="margin-top:8px">
+            <div class="lrow">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-starline"/></svg></span>
+              <div><div class="lt">Bookmarks</div><div class="ls">12 saved locally</div></div>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></span>
+            </div>
+            <div class="lrow">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg></span>
+              <div><div class="lt">Browsing history</div><div class="ls">Normal tabs only</div></div>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></span>
+            </div>
+            <div class="lrow">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"/></svg></span>
+              <div><div class="lt">Downloads</div><div class="ls">Sandboxed storage</div></div>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></span>
+            </div>
+            <div class="lrow">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-location"/></svg></span>
+              <div><div class="lt">Site permissions</div><div class="ls">Deny-by-default for all origins</div></div>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></span>
+            </div>
+            <div class="lrow">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shieldcheck"/></svg></span>
+              <div><div class="lt">Filter lists</div><div class="ls">2 lists · 118,402 rules</div></div>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowright"/></svg></span>
+            </div>
+          </div>
+
+          <div class="btnrow">
+            <div class="btn secondary" style="color:var(--s-danger);border-color:color-mix(in srgb,var(--s-danger) 34%,transparent)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-trash"/></svg>
+              Clear all data
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== LEGEND ===================== -->
+<section class="legend">
+  <div class="lg">
+    <div class="lab">Surface ladder</div>
+    <div class="swatches">
+      <div class="sw" style="background:#000000"></div>
+      <div class="sw" style="background:#0A0A0A"></div>
+      <div class="sw" style="background:#111111"></div>
+      <div class="sw" style="background:#171717"></div>
+      <div class="sw" style="background:#1F1F1F"></div>
+      <div class="sw" style="background:#242424"></div>
+      <div class="sw" style="background:#343434"></div>
+    </div>
+    <p>Ink → Surface → Raised → Elevated → High → hairline → strong. Hierarchy comes from light, not hue.</p>
+  </div>
+  <div class="lg">
+    <div class="lab">Text ladder</div>
+    <div class="swatches">
+      <div class="sw" style="background:#FAFAFA"></div>
+      <div class="sw" style="background:#A3A3A3"></div>
+      <div class="sw" style="background:#6E6E6E"></div>
+      <div class="sw" style="background:#FFFFFF"></div>
+    </div>
+    <p>Primary 93% → secondary 64% → muted 43%. White is the accent and also the primary action colour.</p>
+  </div>
+  <div class="lg">
+    <div class="lab">Security semantics</div>
+    <div class="swatches">
+      <div class="sw" style="background:var(--s-success)"></div>
+      <div class="sw" style="background:var(--s-warning)"></div>
+      <div class="sw" style="background:var(--s-danger)"></div>
+      <div class="sw" style="background:var(--s-private)"></div>
+    </div>
+    <p>Secure, caution, danger, private. The only chromatic values in the product — used nowhere else. Toggle above to grey them out.</p>
+  </div>
+  <div class="lg">
+    <div class="lab">Type scale · Inter</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.03em">Display 26/700</div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-.012em">Title 16/600</div>
+      <div style="font-size:13.5px;font-weight:400;color:var(--text-secondary)">Body 13.5/400</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--text-muted)">OVERLINE 10/700</div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <p>
+    <strong style="color:var(--text-secondary)">Status:</strong> this preview mirrors the shipped Kotlin theme
+    (<code>ui/theme/Color.kt</code>, <code>Type.kt</code>, <code>Theme.kt</code>, <code>MusifyIcons.kt</code>, <code>Components.kt</code>)
+    and <code>:app:compileDebugKotlin</code> passes. Glyphs shown here are the same 24dp / 1.7-stroke vector
+    geometry as <code>MusifyIcons</code>.
+  </p>
+  <p style="margin-top:9px">
+    Note: the in-app preview sandbox blocks external requests, so Inter falls back to your system UI font here.
+    Inside the APK, Inter is bundled as a variable font and renders as designed.
+  </p>
+</div>
+
+<script>
+  const t = document.getElementById('semToggle');
+  const lab = document.getElementById('semLabel');
+  t.addEventListener('click', () => {
+    t.classList.toggle('on');
+    document.body.classList.toggle('mono-only');
+    lab.textContent = document.body.classList.contains('mono-only')
+      ? 'Security colour: off (strict mono)'
+      : 'Security colour: on';
+  });
+</script>
+
+</body>
+</html>

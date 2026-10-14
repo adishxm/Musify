@@ -42,19 +42,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.release.ReleaseInfoRegistry
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentBlue
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.StatusOrange
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.AccentMuted
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Warning
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
+import com.musify.browser.ui.theme.Warning
 @Composable
 fun ReleaseInfoScreen(
     modifier: Modifier = Modifier,
@@ -62,11 +64,16 @@ fun ReleaseInfoScreen(
     onClose: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(initialTab) }
-    val tabs = listOf("ℹ About", "📜 Privacy", "⚠ Limitations", "❓ Data & Help")
+    val tabs = listOf(
+        MusifyIcons.Info to "About",
+        MusifyIcons.Document to "Privacy",
+        MusifyIcons.Warning to "Limitations",
+        MusifyIcons.Help to "Data & Help"
+    )
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = BackgroundDark
+        color = Ink
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Top Bar
@@ -85,15 +92,15 @@ fun ReleaseInfoScreen(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(SurfaceDark)
-                            .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
+                            .background(Surface)
+                            .border(1.dp, Hairline, RoundedCornerShape(10.dp))
                             .clickable(onClick = onClose)
                             .semantics {
                                 contentDescription = "Back to browser"
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("←", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        MusifyIcon(MusifyIcons.ArrowLeft, size = 20.dp, tint = TextPrimary)
                     }
 
                     Column {
@@ -106,7 +113,7 @@ fun ReleaseInfoScreen(
                         Text(
                             text = "Musify ${ReleaseInfoRegistry.METADATA.versionName}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = AccentCyan
+                            color = Accent
                         )
                     }
                 }
@@ -115,18 +122,25 @@ fun ReleaseInfoScreen(
             // Tab Selector
             ScrollableTabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = SurfaceDark,
-                contentColor = AccentCyan,
+                containerColor = Surface,
+                contentColor = Accent,
                 edgePadding = 16.dp
             ) {
-                tabs.forEachIndexed { index, title ->
+                tabs.forEachIndexed { index, (tabIcon, title) ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
+                        icon = {
+                            MusifyIcon(
+                                tabIcon,
+                                size = 15.dp,
+                                tint = if (selectedTab == index) Accent else TextSecondary
+                            )
+                        },
                         text = {
                             Text(
                                 text = title,
-                                color = if (selectedTab == index) AccentCyan else TextSecondary,
+                                color = if (selectedTab == index) Accent else TextSecondary,
                                 fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 13.sp
                             )
@@ -167,8 +181,8 @@ private fun AboutTabContent() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -181,7 +195,7 @@ private fun AboutTabContent() {
                         .clip(RoundedCornerShape(14.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(AccentCyan, AccentBlue, AccentPurple)
+                                listOf(Accent, AccentMuted, Private)
                             )
                         ),
                     contentAlignment = Alignment.Center
@@ -198,7 +212,7 @@ private fun AboutTabContent() {
                 Text(
                     text = "v${meta.versionName} (Build ${meta.versionCode})",
                     style = MaterialTheme.typography.bodySmall,
-                    color = AccentCyan
+                    color = Accent
                 )
                 Text(
                     text = meta.applicationId,
@@ -212,8 +226,8 @@ private fun AboutTabContent() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -238,8 +252,8 @@ private fun AboutTabContent() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -286,8 +300,8 @@ private fun PrivacyTabContent() {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -297,11 +311,11 @@ private fun PrivacyTabContent() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("🛡", fontSize = 16.sp)
+                        MusifyIcon(MusifyIcons.Shield, size = 16.dp, tint = Accent)
                         Text(
                             text = section.title,
                             style = MaterialTheme.typography.titleSmall,
-                            color = StatusGreen,
+                            color = Success,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -349,8 +363,8 @@ private fun LimitationsTabContent() {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -360,11 +374,11 @@ private fun LimitationsTabContent() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("⚠", fontSize = 16.sp)
+                        MusifyIcon(MusifyIcons.Warning, size = 16.dp, tint = Warning)
                         Text(
                             text = limitation.title,
                             style = MaterialTheme.typography.titleSmall,
-                            color = StatusOrange,
+                            color = Warning,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -406,8 +420,8 @@ private fun HelpAndDataClearTabContent() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -416,7 +430,7 @@ private fun HelpAndDataClearTabContent() {
                 Text(
                     text = "Permanent Removal Steps",
                     style = MaterialTheme.typography.titleSmall,
-                    color = AccentCyan,
+                    color = Accent,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
@@ -431,8 +445,8 @@ private fun HelpAndDataClearTabContent() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -452,7 +466,7 @@ private fun HelpAndDataClearTabContent() {
                 Text(
                     text = ReleaseInfoRegistry.METADATA.issueTrackerUrl,
                     style = MaterialTheme.typography.bodySmall,
-                    color = AccentCyan,
+                    color = Accent,
                     fontWeight = FontWeight.SemiBold
                 )
             }

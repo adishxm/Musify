@@ -34,19 +34,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentBlue
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
+import com.musify.browser.ui.theme.AccentMuted
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.MusifyIcons
 import com.musify.browser.ui.theme.MusifyTheme
-import com.musify.browser.ui.theme.StatusGreen
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.Success
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 @Composable
 fun LandingScreen(
     modifier: Modifier = Modifier,
@@ -57,7 +58,7 @@ fun LandingScreen(
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = BackgroundDark
+        color = Ink
     ) {
         Column(
             modifier = Modifier
@@ -82,7 +83,7 @@ fun LandingScreen(
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 Brush.linearGradient(
-                                    listOf(AccentCyan, AccentBlue, AccentPurple)
+                                    listOf(Accent, AccentMuted, Private)
                                 )
                             ),
                         contentAlignment = Alignment.Center
@@ -113,14 +114,14 @@ fun LandingScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(SurfaceDark)
-                        .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+                        .background(Surface)
+                        .border(1.dp, Hairline, RoundedCornerShape(16.dp))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = "Phase 02",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentCyan
+                        color = Accent
                     )
                 }
             }
@@ -129,8 +130,8 @@ fun LandingScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(StatusGreen.copy(alpha = 0.5f), CardBorder)))
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(Success.copy(alpha = 0.5f), Hairline)))
             ) {
                 Row(
                     modifier = Modifier
@@ -143,7 +144,7 @@ fun LandingScreen(
                         modifier = Modifier
                             .size(10.dp)
                             .clip(CircleShape)
-                            .background(StatusGreen)
+                            .background(Success)
                     )
                     Column {
                         Text(
@@ -170,14 +171,15 @@ fun LandingScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text(
-                        text = "🌐 Open Browser",
-                        color = BackgroundDark,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                    IconLabel(
+                        MusifyIcons.Globe,
+                        "Open Browser",
+                        tint = Ink,
+                        iconSize = 16.dp,
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
 
@@ -186,14 +188,15 @@ fun LandingScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = Elevated),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text(
-                        text = "⚡ Engine Spike",
-                        color = TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
+                    IconLabel(
+                        MusifyIcons.Bolt,
+                        "Engine Spike",
+                        tint = TextPrimary,
+                        iconSize = 15.dp,
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
             }
@@ -202,8 +205,8 @@ fun LandingScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(CardBorder, SurfaceLightDark)))
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(Hairline, Elevated)))
             ) {
                 Column(
                     modifier = Modifier
@@ -243,7 +246,7 @@ fun LandingScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                colors = CardDefaults.cardColors(containerColor = Surface),
                 border = CardDefaults.outlinedCardBorder()
             ) {
                 Column(
@@ -298,7 +301,7 @@ private fun ScopeItem(
                 .padding(top = 4.dp)
                 .size(6.dp)
                 .clip(CircleShape)
-                .background(AccentCyan)
+                .background(Accent)
         )
         Column {
             Text(
@@ -335,8 +338,8 @@ private fun PhaseRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             val statusColor = when {
-                isComplete -> StatusGreen
-                isCurrent -> AccentCyan
+                isComplete -> Success
+                isCurrent -> Accent
                 else -> TextMuted
             }
             Box(
@@ -359,8 +362,8 @@ private fun PhaseRow(
             else -> "QUEUED"
         }
         val badgeColor = when {
-            isComplete -> StatusGreen
-            isCurrent -> AccentCyan
+            isComplete -> Success
+            isCurrent -> Accent
             else -> TextMuted
         }
 

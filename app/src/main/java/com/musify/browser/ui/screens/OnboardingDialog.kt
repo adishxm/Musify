@@ -26,23 +26,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.AccentBlue
-import com.musify.browser.ui.theme.AccentPurple
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
+import com.musify.browser.ui.theme.AccentMuted
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
 import com.musify.browser.ui.theme.TextMuted
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.TextSecondary
-
 @Composable
 fun OnboardingDialog(
     onDismiss: () -> Unit,
@@ -54,8 +56,8 @@ fun OnboardingDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
         ) {
             Column(
                 modifier = Modifier
@@ -71,7 +73,7 @@ fun OnboardingDialog(
                         .clip(RoundedCornerShape(16.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(AccentCyan, AccentBlue, AccentPurple)
+                                listOf(Accent, AccentMuted, Private)
                             )
                         ),
                     contentAlignment = Alignment.Center
@@ -103,22 +105,22 @@ fun OnboardingDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(SurfaceLightDark)
+                        .background(Elevated)
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OnboardingFeatureRow(
-                        icon = "🛡",
+                        icon = MusifyIcons.Shield,
                         title = "Zero Telemetry",
                         description = "No trackers, crash beacons, or profile analytics. What you browse stays on your device."
                     )
                     OnboardingFeatureRow(
-                        icon = "🚫",
+                        icon = MusifyIcons.Blocked,
                         title = "Ad & Tracker Blocking",
                         description = "Bundled offline filter engine stops surveillance networks before they load."
                     )
                     OnboardingFeatureRow(
-                        icon = "🔒",
+                        icon = MusifyIcons.Lock,
                         title = "Deny-by-Default Security",
                         description = "Exact-origin isolation, strict HTTPS checks, and sandboxed downloads."
                     )
@@ -139,12 +141,12 @@ fun OnboardingDialog(
                         .semantics {
                             contentDescription = "Complete onboarding and start browsing"
                         },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Start Browsing",
-                        color = BackgroundDark,
+                        color = Ink,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     )
@@ -156,7 +158,7 @@ fun OnboardingDialog(
 
 @Composable
 private fun OnboardingFeatureRow(
-    icon: String,
+    icon: ImageVector,
     title: String,
     description: String
 ) {
@@ -169,10 +171,10 @@ private fun OnboardingFeatureRow(
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(BackgroundDark),
+                .background(Ink),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = icon, fontSize = 16.sp)
+            MusifyIcon(icon, size = 16.dp, tint = TextPrimary)
         }
 
         Column(modifier = Modifier.weight(1f)) {

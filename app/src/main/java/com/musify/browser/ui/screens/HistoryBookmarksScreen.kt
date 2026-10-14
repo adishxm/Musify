@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -59,19 +60,22 @@ import com.musify.browser.storage.BookmarkRepository
 import com.musify.browser.storage.HistoryItem
 import com.musify.browser.storage.HistoryRepository
 import com.musify.browser.storage.TimeRange
-import com.musify.browser.ui.theme.AccentCyan
-import com.musify.browser.ui.theme.BackgroundDark
-import com.musify.browser.ui.theme.CardBorder
-import com.musify.browser.ui.theme.StatusRed
-import com.musify.browser.ui.theme.SurfaceDark
-import com.musify.browser.ui.theme.SurfaceLightDark
-import com.musify.browser.ui.theme.TextMuted
-import com.musify.browser.ui.theme.TextPrimary
-import com.musify.browser.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+import com.musify.browser.ui.theme.Accent
+import com.musify.browser.ui.theme.Ink
+import com.musify.browser.ui.theme.Hairline
+import com.musify.browser.ui.theme.IconLabel
+import com.musify.browser.ui.theme.MusifyIcon
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.Private
+import com.musify.browser.ui.theme.Danger
+import com.musify.browser.ui.theme.Surface
+import com.musify.browser.ui.theme.Elevated
+import com.musify.browser.ui.theme.TextMuted
+import com.musify.browser.ui.theme.TextPrimary
+import com.musify.browser.ui.theme.TextSecondary
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryBookmarksScreen(
@@ -99,9 +103,9 @@ fun HistoryBookmarksScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = BackgroundDark,
+        containerColor = Ink,
         topBar = {
-            Column(modifier = Modifier.background(SurfaceDark)) {
+            Column(modifier = Modifier.background(Surface)) {
                 TopAppBar(
                     title = {
                         Text(
@@ -112,11 +116,12 @@ fun HistoryBookmarksScreen(
                         )
                     },
                     navigationIcon = {
-                        Text(
-                            text = "◀ Back",
-                            color = AccentCyan,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
+                        IconLabel(
+                            MusifyIcons.ArrowLeft,
+                            "Back",
+                            tint = Accent,
+                            iconSize = 14.dp,
+                            style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .clickable(onClick = onClose)
@@ -131,7 +136,7 @@ fun HistoryBookmarksScreen(
                         if (selectedTab == 1 && historyItems.isNotEmpty()) {
                             Text(
                                 text = "Clear...",
-                                color = StatusRed,
+                                color = Danger,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier
@@ -146,7 +151,7 @@ fun HistoryBookmarksScreen(
                         } else if (selectedTab == 0 && bookmarkItems.isNotEmpty()) {
                             Text(
                                 text = "Clear All",
-                                color = StatusRed,
+                                color = Danger,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier
@@ -159,7 +164,7 @@ fun HistoryBookmarksScreen(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceDark)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Surface)
                 )
 
                 // Search field
@@ -173,10 +178,10 @@ fun HistoryBookmarksScreen(
                         .padding(horizontal = 16.dp, vertical = 6.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = BackgroundDark,
-                        unfocusedContainerColor = BackgroundDark,
-                        focusedBorderColor = AccentCyan,
-                        unfocusedBorderColor = CardBorder,
+                        focusedContainerColor = Ink,
+                        unfocusedContainerColor = Ink,
+                        focusedBorderColor = Accent,
+                        unfocusedBorderColor = Hairline,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary
                     )
@@ -185,24 +190,40 @@ fun HistoryBookmarksScreen(
                 // Tabs: Bookmarks | History
                 TabRow(
                     selectedTabIndex = selectedTab,
-                    containerColor = SurfaceDark,
-                    contentColor = AccentCyan,
+                    containerColor = Surface,
+                    contentColor = Accent,
                     indicator = { tabPositions ->
                         TabRowDefaults.SecondaryIndicator(
                             Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = AccentCyan
+                            color = Accent
                         )
                     }
                 ) {
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        text = { Text("★ Bookmarks (${bookmarkItems.size})", fontWeight = FontWeight.SemiBold) }
+                        text = {
+                            IconLabel(
+                                MusifyIcons.StarFilled,
+                                "Bookmarks (${bookmarkItems.size})",
+                                tint = TextPrimary,
+                                iconSize = 15.dp,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     )
                     Tab(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        text = { Text("🕒 History (${historyItems.size})", fontWeight = FontWeight.SemiBold) }
+                        text = {
+                            IconLabel(
+                                MusifyIcons.Clock,
+                                "History (${historyItems.size})",
+                                tint = TextPrimary,
+                                iconSize = 15.dp,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     )
                 }
             }
@@ -217,7 +238,7 @@ fun HistoryBookmarksScreen(
                 // Bookmarks list
                 if (bookmarkItems.isEmpty()) {
                     EmptyStoragePlaceholder(
-                        icon = "★",
+                        icon = MusifyIcons.StarFilled,
                         title = "No Bookmarks Yet",
                         subtitle = "Tap the star icon in the address bar while browsing to save bookmarks."
                     )
@@ -243,7 +264,7 @@ fun HistoryBookmarksScreen(
                 // History list
                 if (historyItems.isEmpty()) {
                     EmptyStoragePlaceholder(
-                        icon = "🕒",
+                        icon = MusifyIcons.Clock,
                         title = "No History Records",
                         subtitle = "Visited pages in normal tabs appear here. Private tabs never save history."
                     )
@@ -293,8 +314,8 @@ private fun BookmarkRow(
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
     ) {
         Row(
             modifier = Modifier
@@ -302,7 +323,12 @@ private fun BookmarkRow(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("★", color = AccentCyan, fontSize = 18.sp, modifier = Modifier.padding(end = 12.dp))
+            MusifyIcon(
+                            MusifyIcons.StarFilled,
+                            size = 18.dp,
+                            tint = Accent,
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
@@ -325,11 +351,11 @@ private fun BookmarkRow(
                 modifier = Modifier
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(SurfaceLightDark)
+                    .background(Elevated)
                     .clickable(onClick = onDelete),
                 contentAlignment = Alignment.Center
             ) {
-                Text("✕", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                MusifyIcon(MusifyIcons.Close, size = 14.dp, tint = TextSecondary)
             }
         }
     }
@@ -352,8 +378,8 @@ private fun HistoryRow(
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = Surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
     ) {
         Row(
             modifier = Modifier
@@ -386,12 +412,12 @@ private fun HistoryRow(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(SurfaceLightDark)
+                                .background(Elevated)
                                 .padding(horizontal = 6.dp, vertical = 1.dp)
                         ) {
                             Text(
                                 text = "${item.visitCount} visits",
-                                color = AccentCyan,
+                                color = Accent,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -403,18 +429,18 @@ private fun HistoryRow(
                 modifier = Modifier
                     .size(28.dp)
                     .clip(CircleShape)
-                    .background(SurfaceLightDark)
+                    .background(Elevated)
                     .clickable(onClick = onDelete),
                 contentAlignment = Alignment.Center
             ) {
-                Text("✕", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                MusifyIcon(MusifyIcons.Close, size = 14.dp, tint = TextSecondary)
             }
         }
     }
 }
 
 @Composable
-private fun EmptyStoragePlaceholder(icon: String, title: String, subtitle: String) {
+private fun EmptyStoragePlaceholder(icon: ImageVector, title: String, subtitle: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -422,7 +448,7 @@ private fun EmptyStoragePlaceholder(icon: String, title: String, subtitle: Strin
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = icon, fontSize = 48.sp)
+            MusifyIcon(icon, size = 48.dp, tint = TextMuted)
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = title, color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(6.dp))
@@ -449,14 +475,14 @@ private fun ClearHistoryDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (selectedRange == range) SurfaceLightDark else BackgroundDark)
+                            .background(if (selectedRange == range) Elevated else Ink)
                             .clickable { selectedRange = range }
                             .padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = if (selectedRange == range) "● " else "○ ",
-                            color = if (selectedRange == range) AccentCyan else TextSecondary
+                            color = if (selectedRange == range) Accent else TextSecondary
                         )
                         Text(
                             text = range.displayName,
@@ -471,7 +497,7 @@ private fun ClearHistoryDialog(
         confirmButton = {
             Button(
                 onClick = { onClear(selectedRange) },
-                colors = ButtonDefaults.buttonColors(containerColor = StatusRed)
+                colors = ButtonDefaults.buttonColors(containerColor = Danger)
             ) {
                 Text("Clear History", color = Color.White)
             }
@@ -479,11 +505,11 @@ private fun ClearHistoryDialog(
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = SurfaceLightDark)
+                colors = ButtonDefaults.buttonColors(containerColor = Elevated)
             ) {
                 Text("Cancel", color = TextPrimary)
             }
         },
-        containerColor = SurfaceDark
+        containerColor = Surface
     )
 }
