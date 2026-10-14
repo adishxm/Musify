@@ -132,33 +132,28 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-tasks.matching { it.name.contains("merge") && it.name.contains("Assets") }.configureEach {
-    doLast {
-        if (project.hasProperty("BUILD_LITE")) {
+tasks.matching { it.name.contains("Assets") || it.name.startsWith("package") }.configureEach {
+    if (project.hasProperty("BUILD_LITE")) {
+        doFirst {
             val buildDir = project.layout.buildDirectory.asFile.get()
-            val assetsDir = File(buildDir, "intermediates/assets")
-            if (assetsDir.exists()) {
-                assetsDir.walkTopDown().filter { it.name == "omni.ja" }.forEach { file ->
+            if (buildDir.exists()) {
+                buildDir.walkTopDown().filter { it.name.startsWith("omni.ja") }.forEach { file ->
                     val len = file.length()
                     file.delete()
-                    logger.lifecycle("BUILD_LITE: Stripped $file ($len bytes)")
+                    logger.lifecycle("BUILD_LITE: Pre-task cleaned $file ($len bytes)")
+                }
+            }
+        }
+        doLast {
+            val buildDir = project.layout.buildDirectory.asFile.get()
+            if (buildDir.exists()) {
+                buildDir.walkTopDown().filter { it.name.startsWith("omni.ja") }.forEach { file ->
+                    val len = file.length()
+                    file.delete()
+                    logger.lifecycle("BUILD_LITE: Post-task cleaned $file ($len bytes)")
                 }
             }
         }
     }
 }
 
-tasks.matching { it.name.startsWith("package") && it.name.endsWith("Release") }.configureEach {
-    doFirst {
-        if (project.hasProperty("BUILD_LITE")) {
-            val buildDir = project.layout.buildDirectory.asFile.get()
-            val assetsDir = File(buildDir, "intermediates/assets")
-            if (assetsDir.exists()) {
-                assetsDir.walkTopDown().filter { it.name == "omni.ja" }.forEach { file ->
-                    file.delete()
-                    logger.lifecycle("BUILD_LITE: Pre-package cleaned $file")
-                }
-            }
-        }
-    }
-}
