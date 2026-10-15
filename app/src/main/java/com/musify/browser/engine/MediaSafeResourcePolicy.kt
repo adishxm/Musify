@@ -18,6 +18,9 @@ object MediaSafeResourcePolicy {
 
     private val MEDIA_LICENSE_INDICATORS = listOf(
         "widevine",
+        "widevine-license",
+        "spclient.wg.spotify.com/widevine-license",
+        "spclient.wg.spotify.com/license",
         "/license",
         "/drm/",
         "drm-widevine",

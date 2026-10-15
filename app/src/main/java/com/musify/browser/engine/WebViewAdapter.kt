@@ -91,12 +91,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     )
 
     private val spotifyAdKeywords = listOf(
-        "audio-fa.scdn.co",
-        "heads-fa.scdn.co",
-        "video-fa.scdn.co",
         "adeventtracker.spotify.com",
         "adstudio.spotify.com",
         "ads.spotify.com",
+        "pixel.spotify.com",
+        "analytics.spotify.com",
         "/ad-logic/",
         "/ads/",
         "/v1/ads",
@@ -222,6 +221,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     val requestUrl = request?.url?.toString().orEmpty()
                     val host = request?.url?.host.orEmpty()
 
+                    // Safeguard: Never block protected media, Widevine DRM licenses, or manifests
+                    if (MediaSafeResourcePolicy.isMediaOrLicenseRequest(requestUrl)) {
+                        return super.shouldInterceptRequest(view, request)
+                    }
+
                     // Intercept Spotify Audio & Visual Ad networks (checked BEFORE isFirstParty bypass)
                     val isSpotifyAd = spotifyAdKeywords.any { kw ->
                         requestUrl.contains(kw, ignoreCase = true) || host.contains(kw, ignoreCase = true)
@@ -229,17 +233,34 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     if (isSpotifyAd) {
                         _shieldState.value = _shieldState.value.copy(
                             blockedCount = _shieldState.value.blockedCount + 1,
-                            lastBlockedUrl = requestUrl,
+                            lastBlockedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(requestUrl),
                             lastBlockCategory = "Spotify Advertisement"
                         )
-                        return WebResourceResponse(
-                            "text/plain",
-                            "UTF-8",
-                            204,
-                            "No Content",
-                            mapOf("Content-Type" to "text/plain"),
-                            ByteArrayInputStream(ByteArray(0))
-                        )
+                        // Anti-Freeze Response: For spclient ad endpoints, synthesize a 200 OK empty JSON `{}`
+                        // to satisfy Spotify's state machine and prevent playback freeze loop.
+                        val isSpclientAdLogic = requestUrl.contains("spclient.wg.spotify.com/ad-logic", ignoreCase = true) ||
+                                requestUrl.contains("spclient.wg.spotify.com/ads", ignoreCase = true) ||
+                                requestUrl.contains("spclient.wg.spotify.com/v1/ads", ignoreCase = true)
+
+                        return if (isSpclientAdLogic) {
+                            WebResourceResponse(
+                                "application/json",
+                                "UTF-8",
+                                200,
+                                "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to "application/json"),
+                                ByteArrayInputStream("{}".toByteArray(Charsets.UTF_8))
+                            )
+                        } else {
+                            WebResourceResponse(
+                                "text/plain",
+                                "UTF-8",
+                                204,
+                                "No Content",
+                                mapOf("Content-Type" to "text/plain"),
+                                ByteArrayInputStream(ByteArray(0))
+                            )
+                        }
                     }
 
                     if (!_shieldState.value.isProtectionEnabled || _shieldState.value.isOriginException) {
@@ -508,11 +529,27 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         '.Root__ads-container',
                         '[aria-label="Advertisement"]',
                         '[data-testid="interstitial-ad"]',
+                        'div[data-testid="advertisement-row"]',
+                        'aside[aria-label="Upgrade to Premium"]',
+                        '[class*="AdsContainer"]',
+                        '[aria-label="Sponsored"]',
                         'div[data-test="upsell-container"]',
                         '#ad-leaderboard',
                         '#leaderboard',
                         '.main-leaderboard-container',
                         '.desktop-interstitial',
+                        '.upsell-banner',
+                        '[data-testid="track-info-advertiser"]',
+                        '.advertisement',
+                        '.sponsored-playlist',
+                        'div[data-testid="top-banner-ad"]',
+                        'div[data-testid="in-feed-ad"]',
+                        'div[data-testid="tracklist-row-ad"]',
+                        'div[data-testid="billboard-ad"]',
+                        'div[data-testid="leaderboard-ad"]',
+                        'div[data-testid="mpu-ad"]',
+                        'div[data-testid="sponsored-header"]',
+                        'div[data-testid="sponsored-card"]',
                         '[data-testid="open-app-button"]',
                         '[data-testid="install-app-button"]',
                         '[data-testid="smart-banner-pitch"]',
