@@ -1,12 +1,13 @@
 /**
- * Musify Browser - Spotify Web Safe Content Shield & App-Nag Suppressor
+ * Musify Browser - Brave-Aligned Spotify Web Content Shield & Ad Blocker
  *
- * Sanitized for media safety:
- * 1. Suppresses visual ad banners, companion iframes, and sponsored cards via CSS.
- * 2. Suppresses "Open App" / "Install App" banners and smart nags.
- * 3. Prevents deep links from breaking into external Spotify/Play Store apps.
- * 4. NEVER tampers with HTMLMediaElement (no currentTime seeks, no forced muting,
- *    no playbackRate alterations) to preserve native Widevine and audio streams.
+ * Modeled on Brave Shields & adblock-rust cosmetic/scriptlet architecture:
+ * 1. Declarative CSS element-hiding for all known Spotify visual ads, leaderboards,
+ *    companion banners, sponsored playlists, and upsell containers.
+ * 2. Non-destructive modal and promotional nag dismissal.
+ * 3. App-nag suppression and intent sandboxing (spotify:, intent:, spotify.link).
+ * 4. Strictly preserves HTMLMediaElement, Widevine DRM CDM, and media clock integrity
+ *    (zero currentTime/playbackRate/volume tampering).
  */
 (function() {
     'use strict';
@@ -14,28 +15,47 @@
     if (window.__musifySpotifyShieldActive) return;
     window.__musifySpotifyShieldActive = true;
 
-    // Safety flag: Media tampering is strictly disabled to prevent audio corruption
+    // Safety flag: Media tampering is strictly disabled to preserve Widevine EME & hardware audio
     window.__musifyMediaTamperingEnabled = false;
 
-    // 1. Inject pure CSS for visual ad and app-nag suppression
-    function injectAdHidingCSS() {
+    // 1. Brave-Aligned Cosmetic Ad Hiding Stylesheet
+    function injectBraveAdHidingCSS() {
         try {
-            if (document.getElementById('musify-ad-styles')) return;
+            if (document.getElementById('musify-brave-ad-styles')) return;
             const style = document.createElement('style');
-            style.id = 'musify-ad-styles';
+            style.id = 'musify-brave-ad-styles';
             style.textContent = `
-                /* Visual advertisement containers */
+                /* Visual advertisement containers & companion banners */
                 [data-testid="ad-companion-banner"],
                 [data-testid="ad-iframe"],
                 [data-testid="interstitial-ad"],
                 [aria-label="Advertisement"],
                 .Root__ads-container,
+                div[data-testid="advertisement-row"],
+                aside[aria-label="Upgrade to Premium"],
+                [class*="AdsContainer"],
+                [aria-label="Sponsored"],
                 div[data-test="upsell-container"],
                 #ad-leaderboard,
                 #leaderboard,
                 .main-leaderboard-container,
                 .desktop-interstitial,
                 .upsell-banner,
+                [data-testid="track-info-advertiser"],
+                .advertisement,
+                .sponsored-playlist,
+                div[data-testid="top-banner-ad"],
+                div[data-testid="in-feed-ad"],
+                div[data-testid="tracklist-row-ad"],
+                div[data-testid="billboard-ad"],
+                div[data-testid="leaderboard-ad"],
+                div[data-testid="mpu-ad"],
+                div[data-testid="sponsored-header"],
+                div[data-testid="sponsored-card"],
+                div[data-testid="sponsored-title"],
+                div[data-testid="sponsored-recommendation"],
+                div[data-testid="now-playing-widget"] [aria-label*="Advertisement"],
+                section[aria-label="Sponsored Content"],
 
                 /* "Open App" and "Install App" smart banners & buttons */
                 [data-testid="open-app-button"],
@@ -72,10 +92,11 @@
         } catch (_) {}
     }
 
+    // Inject immediately at document start, fallback on DOMContentLoaded
     if (document.head || document.documentElement) {
-        injectAdHidingCSS();
+        injectBraveAdHidingCSS();
     } else {
-        document.addEventListener('DOMContentLoaded', injectAdHidingCSS);
+        document.addEventListener('DOMContentLoaded', injectBraveAdHidingCSS);
     }
 
     // 2. Safe Modal Dialog Dismissal (Non-destructive)
@@ -204,6 +225,7 @@
 
     // 6. Non-Destructive Periodic Sanitation Loop
     function tick() {
+        injectBraveAdHidingCSS();
         dismissAdModals();
         suppressOpenAppPrompts();
     }
