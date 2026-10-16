@@ -87,8 +87,8 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 | Release Variant | Artifact File | File Size | Engine Architecture | Best Used For |
 |---|---|---|---|---|
-| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.59 MB** | System WebKit / Android WebView (`WebViewAdapter`) | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
-| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.59 MB** | System WebKit (`BUILD_LITE=true`) | Minimal storage and memory footprint with zero bundled native binaries. |
+| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.60 MB** | System WebKit / Android WebView (`WebViewAdapter`) | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
+| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.60 MB** | System WebKit (`BUILD_LITE=true`) | Minimal storage and memory footprint with zero bundled native binaries. |
 | **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.55 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
 
 > **Requirements:** Android 8.0 (API 26) or higher. Sideload the APK and launch immediately — no account, sign-in, or setup required.
@@ -119,10 +119,10 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 ### Build Commands
 ```bash
-# Run the complete test suite (159 unit tests across 23 test suites)
+# Run the complete test suite (171 unit tests across 24 test suites)
 ./gradlew testDebugUnitTest
 
-# Assemble Featherweight / Universal Release APK (9.59 MB)
+# Assemble Featherweight / Universal Release APK (9.60 MB)
 ./gradlew assembleRelease -PBUILD_LITE=true
 
 # Assemble Compressed GeckoView ARM64 Release APK (85.55 MB)
@@ -150,6 +150,7 @@ Musify is developed through an evidence-based, test-gated phase plan. Every comp
 | **18–20** | Monochrome screen redesign, floating action bar & minimalist entry launch | ✅ PASS | [PHASE-18](.brain/.report/PHASE-18-REPORT.md) · [PHASE-19](.brain/.report/PHASE-19-REPORT.md) · [PHASE-20](.brain/.report/PHASE-20-REPORT.md) |
 | **21** | **Brave-aligned Spotify ad-shielding & non-destructive content scripting** | ✅ PASS | [PHASE-21](.brain/.report/PHASE-21-REPORT.md) |
 | **22** | **Spotify network shield harmonization, anti-freeze mocking & packaging** | ✅ PASS | [PHASE-22](.brain/.report/PHASE-22-REPORT.md) |
+| **23** | **GeckoView WebExtension network interception, ad-logic redirection & main-world anti-adblock immunity** | ✅ PASS | [PHASE-23](.brain/.report/PHASE-23-REPORT.md) |
 
 ---
 
