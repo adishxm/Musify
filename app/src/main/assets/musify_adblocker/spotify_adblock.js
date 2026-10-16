@@ -1,13 +1,16 @@
 /**
- * Musify Browser - Brave-Aligned Spotify Web Content Shield & Ad Blocker
+ * Musify Browser - Brave-Aligned Spotify Web Content Shield & Ad Bypass Engine
  *
- * Modeled on Brave Shields & adblock-rust cosmetic/scriptlet architecture:
- * 1. Declarative CSS element-hiding for all known Spotify visual ads, leaderboards,
- *    companion banners, sponsored playlists, and upsell containers.
- * 2. Non-destructive modal and promotional nag dismissal.
- * 3. App-nag suppression and intent sandboxing (spotify:, intent:, spotify.link).
- * 4. Strictly preserves HTMLMediaElement, Widevine DRM CDM, and media clock integrity
- *    (zero currentTime/playbackRate/volume tampering).
+ * Modeled on Brave Shields, uBlock Origin & Spicetify adblock architecture:
+ * 1. Main-World fetch & XMLHttpRequest interception: neutralizes Spotify ad-logic and
+ *    commercial break queries with synthetic empty JSON responses to prevent ad queueing
+ *    and eliminate playback freeze loops.
+ * 2. Non-destructive Commercial Break Advancer: detects ad break overlays and automatically
+ *    triggers player progression without modifying HTMLMediaElement clock or muting properties.
+ * 3. Complete cosmetic element-hiding for all desktop and mobile ad cards, banners, and overlays.
+ * 4. Deep-link sandboxing suppressing external app-nag intent schemes.
+ * 5. Strictly preserves Widevine DRM CDM license acquisition and genuine media streams
+ *    (zero currentTime, playbackRate, or volume tampering).
  */
 (function() {
     'use strict';
@@ -18,7 +21,87 @@
     // Safety flag: Media tampering is strictly disabled to preserve Widevine EME & hardware audio
     window.__musifyMediaTamperingEnabled = false;
 
-    // 1. Brave-Aligned Cosmetic Ad Hiding Stylesheet
+    // 1. Inject Main-World Fetch & XHR Interceptor
+    function injectMainWorldHooks() {
+        try {
+            if (document.getElementById('musify-main-world-hooks')) return;
+            const script = document.createElement('script');
+            script.id = 'musify-main-world-hooks';
+            script.textContent = `(${function() {
+                // Hook window.fetch
+                const origFetch = window.fetch;
+                if (origFetch) {
+                    window.fetch = async function(resource, init) {
+                        try {
+                            const url = (typeof resource === 'string' ? resource : (resource && resource.url) || '').toString().toLowerCase();
+                            // Safeguard: Never intercept Widevine DRM licenses or real media streams
+                            if (url.includes('widevine') || url.includes('/license') || url.includes('.mpd') || url.includes('.m3u8')) {
+                                return origFetch.apply(this, arguments);
+                            }
+                            if (
+                                url.includes('spclient.wg.spotify.com/ad-logic') ||
+                                url.includes('spclient.wg.spotify.com/ads') ||
+                                url.includes('spclient.wg.spotify.com/v1/ads') ||
+                                url.includes('spclient.wg.spotify.com/desktop-ad-service') ||
+                                url.includes('spclient.wg.spotify.com/commercial-break') ||
+                                url.includes('spclient.wg.spotify.com/ad-break') ||
+                                url.includes('spclient.wg.spotify.com/track-playback/v1/commercial') ||
+                                url.includes('spclient.wg.spotify.com/melody') ||
+                                url.includes('doubleclick.net') ||
+                                url.includes('scorecardresearch.com')
+                            ) {
+                                return new Response('{}', {
+                                    status: 200,
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                            }
+                        } catch (_) {}
+                        return origFetch.apply(this, arguments);
+                    };
+                }
+
+                // Hook XMLHttpRequest
+                const origOpen = XMLHttpRequest.prototype.open;
+                const origSend = XMLHttpRequest.prototype.send;
+                XMLHttpRequest.prototype.open = function(method, url) {
+                    try {
+                        this.__musifyUrl = (url || '').toString().toLowerCase();
+                    } catch (_) {}
+                    return origOpen.apply(this, arguments);
+                };
+                XMLHttpRequest.prototype.send = function() {
+                    try {
+                        const url = this.__musifyUrl || '';
+                        if (
+                            !url.includes('widevine') && !url.includes('/license') && (
+                                url.includes('ad-logic') ||
+                                url.includes('/ads/') ||
+                                url.includes('desktop-ad-service') ||
+                                url.includes('commercial-break') ||
+                                url.includes('ad-break')
+                            )
+                        ) {
+                            Object.defineProperty(this, 'status', { value: 200, writable: false });
+                            Object.defineProperty(this, 'statusText', { value: 'OK', writable: false });
+                            Object.defineProperty(this, 'responseText', { value: '{}', writable: false });
+                            Object.defineProperty(this, 'response', { value: '{}', writable: false });
+                            Object.defineProperty(this, 'readyState', { value: 4, writable: false });
+                            this.dispatchEvent(new Event('readystatechange'));
+                            this.dispatchEvent(new Event('load'));
+                            return;
+                        }
+                    } catch (_) {}
+                    return origSend.apply(this, arguments);
+                };
+            }})();`;
+            const target = document.head || document.documentElement;
+            if (target) {
+                target.appendChild(script);
+            }
+        } catch (_) {}
+    }
+
+    // 2. Brave-Aligned Cosmetic Ad Hiding Stylesheet
     function injectBraveAdHidingCSS() {
         try {
             if (document.getElementById('musify-brave-ad-styles')) return;
@@ -92,14 +175,44 @@
         } catch (_) {}
     }
 
-    // Inject immediately at document start, fallback on DOMContentLoaded
-    if (document.head || document.documentElement) {
-        injectBraveAdHidingCSS();
-    } else {
-        document.addEventListener('DOMContentLoaded', injectBraveAdHidingCSS);
+    // 3. Non-Destructive Commercial Break Auto-Advancer (Preserves Widevine EME)
+    function advanceCommercialBreaks() {
+        try {
+            const title = (document.title || '').toLowerCase();
+            const isTitleAd = title.includes('advertisement') || title === 'spotify';
+
+            const advertiserEl = document.querySelector(
+                '[data-testid="track-info-advertiser"], ' +
+                '[data-testid="now-playing-widget"] [aria-label*="Advertisement"], ' +
+                '[aria-label="Advertisement"], ' +
+                '.advertisement'
+            );
+
+            const nowPlayingText = (
+                document.querySelector('[data-testid="context-item-info-title"]')?.textContent ||
+                document.querySelector('[data-testid="now-playing-widget"]')?.textContent ||
+                document.querySelector('.now-playing')?.textContent ||
+                ''
+            ).toLowerCase();
+
+            const isNowPlayingAd = nowPlayingText.includes('advertisement');
+            const isAdActive = isTitleAd || Boolean(advertiserEl) || isNowPlayingAd;
+
+            if (isAdActive) {
+                // Safely click next/skip if control button exists
+                const skipBtn = document.querySelector(
+                    'button[data-testid="control-button-skip-forward"], ' +
+                    'button[aria-label="Next"], ' +
+                    'button[aria-label="Skip forward"]'
+                );
+                if (skipBtn && !skipBtn.disabled) {
+                    try { skipBtn.click(); } catch (_) {}
+                }
+            }
+        } catch (_) {}
     }
 
-    // 2. Safe Modal Dialog Dismissal (Non-destructive)
+    // 4. Safe Modal Dialog Dismissal (Non-destructive)
     function dismissAdModals() {
         try {
             const modals = document.querySelectorAll('[data-testid="modal-container"], div[role="dialog"]');
@@ -125,7 +238,7 @@
         } catch (_) {}
     }
 
-    // 3. Safe App-Nag Prompts Suppression
+    // 5. Safe App-Nag Prompts Suppression
     function suppressOpenAppPrompts() {
         try {
             const clickables = document.querySelectorAll('button, a, div[role="button"]');
@@ -161,7 +274,7 @@
         } catch (_) {}
     }
 
-    // 4. Safe Deep-Link Navigation Blocker (Keeps user in Musify)
+    // 6. Safe Deep-Link Navigation Blocker (Keeps user in Musify)
     try {
         document.addEventListener('click', function(e) {
             try {
@@ -204,7 +317,7 @@
         }, true);
     } catch (_) {}
 
-    // 5. Protect window.open from launching external spotify: / intent: schemes
+    // 7. Protect window.open from launching external spotify: / intent: schemes
     try {
         const origWindowOpen = window.open;
         window.open = function(url, ...args) {
@@ -223,15 +336,20 @@
         };
     } catch (_) {}
 
-    // 6. Non-Destructive Periodic Sanitation Loop
+    // 8. Execution loop & Lifecycle hooks
     function tick() {
+        injectMainWorldHooks();
         injectBraveAdHidingCSS();
+        advanceCommercialBreaks();
         dismissAdModals();
         suppressOpenAppPrompts();
     }
 
-    // Execute periodically and via MutationObserver
-    setInterval(tick, 500);
+    // Run immediately
+    tick();
+
+    // Fast-cycle polling for ad transitions
+    setInterval(tick, 300);
 
     const observer = new MutationObserver(() => {
         tick();
