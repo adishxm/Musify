@@ -37,14 +37,35 @@ echo   [1] Musify.apk (Universal Release Build - 9.60 MB, Default)
 echo   [2] Musify-ARM64.apk (Full GeckoView Engine Build - 85.56 MB)
 echo   [3] Musify-Lite.apk (Featherweight System WebView Build - 9.60 MB)
 echo   [4] app-debug.apk (Debug Build with Logcat Instrumentation)
+echo   [5] Wipe AVD Userdata ^& Fresh Cold Boot (Fix disk or snapshot issues)
 echo.
-set /p "APK_CHOICE=Enter choice [1-4, default 1]: "
+set /p "APK_CHOICE=Enter choice [1-5, default 1]: "
 if "%APK_CHOICE%"=="" set "APK_CHOICE=1"
 
+if "%APK_CHOICE%"=="5" (
+    echo.
+    echo [ACTION] Wiping emulator userdata and restarting clean...
+    "%ADB_EXE%" emu kill >nul 2>&1
+    timeout /t 2 >nul
+    del /f /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\*.lock" >nul 2>&1
+    rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\hardware-qemu.ini.lock" >nul 2>&1
+    if exist "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot" (
+        rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot" >nul 2>&1
+    )
+    pushd "%SDK_DIR%\emulator"
+    start "Medium Phone - Musify Emulator (Wiped)" emulator.exe -avd "%AVD_NAME%" -wipe-data
+    popd
+    echo Emulator launched with wiped data. Please re-run test runner once booted.
+    pause
+    exit /b 0
+)
+
+set "PACKAGE_NAME=com.musify.browser"
 if "%APK_CHOICE%"=="1" set "APK_PATH=%~dp0Musify.apk"
 if "%APK_CHOICE%"=="2" set "APK_PATH=%~dp0Musify-ARM64.apk"
 if "%APK_CHOICE%"=="3" set "APK_PATH=%~dp0Musify-Lite.apk"
 if "%APK_CHOICE%"=="4" (
+    set "PACKAGE_NAME=com.musify.browser.debug"
     set "APK_PATH=%~dp0app\build\outputs\apk\debug\app-debug.apk"
     if not exist "!APK_PATH!" (
         echo Building debug APK...
@@ -65,6 +86,11 @@ if %errorlevel% neq 0 (
     echo Starting emulator '%AVD_NAME%'...
     del /f /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\*.lock" >nul 2>&1
     rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\hardware-qemu.ini.lock" >nul 2>&1
+    if exist "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot\ram.img.dirty" (
+        echo Purging corrupted/dirty snapshot...
+        del /f /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot\*" >nul 2>&1
+        rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot" >nul 2>&1
+    )
     pushd "%SDK_DIR%\emulator"
     start "Medium Phone - Musify Emulator" emulator.exe -avd "%AVD_NAME%"
     popd
@@ -75,35 +101,57 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [2/5] Waiting for Android system boot completion...
+echo [2/5] Waiting for Android system and Package Manager readiness...
 :wait_boot
+set "BOOT_STATUS=0"
 for /f "tokens=*" %%a in ('"%ADB_EXE%" shell getprop sys.boot_completed 2^>nul') do set "BOOT_STATUS=%%a"
 if not "!BOOT_STATUS!"=="1" (
     echo Boot in progress... waiting 3 seconds...
     timeout /t 3 >nul
     goto wait_boot
 )
-echo Android system booted successfully!
+
+:wait_pm
+set "PM_READY=0"
+for /f "tokens=*" %%a in ('"%ADB_EXE%" shell pm path android 2^>nul') do (
+    echo %%a | findstr /i "package:" >nul 2>&1
+    if !errorlevel! equ 0 set "PM_READY=1"
+)
+if not "!PM_READY!"=="1" (
+    echo Package Manager initializing... waiting 3 seconds...
+    timeout /t 3 >nul
+    goto wait_pm
+)
+echo Android system and Package Manager are fully ready.
 
 echo.
 echo [3/5] Installing selected APK: %APK_PATH%...
-"%ADB_EXE%" install -r -d "%APK_PATH%"
+"%ADB_EXE%" install -r -d -g "%APK_PATH%"
 if %errorlevel% neq 0 (
-    echo [ERROR] APK installation failed.
-    pause
-    exit /b 1
+    echo [NOTICE] Standard install reported error (possible signature collision or stale cache).
+    echo [NOTICE] Performing clean reinstall: uninstalling existing versions...
+    "%ADB_EXE%" uninstall com.musify.browser >nul 2>&1
+    "%ADB_EXE%" uninstall com.musify.browser.debug >nul 2>&1
+    echo [NOTICE] Retrying installation...
+    "%ADB_EXE%" install -r -g "%APK_PATH%"
+    if !errorlevel! neq 0 (
+        echo [ERROR] Clean APK installation failed.
+        echo Possible cause: Insufficient storage on host or AVD virtual partition.
+        echo Try selecting option [5] from runner menu to wipe userdata.
+        pause
+        exit /b 1
+    )
 )
+echo APK installed successfully!
 
 echo.
-echo [4/5] Launching Musify (MainActivity)...
-"%ADB_EXE%" shell am start -n com.musify.browser/com.musify.browser.MainActivity >nul 2>&1
-if %errorlevel% neq 0 (
-    "%ADB_EXE%" shell am start -n com.musify.browser.debug/com.musify.browser.MainActivity
-)
+echo [4/5] Launching Musify (!PACKAGE_NAME!)...
+"%ADB_EXE%" shell am start -n !PACKAGE_NAME!/com.musify.browser.MainActivity
 
 echo.
 echo [5/5] Musify launched successfully!
 echo ========================================================
+echo  Target Package: !PACKAGE_NAME!
 echo  Ready to verify Brave-Aligned Shields:
 echo.
 echo  Quick Test Shortcuts:
@@ -121,32 +169,32 @@ echo.
 set /p "TEST_CMD=Choose website test [S/Y/M/B/C/D/Q]: "
 if /i "!TEST_CMD!"=="S" (
     echo Opening Spotify Web Player...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://open.spotify.com" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://open.spotify.com" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="Y" (
     echo Opening YouTube...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://m.youtube.com" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://m.youtube.com" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="M" (
     echo Opening YouTube Music...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://music.youtube.com" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://music.youtube.com" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="B" (
     echo Opening d3ward Adblock Benchmark...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://d3ward.github.io/toolz/adblock.html" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://d3ward.github.io/toolz/adblock.html" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="C" (
     echo Opening CanYouBlockIt Test...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://canyoublockit.com/testing/" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://canyoublockit.com/testing/" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="D" (
     echo Opening Bounce Tracking Redirect Test...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://dpbolvw.net/click-12345?url=https%%3A%%2F%%2Fmusify.app%%2Fdownload%%3Ffbclid%%3Dtracking_token_123" com.musify.browser
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://dpbolvw.net/click-12345?url=https%%3A%%2F%%2Fmusify.app%%2Fdownload%%3Ffbclid%%3Dtracking_token_123" !PACKAGE_NAME!
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="Q" (
