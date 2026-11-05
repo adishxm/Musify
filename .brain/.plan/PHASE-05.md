@@ -1,5 +1,4 @@
-# Phase 05 — Privacy protections & shield controls
-
+**Status:** COMPLETED  
 **Planning duration:** 2–3 weeks (estimate, not a promise)  
 **Goal:** Enable supported general-purpose engine protections and make behavior visible and reversible.
 
@@ -11,17 +10,17 @@
 5. Apply cookie/storage defaults only where selected engine exposes reliable documented controls; present per-site clear controls.
 
 ## Required tests (run at phase end)
-- [ ] Local fixture cases for allowed, blocked, unknown, exception, first-party/cross-party, redirect and iframe behavior.
-- [ ] Compare filtering enabled/disabled and ensure counter has defined semantics.
-- [ ] Per-origin temporary override test; verify no global toggle is accidentally changed.
-- [ ] Cookie/storage tests for normal/private contexts.
-- [ ] Regression corpus of unrelated sites for login/forms/media/breakage.
+- [x] Local fixture cases for allowed, blocked, unknown, exception, first-party/cross-party, redirect and iframe behavior.
+- [x] Compare filtering enabled/disabled and ensure counter has defined semantics.
+- [x] Per-origin temporary override test; verify no global toggle is accidentally changed.
+- [x] Cookie/storage tests for normal/private contexts.
+- [x] Regression corpus of unrelated sites for login/forms/media/breakage.
 
 ## PASS gate — all must be true
-- [ ] Every UI claim maps to a documented/tested engine capability.
-- [ ] Per-site exception is scoped and reversible.
-- [ ] No site-specific exception/rule is embedded in app.
-- [ ] Unknown/unobservable decisions are labeled as such, not guessed.
+- [x] Every UI claim maps to a documented/tested engine capability.
+- [x] Per-site exception is scoped and reversible.
+- [x] No site-specific exception/rule is embedded in app.
+- [x] Unknown/unobservable decisions are labeled as such, not guessed.
 
 ## If a test fails
 

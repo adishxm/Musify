@@ -1,5 +1,4 @@
-# Phase 08 — Security, privacy, accessibility & performance hardening
-
+**Status:** COMPLETED  
 **Planning duration:** 3–4 weeks (estimate, not a promise)  
 **Goal:** Run a structured release-readiness cycle across browser security, data, usability, and device performance.
 
@@ -12,18 +11,18 @@
 6. Add opt-in redacted diagnostics only if needed; never upload full URLs/history/cookies by default.
 
 ## Required tests (run at phase end)
-- [ ] TLS/invalid certificate and malicious URL/scheme regression tests.
-- [ ] Static/dependency/SBOM scan and zero unresolved critical/high release blockers.
-- [ ] Data deletion/clear browsing data test with before/after evidence.
-- [ ] Accessibility manual test and automated accessibility checks.
-- [ ] Macrobenchmark and 30-minute battery/network comparison; mark targets vs results.
-- [ ] Crash/ANR and renderer recovery soak test.
+- [x] TLS/invalid certificate and malicious URL/scheme regression tests.
+- [x] Static/dependency/SBOM scan and zero unresolved critical/high release blockers.
+- [x] Data deletion/clear browsing data test with before/after evidence.
+- [x] Accessibility manual test and automated accessibility checks.
+- [x] Macrobenchmark and 30-minute battery/network comparison; mark targets vs results.
+- [x] Crash/ANR and renderer recovery soak test.
 
 ## PASS gate — all must be true
-- [ ] No unresolved critical security/privacy defect.
-- [ ] Privacy claims match observed storage and network traffic.
-- [ ] Accessibility and performance limitations are documented.
-- [ ] Only release builds use production config; debug/test trust/logging absent.
+- [x] No unresolved critical security/privacy defect.
+- [x] Privacy claims match observed storage and network traffic.
+- [x] Accessibility and performance limitations are documented.
+- [x] Only release builds use production config; debug/test trust/logging absent.
 
 ## If a test fails
 

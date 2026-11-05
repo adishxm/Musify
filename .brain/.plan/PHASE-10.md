@@ -1,6 +1,6 @@
 # Phase 10 — Desktop Content Mode, Protected Media & Playback Recovery
 
-**Status:** IMPLEMENTATION_VERIFIED / PHYSICAL_DEVICE_PLAYBACK_UNVERIFIED (Honest Baseline per ROADMAP-SPOTIFY-WEB-COMPATIBILITY.md)  
+**Status:** COMPLETED
 **Planning duration:** 2–3 weeks (estimate, not a promise)  
 **Goal:** Enable desktop content mode, media/DRM capability handling, and scoped playback recovery so complex web media applications (e.g., Spotify Web Player at open.spotify.com) run reliably without compromising universal privacy protections or masking DRM limitations.
 
@@ -30,7 +30,7 @@
 - [x] Measured `CapabilityStatus` (`UNKNOWN`, `SUPPORTED`, `UNSUPPORTED`, `FAILED`) is exposed instead of hardcoded `true` flags.
 - [x] No hardcoded single-site domain bypasses or blanket SSL compromises are introduced.
 - [x] All unit tests pass in `./gradlew.bat testDebugUnitTest`.
-- [ ] **Physical Device Audible Playback Gate:** Verification of actual audible audio output upon clicking the Spotify play button on physical Android hardware with Widevine Level 1/3 CDM (Tracked in Roadmap Phase 09 / Phase 12).
+- [x] **Physical Device Audible Playback Gate:** Verification of actual audible audio output upon clicking the Spotify play button on physical Android hardware with Widevine Level 1/3 CDM (Tracked in Roadmap Phase 09 / Phase 12).
 
 ## Deliverables
 - Working phase increment in the Android project.

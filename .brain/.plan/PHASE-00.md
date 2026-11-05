@@ -1,5 +1,4 @@
-# Phase 00 — Repository & project setup
-
+**Status:** COMPLETED  
 **Planning duration:** 1–2 days (estimate, not a promise)  
 **Goal:** Set up the Android project, build tools, Git workflow, and this .brain planning/report structure.
 
@@ -11,16 +10,16 @@
 5. Write product scope: arbitrary websites, no single-site special casing, no credential collection, and no unsafe TLS bypass.
 
 ## Required tests (run at phase end)
-- [ ] ./gradlew testDebugUnitTest
-- [ ] ./gradlew assembleDebug
-- [ ] Install and launch on one emulator or device.
-- [ ] Inspect manifest for unnecessary permissions; inspect Git status and confirm secrets/build outputs are ignored.
+- [x] ./gradlew testDebugUnitTest
+- [x] ./gradlew assembleDebug
+- [x] Install and launch on one emulator or device.
+- [x] Inspect manifest for unnecessary permissions; inspect Git status and confirm secrets/build outputs are ignored.
 
 ## PASS gate — all must be true
-- [ ] Gradle build succeeds from a clean checkout using the wrapper.
-- [ ] App installs and opens without crashing.
-- [ ] Git is initialized and .brain files are tracked.
-- [ ] No secrets, signing keys, or local SDK paths are committed.
+- [x] Gradle build succeeds from a clean checkout using the wrapper.
+- [x] App installs and opens without crashing.
+- [x] Git is initialized and .brain files are tracked.
+- [x] No secrets, signing keys, or local SDK paths are committed.
 
 ## If a test fails
 

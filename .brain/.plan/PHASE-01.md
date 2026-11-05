@@ -1,5 +1,4 @@
-# Phase 01 — Browser engine feasibility spike
-
+**Status:** COMPLETED  
 **Planning duration:** 1–2 weeks (estimate, not a promise)  
 **Goal:** Choose GeckoView Stable as the production candidate, then validate its current artifacts and core behavior before building on it.
 
@@ -11,17 +10,17 @@
 5. Keep WebView as a bounded comparison/fallback spike. Do not fork Chromium. Decide based on observed test evidence, not assumptions.
 
 ## Required tests (run at phase end)
-- [ ] Clean Gradle build with pinned engine dependencies.
-- [ ] Engine smoke test: HTTPS navigation, back/forward, JavaScript form submit, media test fixture, and download callback.
-- [ ] Process/renderer loss test: show recoverable error/reopen state without reload loop.
-- [ ] Run on two API/device profiles; save versions and observations.
-- [ ] Verify dependency licenses and source notices.
+- [x] Clean Gradle build with pinned engine dependencies.
+- [x] Engine smoke test: HTTPS navigation, back/forward, JavaScript form submit, media test fixture, and download callback.
+- [x] Process/renderer loss test: show recoverable error/reopen state without reload loop.
+- [x] Run on two API/device profiles; save versions and observations.
+- [x] Verify dependency licenses and source notices.
 
 ## PASS gate — all must be true
-- [ ] Engine loads representative unrelated sites and core browser events are observable.
-- [ ] Security gate: invalid TLS is cancelled; no blanket SSL proceed option or arbitrary JS-native bridge.
-- [ ] Engine choice and limitations are written in report.
-- [ ] If GeckoView fails a critical requirement, report concrete evidence and choose WebView fallback only after documenting limitations.
+- [x] Engine loads representative unrelated sites and core browser events are observable.
+- [x] Security gate: invalid TLS is cancelled; no blanket SSL proceed option or arbitrary JS-native bridge.
+- [x] Engine choice and limitations are written in report.
+- [x] If GeckoView fails a critical requirement, report concrete evidence and choose WebView fallback only after documenting limitations.
 
 ## If a test fails
 

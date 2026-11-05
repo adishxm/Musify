@@ -1,6 +1,6 @@
 # Phase 11 — Build Variant & Protected Media Capability Transparency
 
-**Status:** IN_PROGRESS  
+**Status:** COMPLETED
 **Planning duration:** 2–3 days  
 **Goal:** Provide full transparency into the running build variant (Universal GeckoView, ARM64 GeckoView, or Lite WebView), engine type, and exact Widevine CDM status (`UNKNOWN`, `SUPPORTED`, `UNSUPPORTED`, `FAILED`). Clearly communicate in the UI and README that `Musify-Lite` (System WebView) does not provide Widevine CDM for protected media, directing users to the full GeckoView builds for protected playback. Soften and correct all release claims to reflect verified reality.
 
@@ -18,16 +18,16 @@
 5. Implement unit tests verifying `BuildVariantInfo` resolution, capability status states, and honesty checks.
 
 ## Required tests (run at phase end)
-- [ ] Unit tests for `BuildVariantInfo` detection and diagnostic data formatting.
-- [ ] Unit tests verifying `CapabilityStatus` transitions (`UNKNOWN`, `SUPPORTED`, `UNSUPPORTED`, `FAILED`) without hardcoded true booleans.
-- [ ] Diagnostic UI model test asserting Lite build exposes the WebView Widevine limitation notice.
-- [ ] Full regression suite run: `./gradlew testDebugUnitTest`.
+- [x] Unit tests for `BuildVariantInfo` detection and diagnostic data formatting.
+- [x] Unit tests verifying `CapabilityStatus` transitions (`UNKNOWN`, `SUPPORTED`, `UNSUPPORTED`, `FAILED`) without hardcoded true booleans.
+- [x] Diagnostic UI model test asserting Lite build exposes the WebView Widevine limitation notice.
+- [x] Full regression suite run: `./gradlew testDebugUnitTest`.
 
 ## Verification Gate
-- [ ] Build variant and engine type are prominently visible in diagnostics.
-- [ ] Lite build explicitly communicates the Widevine CDM absence instead of masking it.
-- [ ] `README.md` accurately reflects testing status and engine distinctions.
-- [ ] All unit tests pass.
+- [x] Build variant and engine type are prominently visible in diagnostics.
+- [x] Lite build explicitly communicates the Widevine CDM absence instead of masking it.
+- [x] `README.md` accurately reflects testing status and engine distinctions.
+- [x] All unit tests pass.
 
 ## Deliverables
 - `BuildVariantInfo` and updated `PlaybackDiagnostics` model.

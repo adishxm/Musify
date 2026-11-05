@@ -1,5 +1,4 @@
-# Phase 04 — History, bookmarks & private tabs
-
+**Status:** COMPLETED  
 **Planning duration:** 2–3 weeks (estimate, not a promise)  
 **Goal:** Add local browsing utility features and a defensible private-tab lifecycle.
 
@@ -11,17 +10,17 @@
 5. Add a data-control screen with clear browsing data actions.
 
 ## Required tests (run at phase end)
-- [ ] Database unit tests and migration tests.
-- [ ] Isolation tests: visit same fixture in normal and private profiles; verify cookies/history/storage do not cross where supported.
-- [ ] Close private tab/app, inspect history and storage through supported test hooks.
-- [ ] Deletion tests for clear one/site/time/all.
-- [ ] UI test ensures private status remains visible during navigation.
+- [x] Database unit tests and migration tests.
+- [x] Isolation tests: visit same fixture in normal and private profiles; verify cookies/history/storage do not cross where supported.
+- [x] Close private tab/app, inspect history and storage through supported test hooks.
+- [x] Deletion tests for clear one/site/time/all.
+- [x] UI test ensures private status remains visible during navigation.
 
 ## PASS gate — all must be true
-- [ ] Normal history/bookmarks persist locally and can be deleted.
-- [ ] Private tab data is not written to normal history in tested cases.
-- [ ] Private-mode limits are disclosed; no anonymity promise.
-- [ ] Any engine limitation is documented, not hidden.
+- [x] Normal history/bookmarks persist locally and can be deleted.
+- [x] Private tab data is not written to normal history in tested cases.
+- [x] Private-mode limits are disclosed; no anonymity promise.
+- [x] Any engine limitation is documented, not hidden.
 
 ## If a test fails
 

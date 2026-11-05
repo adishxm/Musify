@@ -33,6 +33,9 @@ object MediaSafeResourcePolicy {
         "manifest",
         ".mpd",
         ".m3u8",
+        "videoplayback",
+        "initplayback",
+        "googlevideo.com",
         "keyexchange",
         "drmtoday",
         "fps.ezdrm.com"

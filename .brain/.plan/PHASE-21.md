@@ -1,6 +1,6 @@
 # Phase 21 — Brave-Aligned Spotify Ad-Shield & Non-Destructive Audio Ad Suppressor
 
-**Status:** PLANNED  
+**Status:** COMPLETED
 **Planning duration:** 1–2 days  
 **Goal:** Analyze Brave Browser's ad-blocking architecture from `nottopushongit/com.brave.browser_*.apkm` (native `adblock-rust`, component-driven filter lists, cosmetic stylesheet injection, and scriptlet defusing) and implement a hardened, Brave-inspired multi-tier shield for `open.spotify.com` in Musify. Deliver advanced cosmetic ad hiding, an intelligent non-destructive audio ad suppressor (auto-mute & auto-skip during commercials without media element destruction), modal/nag dismissal, and intent scheme sandboxing.
 
@@ -40,13 +40,13 @@
    - Commit and push to Git (`feat(phase-21): brave-aligned spotify ad-shield and non-destructive audio ad suppressor`).
 
 ## Required tests (run at phase end)
-- [ ] `Phase21BraveSpotifyAdBlockTest` passes 100%.
-- [ ] Full project test suite passes: `./gradlew testDebugUnitTest`.
-- [ ] Zero regression in Phase 12 media protection sanitization rules.
+- [x] `Phase21BraveSpotifyAdBlockTest` passes 100%.
+- [x] Full project test suite passes: `./gradlew testDebugUnitTest`.
+- [x] Zero regression in Phase 12 media protection sanitization rules.
 
 ## Verification Gate
-- [ ] All visual ad and upgrade banners on `open.spotify.com` are hidden via CSS.
-- [ ] Audio ads are automatically muted and restored when normal music plays.
-- [ ] No `currentTime = 9999` or forced `playbackRate = 16.0` tampering exists.
-- [ ] `.brain/.report/PHASE-21-REPORT.md` documented with full test evidence.
-- [ ] Focused Git commit pushed to remote repository.
+- [x] All visual ad and upgrade banners on `open.spotify.com` are hidden via CSS.
+- [x] Audio ads are automatically muted and restored when normal music plays.
+- [x] No `currentTime = 9999` or forced `playbackRate = 16.0` tampering exists.
+- [x] `.brain/.report/PHASE-21-REPORT.md` documented with full test evidence.
+- [x] Focused Git commit pushed to remote repository.

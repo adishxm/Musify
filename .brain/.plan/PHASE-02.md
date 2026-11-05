@@ -1,5 +1,4 @@
-# Phase 02 — Single-tab browser shell
-
+**Status:** COMPLETED  
 **Planning duration:** 1–2 weeks (estimate, not a promise)  
 **Goal:** Build the first user-visible browser flow around one safe tab.
 
@@ -11,16 +10,16 @@
 5. Create a local HTTPS fixture for test pages; keep test CA/config debug-only.
 
 ## Required tests (run at phase end)
-- [ ] Unit tests for URL/search parsing, URI schemes, IDN-ish host display, and malformed input.
-- [ ] UI tests: enter URL, search query, back, forward, reload, stop, loading state, error state.
-- [ ] Security tests: javascript:, file:, content:, intent:, data: top-level inputs are rejected or safely handed off; TLS test cert errors cancel.
-- [ ] Manual TalkBack smoke test for address/navigation controls.
+- [x] Unit tests for URL/search parsing, URI schemes, IDN-ish host display, and malformed input.
+- [x] UI tests: enter URL, search query, back, forward, reload, stop, loading state, error state.
+- [x] Security tests: javascript:, file:, content:, intent:, data: top-level inputs are rejected or safely handed off; TLS test cert errors cancel.
+- [x] Manual TalkBack smoke test for address/navigation controls.
 
 ## PASS gate — all must be true
-- [ ] Single-tab navigation works repeatedly on fixture and unrelated ordinary sites.
-- [ ] No unsafe scheme reaches the engine as a top-level navigation.
-- [ ] Loading/error/security state is understandable and accessible.
-- [ ] No release build trusts test certificates.
+- [x] Single-tab navigation works repeatedly on fixture and unrelated ordinary sites.
+- [x] No unsafe scheme reaches the engine as a top-level navigation.
+- [x] Loading/error/security state is understandable and accessible.
+- [x] No release build trusts test certificates.
 
 ## If a test fails
 

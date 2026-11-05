@@ -1,6 +1,6 @@
 # Phase 16 — Core Browser Chrome, Omnibar & Tab Switcher Obsidian Redesign
 
-**Status:** PLANNED  
+**Status:** COMPLETED
 **Planning duration:** 2–3 days  
 **Goal:** Redesign the primary browsing experience and core navigation chrome using the Obsidian design language. Transform the top Omnibar, toolbar controls, security/shield indicators, progress bar, tab switcher grid, and single-tab host into sleek, minimalist, monochrome surfaces with vector iconography.
 
@@ -23,14 +23,14 @@
    - Add `Phase16BrowserChromeTest.kt` verifying tab count formatting, URL bar presentation state, menu action bindings, and theme application across chrome components.
 
 ## Required tests (run at phase end)
-- [ ] `./gradlew testDebugUnitTest` runs with 100% pass rate including `Phase16BrowserChromeTest`.
-- [ ] Visual verification of browser chrome, omnibar interactions, tab switching, and menu states.
+- [x] `./gradlew testDebugUnitTest` runs with 100% pass rate including `Phase16BrowserChromeTest`.
+- [x] Visual verification of browser chrome, omnibar interactions, tab switching, and menu states.
 
 ## Verification Gate
-- [ ] All cartoon emojis removed from navigation and tab switching chrome.
-- [ ] Omnibar and tab switcher render with Obsidian tokens and typography.
-- [ ] Comprehensive `.brain/.report/PHASE-16-REPORT.md` generated with detailed evidence.
-- [ ] Branch/commit created and pushed cleanly to GitHub `origin/main`.
+- [x] All cartoon emojis removed from navigation and tab switching chrome.
+- [x] Omnibar and tab switcher render with Obsidian tokens and typography.
+- [x] Comprehensive `.brain/.report/PHASE-16-REPORT.md` generated with detailed evidence.
+- [x] Branch/commit created and pushed cleanly to GitHub `origin/main`.
 
 ## Deliverables
 - Redesigned `BrowserShellScreen.kt`, `TabSwitcherScreen.kt`, `SingleTabBrowserScreen.kt`, and `EngineView.kt`.

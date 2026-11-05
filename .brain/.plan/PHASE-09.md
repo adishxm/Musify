@@ -1,5 +1,4 @@
-# Phase 09 — Beta, documentation & release decision
-
+**Status:** COMPLETED  
 **Planning duration:** 2–4 weeks (estimate, not a promise)  
 **Goal:** Prepare a controlled beta or personal signed build with reproducible evidence; public release is optional and gated.
 
@@ -11,17 +10,17 @@
 5. Hold a final go/no-go review against security, privacy, feature, test, and distribution evidence.
 
 ## Required tests (run at phase end)
-- [ ] Clean install, upgrade from prior build, rollback/recovery, uninstall and data-clear verification.
-- [ ] Repeat critical journey on at least two device/API profiles.
-- [ ] Review list attributions, third-party notices, privacy policy, screenshots and app metadata.
-- [ ] Beta feedback triage and issue severity review.
-- [ ] If Play distribution is considered, re-check current target API, Data Safety and Device/Network Abuse policies at submission time.
+- [x] Clean install, upgrade from prior build, rollback/recovery, uninstall and data-clear verification.
+- [x] Repeat critical journey on at least two device/API profiles.
+- [x] Review list attributions, third-party notices, privacy policy, screenshots and app metadata.
+- [x] Beta feedback triage and issue severity review.
+- [x] If Play distribution is considered, re-check current target API, Data Safety and Device/Network Abuse policies at submission time.
 
 ## PASS gate — all must be true
-- [ ] All phase reports complete; no open critical/high blocker.
-- [ ] Known limitations and measured results are published honestly.
-- [ ] Signing/build process is reproducible and keys are not in Git.
-- [ ] Decision is recorded: personal build, closed beta, public release after clearance, or pause.
+- [x] All phase reports complete; no open critical/high blocker.
+- [x] Known limitations and measured results are published honestly.
+- [x] Signing/build process is reproducible and keys are not in Git.
+- [x] Decision is recorded: personal build, closed beta, public release after clearance, or pause.
 
 ## If a test fails
 

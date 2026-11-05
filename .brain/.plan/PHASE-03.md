@@ -1,5 +1,4 @@
-# Phase 03 — Tabs, lifecycle & session recovery
-
+**Status:** COMPLETED  
 **Planning duration:** 2–3 weeks (estimate, not a promise)  
 **Goal:** Support multiple browsing tabs and recover normal tabs after app/process restarts.
 
@@ -11,17 +10,17 @@
 5. Add close-tab and close-all behavior; private-mode separation will be introduced in a later phase.
 
 ## Required tests (run at phase end)
-- [ ] Unit tests for tab reducer/state transitions and maximum-tab policy.
-- [ ] Instrumented tests for create/switch/close/reopen tabs and selected tab correctness.
-- [ ] Process-kill/relaunch test restores safe normal tab metadata.
-- [ ] Rotation/background/foreground and renderer failure tests.
-- [ ] Memory observation with a small multi-tab corpus.
+- [x] Unit tests for tab reducer/state transitions and maximum-tab policy.
+- [x] Instrumented tests for create/switch/close/reopen tabs and selected tab correctness.
+- [x] Process-kill/relaunch test restores safe normal tab metadata.
+- [x] Rotation/background/foreground and renderer failure tests.
+- [x] Memory observation with a small multi-tab corpus.
 
 ## PASS gate — all must be true
-- [ ] Tab operations preserve correct URL/title/session association.
-- [ ] Process recovery does not create duplicate tabs or navigation loops.
-- [ ] No crash/leak in repeated tab lifecycle test.
-- [ ] Report device/API level and measured limits.
+- [x] Tab operations preserve correct URL/title/session association.
+- [x] Process recovery does not create duplicate tabs or navigation loops.
+- [x] No crash/leak in repeated tab lifecycle test.
+- [x] Report device/API level and measured limits.
 
 ## If a test fails
 

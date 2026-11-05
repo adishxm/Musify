@@ -11,7 +11,8 @@
 (function() {
     'use strict';
 
-    const SPOTIFY_AD_ENDPOINTS = [
+    const AD_AND_TRACKER_ENDPOINTS = [
+        // Spotify ad & telemetry endpoints
         'spclient.wg.spotify.com/ad-logic',
         'spclient.wg.spotify.com/ads',
         'spclient.wg.spotify.com/v1/ads',
@@ -22,6 +23,15 @@
         'spclient.wg.spotify.com/melody',
         'spclient.wg.spotify.com/metadata/4/ad',
         'audio-ak-spotify-com.akamaized.net',
+        // YouTube ad & telemetry endpoints (Brave Shields reverse-engineered)
+        'youtube.com/api/stats/ads',
+        'youtube.com/pagead',
+        'youtube.com/ptracking',
+        'youtube.com/youtubei/v1/log_event',
+        'googleads.g.doubleclick.net',
+        'adservice.google.com',
+        'static.doubleclick.net',
+        // General trackers
         'scorecardresearch.com',
         'doubleclick.net',
         'google-analytics.com'
@@ -39,7 +49,10 @@
         'heads-fa.scdn.co',
         'video-fa.scdn.co',
         'audio-ak-p-b.spotifycdn.net',
-        'cping.spotify.com'
+        'cping.spotify.com',
+        // YouTube genuine audio/video playback streams
+        'videoplayback',
+        'initplayback'
     ];
 
     function isSafeMediaOrLicense(url) {
@@ -47,9 +60,9 @@
         return MEDIA_LICENSE_SAFEGUARD.some(term => lower.includes(term));
     }
 
-    function isSpotifyAd(url) {
+    function isAdOrTracker(url) {
         const lower = url.toLowerCase();
-        return SPOTIFY_AD_ENDPOINTS.some(term => lower.includes(term));
+        return AD_AND_TRACKER_ENDPOINTS.some(term => lower.includes(term));
     }
 
     if (typeof browser !== 'undefined' && browser.webRequest && browser.webRequest.onBeforeRequest) {
@@ -62,8 +75,8 @@
                     return {};
                 }
 
-                // Priority 2: Intercept Spotify ad endpoints
-                if (isSpotifyAd(url)) {
+                // Priority 2: Intercept ad & tracker endpoints
+                if (isAdOrTracker(url)) {
                     const lower = url.toLowerCase();
                     // For JSON ad-logic metadata endpoints, redirect to synthetic empty JSON {}
                     // to prevent player freeze loops

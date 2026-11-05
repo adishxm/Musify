@@ -1,6 +1,6 @@
 # Phase 17 — Privacy Shields, Playback Diagnostics & Security Sheets Redesign
 
-**Status:** PLANNED  
+**Status:** COMPLETED
 **Planning duration:** 2–3 days  
 **Goal:** Redesign the privacy controls, security configuration dialogs, and diagnostic sheets to align with the Obsidian design system. Crucially, retain and elevate all build variant diagnostics and Widevine media capability features implemented in Phases 11–13 while replacing legacy dialog layouts with sleek `MusifyCard`, `SettingRow`, `CountBadge`, and jewel-tone security accents.
 
@@ -28,14 +28,14 @@
    - Add `Phase17PrivacyDiagnosticsTest.kt` validating shield toggling state, DNS provider selection, and full compatibility dialog data binding (including `BuildVariantInfo` and `MediaCapabilityState`).
 
 ## Required tests (run at phase end)
-- [ ] `./gradlew testDebugUnitTest` runs with 100% pass rate including `Phase17PrivacyDiagnosticsTest`.
-- [ ] Verification that all Phase 11–13 diagnostic elements remain present and functional in `PlaybackCompatibilityDialog`.
+- [x] `./gradlew testDebugUnitTest` runs with 100% pass rate including `Phase17PrivacyDiagnosticsTest`.
+- [x] Verification that all Phase 11–13 diagnostic elements remain present and functional in `PlaybackCompatibilityDialog`.
 
 ## Verification Gate
-- [ ] No regression in privacy shield toggling or media playback compatibility logic.
-- [ ] All sheets and dialogs render in Obsidian theme without white flashes or legacy styling.
-- [ ] Comprehensive `.brain/.report/PHASE-17-REPORT.md` generated with detailed evidence.
-- [ ] Branch/commit created and pushed cleanly to GitHub `origin/main`.
+- [x] No regression in privacy shield toggling or media playback compatibility logic.
+- [x] All sheets and dialogs render in Obsidian theme without white flashes or legacy styling.
+- [x] Comprehensive `.brain/.report/PHASE-17-REPORT.md` generated with detailed evidence.
+- [x] Branch/commit created and pushed cleanly to GitHub `origin/main`.
 
 ## Deliverables
 - Redesigned `PrivacyShieldSheet.kt`, `DnsSettingsDialog.kt`, `SitePermissionsScreen.kt`, `DataControlScreen.kt`, and `PlaybackCompatibilityDialog.kt`.

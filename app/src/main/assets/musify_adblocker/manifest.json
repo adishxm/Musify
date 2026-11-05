@@ -28,6 +28,17 @@
       ],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.youtube-nocookie.com/*"
+      ],
+      "js": [
+        "youtube_adblock.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ]
 }

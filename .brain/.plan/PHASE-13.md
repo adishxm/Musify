@@ -1,6 +1,6 @@
 # Phase 13 — Real Engine Policy Isolation & Media-Safe Protection Architecture
 
-**Status:** PLANNED  
+**Status:** COMPLETED
 **Planning duration:** 3–5 days  
 **Goal:** Implement true engine-level policy isolation so that relaxing shields for an origin (or activating Desktop mode) actually updates GeckoView's session policies and live blocking decisions without polluting global engine state or other tabs. Guarantee that first-party media CDN, authentication tokens, cookies, service workers, WebSockets, and Widevine license flows are never blocked or broken.
 
@@ -17,16 +17,16 @@
    - Report whether any blocker rule intercepted a request on the current page, displaying the rule category without logging private query tokens, credentials, or license payloads.
 
 ## Required tests (run at phase end)
-- [ ] Unit tests verifying that `setOriginException` applies to the active session and preserves media/license requests.
-- [ ] Tab isolation tests asserting origin exceptions are strictly bounded per-tab/per-origin.
-- [ ] Media safety tests asserting DRM/license challenge URLs are never classified as trackers.
-- [ ] Full regression suite run: `./gradlew testDebugUnitTest`.
+- [x] Unit tests verifying that `setOriginException` applies to the active session and preserves media/license requests.
+- [x] Tab isolation tests asserting origin exceptions are strictly bounded per-tab/per-origin.
+- [x] Media safety tests asserting DRM/license challenge URLs are never classified as trackers.
+- [x] Full regression suite run: `./gradlew testDebugUnitTest`.
 
 ## Verification Gate
-- [ ] Origin exceptions cleanly affect engine session behavior without mutating global runtime defaults.
-- [ ] Cross-tab shield state isolation is verified by automated tests.
-- [ ] DRM/license endpoints are explicitly preserved.
-- [ ] All unit tests pass.
+- [x] Origin exceptions cleanly affect engine session behavior without mutating global runtime defaults.
+- [x] Cross-tab shield state isolation is verified by automated tests.
+- [x] DRM/license endpoints are explicitly preserved.
+- [x] All unit tests pass.
 
 ## Deliverables
 - Updated `GeckoEngineAdapter.kt` and `TabsViewModel.kt` with live policy isolation.

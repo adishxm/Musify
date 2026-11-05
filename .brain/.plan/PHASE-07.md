@@ -1,5 +1,4 @@
-# Phase 07 — Browser essentials: downloads, permissions & safety
-
+**Status:** COMPLETED  
 **Planning duration:** 2–3 weeks (estimate, not a promise)  
 **Goal:** Complete useful browser interactions while minimizing unsafe privileges.
 
@@ -11,17 +10,17 @@
 5. Add find-in-page, share, landscape support, dark theme, and clear accessible labels where time permits.
 
 ## Required tests (run at phase end)
-- [ ] Download MIME/name/redirect/cancel/open-intent matrix; no automatic execution.
-- [ ] File chooser tests with cancel, multi-select if supported, and no broad storage permission.
-- [ ] Permission tests for deny, grant, partial grant, origin change, and revoke.
-- [ ] Intent tests for benign and malicious-looking schemes; external handoff asks user as appropriate.
-- [ ] Manual form/login/upload and download tests on unrelated sites.
+- [x] Download MIME/name/redirect/cancel/open-intent matrix; no automatic execution.
+- [x] File chooser tests with cancel, multi-select if supported, and no broad storage permission.
+- [x] Permission tests for deny, grant, partial grant, origin change, and revoke.
+- [x] Intent tests for benign and malicious-looking schemes; external handoff asks user as appropriate.
+- [x] Manual form/login/upload and download tests on unrelated sites.
 
 ## PASS gate — all must be true
-- [ ] No permission is granted to a page without matching user/app consent.
-- [ ] Downloads require explicit user action and safe destination.
-- [ ] Unsupported behaviors fail closed with readable explanation.
-- [ ] No broad storage permission without documented necessity.
+- [x] No permission is granted to a page without matching user/app consent.
+- [x] Downloads require explicit user action and safe destination.
+- [x] Unsupported behaviors fail closed with readable explanation.
+- [x] No broad storage permission without documented necessity.
 
 ## If a test fails
 
