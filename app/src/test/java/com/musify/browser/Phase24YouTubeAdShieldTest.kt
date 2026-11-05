@@ -37,7 +37,7 @@ class Phase24YouTubeAdShieldTest {
         assertTrue("Must strip adPlacements", content.contains("delete obj.adPlacements") || content.contains("adPlacements"))
         assertTrue("Must strip adSlots", content.contains("delete obj.adSlots") || content.contains("adSlots"))
         assertTrue("Must hook JSON.parse for player responses", content.contains("JSON.parse = function"))
-        assertTrue("Must hook window.fetch for player queries", content.contains("window.fetch = async function"))
+        assertTrue("Must hook window.fetch for player queries", content.contains("window.fetch = function") || content.contains("window.fetch = async function"))
         assertTrue("Must hook XMLHttpRequest for player queries", content.contains("XMLHttpRequest.prototype.open"))
     }
 

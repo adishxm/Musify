@@ -1,20 +1,24 @@
 /**
- * Musify Browser - Brave-Aligned YouTube & YouTube Music Ad Shield & Background Playback Engine
+ * Musify Browser - Brave-Aligned YouTube & YouTube Music Ad Shield, SABR Protocol Interceptor & Background Playback Engine
  *
  * Reverse-Engineered from Brave Browser Shields (brave-yt-sabr-fix, brave-video-bg-play, json-prune, set):
- * 1. Main-World Initial Player Response Sanitization:
- *    - Traps and strips `ytInitialPlayerResponse.playerAds`, `adPlacements`, and `adSlots`.
- *    - Strips `playerResponse.adPlacements`, `playerResponse.playerAds`, and `adSlots`.
- * 2. Main-World Fetch & XHR Interception:
- *    - Sanitizes `/youtubei/v1/player`, `/player`, and `reel_watch_sequence` responses to eliminate ad queues.
- * 3. Element Hiding Cosmetic CSS:
+ * 1. SABR Protobuf Streaming Interceptor:
+ *    - Intercepts googlevideo.com requests with sabr=1.
+ *    - Tees readable streams so media chunks (>1000 bytes) stream with zero latency.
+ *    - Parses binary Protobuf Field 4 (tag 0x20 varint) backoffTimeMs.
+ *    - Rewrites backoffs > 500ms in-place to 50-150ms noise to eliminate 4-16s spinner.
+ *    - Sets player.getVideoData().isInlinePlaybackNoAd = true and reloads session.
+ * 2. Main-World Initial Player Response Sanitization:
+ *    - Traps and strips ytInitialPlayerResponse.playerAds, adPlacements, and adSlots.
+ *    - Strips playerResponse.adPlacements, playerResponse.playerAds, and adSlots.
+ * 3. Main-World Fetch & XHR Interception:
+ *    - Sanitizes /youtubei/v1/player, /player, and reel_watch_sequence responses to eliminate ad queues.
+ * 4. Element Hiding Cosmetic CSS:
  *    - Injects Brave cosmetic filter selectors hiding video overlay ads, promo slots, and Premium nag dialogs.
- * 4. Background Playback Preservation & Anti-Pause:
- *    - Spoofs Page Visibility API (`hidden = false`, `visibilityState = 'visible'`).
- *    - Suppresses `visibilitychange` bubbling to prevent background video pauses.
- *    - Periodically updates `window._lact` (user activity timestamp) every 5 minutes to prevent idle pause dialogs.
- * 5. Media-Safe Invariant:
- *    - Strictly preserves genuine audio/video streams (`googlevideo.com/videoplayback`).
+ * 5. Background Playback Preservation & Anti-Pause:
+ *    - Spoofs Page Visibility API (hidden = false, visibilityState = 'visible').
+ *    - Suppresses visibilitychange bubbling to prevent background video pauses.
+ *    - Periodically updates window._lact (user activity timestamp) every 5 minutes to prevent idle pause dialogs.
  */
 
 (function() {
@@ -23,7 +27,7 @@
     if (window.__musifyYouTubeShieldActive) return;
     window.__musifyYouTubeShieldActive = true;
 
-    // 1. Inject Main-World Hooks for Player Response Sanitization & Visibility Spoofing
+    // 1. Inject Main-World Hooks for SABR Streaming, Player Sanitization & Visibility Spoofing
     function injectMainWorldHooks() {
         try {
             if (document.getElementById('musify-yt-main-world-hooks')) return;
@@ -94,31 +98,136 @@
                     return parsed;
                 };
 
-                // D. Hook window.fetch for player and watch requests
+                // D. SABR Protobuf Streaming Interceptor (Brave brave-yt-sabr-fix.js)
+                let reloadedVid = null;
+                function forceFreshSabrSession() {
+                    try {
+                        const vid = new URL(window.location.href).searchParams.get('v');
+                        if (!vid || vid === reloadedVid) return;
+                        const video = document.querySelector('video');
+                        if (video && video.currentTime > 1) return;
+                        reloadedVid = vid;
+                        const player = document.querySelector('#movie_player');
+                        if (!player || !player.cancelPlayback || !player.loadVideoById) return;
+
+                        const vd = player.getVideoData ? player.getVideoData() : null;
+                        if (vd) vd.isInlinePlaybackNoAd = true;
+
+                        player.cancelPlayback();
+                        const realLoad = player.loadVideoById.bind(player);
+                        player.loadVideoById = function() {};
+                        setTimeout(function() {
+                            player.loadVideoById = realLoad;
+                            player.loadVideoById(vid);
+                        }, 1000);
+                    } catch (_) {}
+                }
+
+                function readStreamBytes(reader, threshold) {
+                    const chunks = [];
+                    let total = 0;
+                    return reader.read().then(function pump(result) {
+                        if (result.done) {
+                            const merged = new Uint8Array(total);
+                            for (let i = 0, off = 0; i < chunks.length; off += chunks[i].length, i++)
+                                merged.set(chunks[i], off);
+                            return merged;
+                        }
+                        chunks.push(result.value);
+                        total += result.value.length;
+                        if (threshold && total >= threshold) {
+                            try { reader.cancel(); } catch (_) {}
+                            return null;
+                        }
+                        return reader.read().then(pump);
+                    });
+                }
+
+                function patchSabrBackoffField(bytes) {
+                    let patched = false;
+                    for (let i = 0; i < bytes.length - 2; i++) {
+                        // Protobuf Field 4, wire type 0 (varint) = 0x20
+                        if (bytes[i] !== 0x20) continue;
+                        let val = 0, shift = 0, end = i + 1;
+                        while (end < bytes.length && shift < 35) {
+                            val |= (bytes[end] & 0x7f) << shift;
+                            if (!(bytes[end] & 0x80)) { end++; break; }
+                            shift += 7;
+                            end++;
+                        }
+                        if (val > 500 && val < 100000) {
+                            const target = 50 + Math.floor(Math.random() * 100);
+                            let pos = i + 1, remaining = target;
+                            while (pos < end - 1) {
+                                bytes[pos++] = (remaining & 0x7f) | 0x80;
+                                remaining >>>= 7;
+                            }
+                            bytes[pos] = remaining & 0x7f;
+                            patched = true;
+                        }
+                    }
+                    return patched;
+                }
+
+                // E. Hook window.fetch for SABR streaming & player API requests
                 const origFetch = window.fetch;
                 if (origFetch) {
-                    window.fetch = async function(resource, init) {
+                    window.fetch = function(resource, init) {
                         const url = (typeof resource === 'string' ? resource : (resource && resource.url) || '').toString();
-                        const isPlayerReq = url.includes('/youtubei/v1/player') || url.includes('/player?') || url.includes('/reel_watch_sequence');
-                        
-                        const response = await origFetch.apply(this, arguments);
-                        if (isPlayerReq && response.ok) {
-                            try {
-                                const clone = response.clone();
-                                const data = await clone.json();
-                                sanitizePlayerResponse(data);
-                                return new Response(JSON.stringify(data), {
-                                    status: response.status,
-                                    statusText: response.statusText,
-                                    headers: response.headers
+
+                        // Intercept SABR Streaming requests
+                        if (url.includes('googlevideo.com') && url.includes('sabr=1')) {
+                            return origFetch.apply(this, arguments).then(function(response) {
+                                if (!response.ok || !response.body) return response;
+                                let pass, scan, reinit;
+                                try {
+                                    [pass, scan] = response.body.tee();
+                                    reinit = { status: response.status, statusText: response.statusText, headers: response.headers };
+                                } catch (_) {
+                                    return response;
+                                }
+                                return readStreamBytes(scan.getReader(), 1000).then(function(bytes) {
+                                    if (bytes === null) {
+                                        return new Response(pass, reinit);
+                                    }
+                                    if (patchSabrBackoffField(bytes)) {
+                                        forceFreshSabrSession();
+                                    }
+                                    const out = new Response(bytes, reinit);
+                                    try {
+                                        Object.defineProperty(out, 'url', { value: response.url, configurable: true });
+                                        Object.defineProperty(out, 'type', { value: response.type, configurable: true });
+                                    } catch (_) {}
+                                    return out;
                                 });
-                            } catch (_) {}
+                            });
                         }
-                        return response;
+
+                        // Intercept standard player and watch requests
+                        const isPlayerReq = url.includes('/youtubei/v1/player') || url.includes('/player?') || url.includes('/reel_watch_sequence');
+                        if (isPlayerReq) {
+                            return origFetch.apply(this, arguments).then(async function(response) {
+                                if (response.ok) {
+                                    try {
+                                        const clone = response.clone();
+                                        const data = await clone.json();
+                                        sanitizePlayerResponse(data);
+                                        return new Response(JSON.stringify(data), {
+                                            status: response.status,
+                                            statusText: response.statusText,
+                                            headers: response.headers
+                                        });
+                                    } catch (_) {}
+                                }
+                                return response;
+                            });
+                        }
+
+                        return origFetch.apply(this, arguments);
                     };
                 }
 
-                // E. Hook XMLHttpRequest for player queries
+                // F. Hook XMLHttpRequest for player queries
                 const origOpen = XMLHttpRequest.prototype.open;
                 const origSend = XMLHttpRequest.prototype.send;
                 XMLHttpRequest.prototype.open = function(method, url) {
@@ -154,7 +263,7 @@
         } catch (_) {}
     }
 
-    // 2. Inject Cosmetic Element-Hiding CSS (Brave Default & First-Party Filter Lists)
+    // 2. Inject Cosmetic Element-Hiding CSS
     function injectCosmeticStyles() {
         try {
             if (document.getElementById('musify-yt-cosmetic-shield')) return;
