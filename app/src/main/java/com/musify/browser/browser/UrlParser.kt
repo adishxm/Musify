@@ -1,5 +1,7 @@
 package com.musify.browser.browser
 
+import com.musify.browser.safety.DebounceInterceptor
+import com.musify.browser.safety.TrackingParamSanitizer
 import java.net.IDN
 import java.net.URI
 import java.net.URLEncoder
@@ -67,16 +69,18 @@ object UrlParser {
 
         // Check if explicitly http or https
         if (trimmed.startsWith("http://", ignoreCase = true) || trimmed.startsWith("https://", ignoreCase = true)) {
+            val debounced = DebounceInterceptor.resolveBounceUrl(trimmed)
+            val sanitized = TrackingParamSanitizer.sanitize(debounced)
             return try {
-                val uri = URI(trimmed)
+                val uri = URI(sanitized)
                 val host = uri.host ?: ""
                 if (host.isBlank()) {
-                    ParsedNavigation.Rejected(trimmed, "Malformed URL missing valid host")
+                    ParsedNavigation.Rejected(sanitized, "Malformed URL missing valid host")
                 } else {
-                    buildAllowedUrl(uri, trimmed)
+                    buildAllowedUrl(uri, sanitized)
                 }
             } catch (e: Exception) {
-                ParsedNavigation.Rejected(trimmed, "Malformed URL: ${e.message}")
+                ParsedNavigation.Rejected(sanitized, "Malformed URL: ${e.message}")
             }
         }
 
@@ -98,8 +102,10 @@ object UrlParser {
             return try {
                 // HTTPS-First upgrade by default
                 val targetUrl = "https://$trimmed"
-                val uri = URI(targetUrl)
-                buildAllowedUrl(uri, targetUrl)
+                val debounced = DebounceInterceptor.resolveBounceUrl(targetUrl)
+                val sanitized = TrackingParamSanitizer.sanitize(debounced)
+                val uri = URI(sanitized)
+                buildAllowedUrl(uri, sanitized)
             } catch (_: Exception) {
                 buildSearch(trimmed)
             }
