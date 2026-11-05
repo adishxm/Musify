@@ -122,6 +122,48 @@ fun Color.mediumTint(): Color = copy(alpha = TINT_MEDIUM)
 fun Color.strongTint(): Color = copy(alpha = TINT_STRONG)
 
 // ---------------------------------------------------------------------------
+// M6 EXHIBITION DESIGN SYSTEM TOKENS
+// Museum-Grade Digital Sound Archive & Kinetic Shield Interface (Phase 28)
+// ---------------------------------------------------------------------------
+
+/** Deep gallery void for OLED displays in the M6 exhibition theme. */
+val M6Canvas = Color(0xFF08080A)
+
+/** Primary exhibition architectural surface for chrome and persistent panels. */
+val M6Surface = Color(0xFF101014)
+
+/** Exhibition card and bento tile container background. */
+val M6Card = Color(0xFF16161C)
+
+/** Elevated interactive elements, input fills, and omnibar search pills. */
+val M6Elevated = Color(0xFF1E1E26)
+
+/** Resting architectural hairline grid boundary. */
+val M6Hairline = Color(0xFF282832)
+
+/** Emphasized boundary for active selections, focus rings, and active tabs. */
+val M6HairlineStrong = Color(0xFF3E3E4C)
+
+// Exhibition Jewel Semantics
+/** Seismic Emerald: Secure HTTPS origin, zero surveillance, protected audio streams. */
+val M6Emerald = Color(0xFF00F59B)
+
+/** Signal Orange: Real-time shield activation, ad defusal, kinetic protection telemetry. */
+val M6SignalOrange = Color(0xFFFF5C00)
+
+/** Signal Red: Critical threats blocked, malicious redirect hops neutralized. */
+val M6SignalRed = Color(0xFFFF3B30)
+
+/** Sound Violet: Widevine DRM hardware acceleration, lossless stream preservation. */
+val M6SoundViolet = Color(0xFFA855F7)
+
+/** High-legibility exhibition metadata copy. */
+val M6TextSecondary = Color(0xFF9898A6)
+
+/** De-emphasized technical exhibition captions and timestamps. */
+val M6TextMuted = Color(0xFF5C5C6E)
+
+// ---------------------------------------------------------------------------
 // Backward-compatible aliases for legacy references during migration
 // ---------------------------------------------------------------------------
 val BackgroundDark = Ink

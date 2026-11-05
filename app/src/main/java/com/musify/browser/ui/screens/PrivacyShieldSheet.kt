@@ -91,10 +91,10 @@ fun PrivacyShieldSheet(
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Surface),
+        colors = CardDefaults.cardColors(containerColor = com.musify.browser.ui.theme.M6Card),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            if (isShieldEnabled) Success.copy(alpha = 0.5f) else Warning.copy(alpha = 0.5f)
+            if (isShieldEnabled) com.musify.browser.ui.theme.M6Emerald.copy(alpha = 0.5f) else com.musify.browser.ui.theme.M6SignalOrange.copy(alpha = 0.5f)
         )
     ) {
         Column(
@@ -112,20 +112,28 @@ fun PrivacyShieldSheet(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     MusifyIcon(
                         imageVector = if (isShieldEnabled) MusifyIcons.ShieldCheck else MusifyIcons.Warning,
-                        size = 20.dp,
-                        tint = if (isShieldEnabled) Success else Warning,
-                        modifier = Modifier.padding(end = 8.dp)
+                        size = 22.dp,
+                        tint = if (isShieldEnabled) com.musify.browser.ui.theme.M6Emerald else com.musify.browser.ui.theme.M6SignalOrange,
+                        modifier = Modifier.padding(end = 10.dp)
                     )
                     Column {
-                        Text(
-                            text = "Privacy Shields",
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "M6 PRIVACY SEISMOGRAPH",
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            com.musify.browser.ui.theme.M6CatalogTag(
+                                text = if (isShieldEnabled) "ACTIVE" else "PAUSED",
+                                accentColor = if (isShieldEnabled) com.musify.browser.ui.theme.M6Emerald else com.musify.browser.ui.theme.M6SignalOrange
+                            )
+                        }
                         Text(
                             text = currentOrigin,
-                            color = TextSecondary,
+                            color = com.musify.browser.ui.theme.M6TextSecondary,
                             fontSize = 12.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -135,9 +143,9 @@ fun PrivacyShieldSheet(
 
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(30.dp)
                         .clip(CircleShape)
-                        .background(Elevated)
+                        .background(com.musify.browser.ui.theme.M6Elevated)
                         .clickable(onClick = onClose)
                         .semantics {
                             contentDescription = "Close privacy shields panel"
@@ -145,7 +153,7 @@ fun PrivacyShieldSheet(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    MusifyIcon(MusifyIcons.Close, size = 15.dp, tint = TextSecondary)
+                    MusifyIcon(MusifyIcons.Close, size = 15.dp, tint = com.musify.browser.ui.theme.M6TextSecondary)
                 }
             }
 

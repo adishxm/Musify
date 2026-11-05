@@ -7,6 +7,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -1074,42 +1076,123 @@ private fun QuickChip(
 
 @Composable
 private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) -> Unit) {
+    val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Ink)
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+            .background(com.musify.browser.ui.theme.M6Canvas)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            MusifyIcon(
-                imageVector = if (isPrivate) MusifyIcons.Incognito else MusifyIcons.Emblem,
-                size = 64.dp,
-                tint = if (isPrivate) Private else TextPrimary
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            com.musify.browser.ui.theme.M6CatalogTag(
+                text = if (isPrivate) "[M6 // EPHEMERAL ARCHIVE]" else "[M6 // SOUND ARCHIVE]",
+                accentColor = if (isPrivate) com.musify.browser.ui.theme.M6SoundViolet else com.musify.browser.ui.theme.M6Emerald
             )
-            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = if (isPrivate) "Musify Private Tab" else "Musify Browser",
-                color = TextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                text = if (isPrivate) "M6 PRIVATE ARCHIVE" else "M6 SOUND ARCHIVE",
+                style = com.musify.browser.ui.theme.M6Typography_ExhibitionTitle,
+                color = TextPrimary
             )
-            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = if (isPrivate)
-                    "RAM-Only Ephemeral Mode • No History • Session Disposed on Close"
+                    "RAM-Only Ephemeral Mode • Session Disposed on Close"
                 else
-                    "Zero Telemetry • Multi-Tab Isolation • Strict TLS",
-                color = TextSecondary,
-                fontSize = 13.sp
+                    "Lossless Media Streaming • Zero-Latency Anti-Freeze Shields",
+                style = com.musify.browser.ui.theme.M6Typography_ExhibitionSubtitle,
+                color = com.musify.browser.ui.theme.M6TextSecondary,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Exhibition Media Bento Grid
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                M6HomeTile(
+                    title = "Spotify Web",
+                    category = "DRM // LOSSLESS",
+                    accent = com.musify.browser.ui.theme.M6Emerald,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onNavigate("https://open.spotify.com") }
+                )
+                M6HomeTile(
+                    title = "YouTube Music",
+                    category = "BG // PLAYBACK",
+                    accent = com.musify.browser.ui.theme.M6SignalOrange,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onNavigate("https://music.youtube.com") }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                M6HomeTile(
+                    title = "YouTube Video",
+                    category = "SABR // DEFENSE",
+                    accent = com.musify.browser.ui.theme.M6SignalOrange,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onNavigate("https://m.youtube.com") }
+                )
+                M6HomeTile(
+                    title = "SoundCloud",
+                    category = "DIRECT // CDN",
+                    accent = com.musify.browser.ui.theme.M6SoundViolet,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onNavigate("https://soundcloud.com") }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             MusifyGlowButton(
                 label = "DuckDuckGo Search",
                 icon = MusifyIcons.Search,
                 variant = MusifyButtonVariant.Plate,
-                meta = "SECURE",
+                meta = "SECURE SEARCH",
                 onClick = { onNavigate("https://duckduckgo.com") }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun M6HomeTile(
+    title: String,
+    category: String,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    com.musify.browser.ui.theme.M6ExhibitionCard(
+        modifier = modifier,
+        containerColor = com.musify.browser.ui.theme.M6Card,
+        borderColor = com.musify.browser.ui.theme.M6Hairline,
+        onClick = onClick,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = category,
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                color = accent
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = TextPrimary
             )
         }
     }

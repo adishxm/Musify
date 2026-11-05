@@ -8,7 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -82,9 +84,14 @@ fun WelcomeScreen(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(start = 34.dp)
-                .offset(y = screenHeight * 0.30f)
+                .offset(y = screenHeight * 0.28f)
                 .alpha(contentAlpha.value)
         ) {
+            com.musify.browser.ui.theme.M6CatalogTag(
+                text = "[M6 // SOUND ARCHIVE]",
+                accentColor = com.musify.browser.ui.theme.M6Emerald
+            )
+            Spacer(Modifier.height(12.dp))
             Text(
                 text = stringResource(R.string.welcome_hello),
                 color = TextPrimary,

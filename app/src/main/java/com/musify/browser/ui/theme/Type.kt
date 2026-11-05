@@ -229,3 +229,34 @@ val MusifyTypography_Numeric = TextStyle(
     letterSpacing = (-1.0).sp,
     fontFeatureSettings = "tnum"
 )
+
+// ---------------------------------------------------------------------------
+// M6 Exhibition Typography Styles (Phase 28)
+// ---------------------------------------------------------------------------
+
+/** Monospaced catalog metadata label (e.g. `[M6 // PRIVACY ARCHIVE]`). */
+val M6Typography_CatalogTag = TextStyle(
+    fontFamily = MusifyMono,
+    fontWeight = FontWeight.W600,
+    fontSize = 11.sp,
+    lineHeight = 14.sp,
+    letterSpacing = 1.1.sp
+)
+
+/** High-contrast architectural exhibition title with tight tracking. */
+val M6Typography_ExhibitionTitle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.W800,
+    fontSize = 28.sp,
+    lineHeight = 32.sp,
+    letterSpacing = (-1.2).sp
+)
+
+/** Editorial exhibition subtitle and section identifier. */
+val M6Typography_ExhibitionSubtitle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.W500,
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    letterSpacing = (-0.2).sp
+)

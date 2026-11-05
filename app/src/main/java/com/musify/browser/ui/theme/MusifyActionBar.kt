@@ -101,8 +101,8 @@ fun MusifyActionBar(
         Row(
             modifier = Modifier
                 .clip(MusifyShapes.pill)
-                .background(Surface.copy(alpha = 0.94f), MusifyShapes.pill)
-                .border(1.dp, Hairline, MusifyShapes.pill)
+                .background(M6Surface.copy(alpha = 0.96f), MusifyShapes.pill)
+                .border(1.dp, M6Hairline, MusifyShapes.pill)
                 .padding(horizontal = 6.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -236,8 +236,8 @@ fun MusifyActionGrid(
                     .fillMaxWidth()
                     .padding(horizontal = Space.lg, vertical = Space.xl)
                     .clip(MusifyShapes.lg)
-                    .background(Surface.copy(alpha = 0.98f), MusifyShapes.lg)
-                    .border(1.dp, Hairline, MusifyShapes.lg)
+                    .background(M6Surface.copy(alpha = 0.98f), MusifyShapes.lg)
+                    .border(1.dp, M6Hairline, MusifyShapes.lg)
                     .padding(horizontal = Space.md, vertical = Space.lg)
             ) {
                 if (title != null) {

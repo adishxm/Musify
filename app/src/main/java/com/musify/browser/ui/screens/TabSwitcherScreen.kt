@@ -98,29 +98,31 @@ fun TabSwitcherScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Ink,
+        containerColor = com.musify.browser.ui.theme.M6Canvas,
         topBar = {
-            Column(modifier = Modifier.background(Ink)) {
+            Column(modifier = Modifier.background(com.musify.browser.ui.theme.M6Canvas)) {
                 TopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Tabs",
+                                text = "M6 EXHIBITION TABS",
                                 color = TextPrimary,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
+                                fontSize = 16.sp,
+                                letterSpacing = 0.5.sp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Elevated)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(com.musify.browser.ui.theme.M6Elevated)
+                                    .border(1.dp, com.musify.browser.ui.theme.M6Hairline, RoundedCornerShape(6.dp))
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "${tabsState.tabCount}/${tabsState.maxTabs}",
                                     color = if (tabsState.isAtMaxCapacity) Danger else activeAccent,
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
@@ -431,22 +433,23 @@ private fun TabCard(
     onSelect: () -> Unit,
     onClose: () -> Unit
 ) {
-    val borderColor = if (isSelected) accentColor else Hairline
+    val activeBorder = if (tab.isPrivate) com.musify.browser.ui.theme.M6SoundViolet else com.musify.browser.ui.theme.M6SignalOrange
+    val borderColor = if (isSelected) activeBorder else com.musify.browser.ui.theme.M6Hairline
     val borderWidth = if (isSelected) 2.dp else 1.dp
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
             .clickable(onClick = onSelect)
             .semantics {
                 contentDescription = "${if (tab.isPrivate) "Private " else ""}Tab: ${tab.title}, URL: ${tab.url}" +
                         if (isSelected) " (Active)" else ""
                 role = androidx.compose.ui.semantics.Role.Button
             },
-        colors = CardDefaults.cardColors(containerColor = Surface),
-        shape = RoundedCornerShape(14.dp)
+        colors = CardDefaults.cardColors(containerColor = com.musify.browser.ui.theme.M6Card),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             // Header: Title + Close Button

@@ -9,9 +9,9 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?logo=android&logoColor=white)](#-download)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#-tech-stack)
-[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_Obsidian-4285F4?logo=jetpackcompose&logoColor=white)](#-tech-stack)
+[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_M6_Exhibition-4285F4?logo=jetpackcompose&logoColor=white)](#-tech-stack)
 [![Engine](https://img.shields.io/badge/Engine-GeckoView_135_%2B_Android_WebView-FF7139?logo=firefoxbrowser&logoColor=white)](#-tech-stack)
-[![Tests](https://img.shields.io/badge/Unit_Tests-196%2F196_passing-success)](#-building--testing)
+[![Tests](https://img.shields.io/badge/Unit_Tests-203%2F203_passing-success)](#-building--testing)
 [![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
 [**⬇️ Download APKs**](#-download) · [**✨ Features**](#-features) · [**🛡️ Privacy & Ad Shields**](#-brave-aligned-privacy--ad-shielding) · [**🎨 Design System**](#-obsidian-design-system) · [**🛠️ Build & Test**](#-building--testing) · [**🗺️ Phased Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
@@ -40,13 +40,13 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 - 📺 **YouTube & YouTube Music Ad Defense** — Player response scrubbing (`playerAds`, `adPlacements`, `adSlots`), cosmetic CSS hiding, and background playback keepalive (`_lact` timer + Page Visibility API spoofing).
 - ⚡ **SABR Protobuf Backoff Interceptor** — Zero-latency streaming bypass and Protobuf Field 4 (`0x20` varint) rewriting for YouTube SABR streams (`googlevideo.com?sabr=1`), defeating intentional 4–16s buffering freezes.
 - 🔗 **Bounce Tracking Defuser & Clean URLs** — Ports Brave's `debounce.json` and `query-filter.json` to bypass affiliate redirect hops (`dpbolvw.net`, `howl.me`, `tkqlhce.com`) and strip tracking parameters (`fbclid`, `gclid`, `msclkid`, `_gl`, `mc_eid`).
-- 🎨 **Obsidian Design System** — Minimalist `#242424` launch surface, floating pill `MusifyActionBar`, 14-action quick control grid, custom iridescent glow button, and 44 hand-crafted vector icons.
+- 🎨 **M6 Exhibition Design Language & Curated Media Bento Grid** — Museum-grade architectural aesthetic inspired by the M6 UX/UI Exhibition. Deep `#08080A` obsidian canvas, monospaced metadata badges (`[M6 // SOUND ARCHIVE]`, `[WIDEVINE // DRM ACTIVE]`), floating capsule navigation dock, real-time seismograph telemetry meters, and curated media exhibits (Spotify Web, YouTube Music, YouTube, SoundCloud).
 - 🌐 **HTTPS-First & Enforced Strict TLS** — Automatic HTTPS upgrades with cleartext disabled in the Android Network Security Config. Zero silent SSL overrides.
 - 🗂️ **Deterministic 20-Tab Architecture** — Strict memory-capped tab management that lazy-allocates sessions and destroys them upon closure to prevent Android OOM kills.
 - ♻️ **Zero-Leak Session Recovery** — Persists and recovers browsing tabs across process restarts using strictly minimal metadata (UUID, URL, title, timestamp) — never DOM trees, form data, cookies, or secrets.
 - ⬇️ **Sandboxed Off-Thread Downloads** — User-confirmed background download management mediated via `FileProvider` with file-type inspection and executable threat alerts.
 - 📡 **AdGuard DNS Companion Integration** — System-wide Android Private DNS support cleanly separated from in-page Shields metrics.
-- 🧪 **196/196 Unit Tests Passing (100% Pass Rate)** — Fully validated across 29 test suites spanning security, engine isolation, media safety, UI components, and network policy.
+- 🧪 **203/203 Unit Tests Passing (100% Pass Rate)** — Fully validated across 29 test suites spanning security, engine isolation, media safety, UI components, and network policy.
 - 🆓 **100% Free & Open Source** — Licensed under Apache 2.0 with completely independent design and branding.
 
 ---
@@ -90,9 +90,9 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 | Release Variant | Artifact File | File Size | Engine Architecture | SHA-256 Checksum | Best Used For |
 |---|---|---|---|---|---|
-| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.60 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `F9AD0605CF1367F92C988B494D4A14329E64ACAC18E56E618AB8E6EA89C4DF70` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
-| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.60 MB** | System WebKit (`BUILD_LITE=true`) | `F9AD0605CF1367F92C988B494D4A14329E64ACAC18E56E618AB8E6EA89C4DF70` | Minimal storage and memory footprint with zero bundled native binaries. |
-| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.56 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `031B2708D1A964FCE12486D463E3C7F32C5C3DB390491352CF438F8558569D4D` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
+| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.61 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `E1ED678A7EE4B87D199F5A58E63525EE4B0FD94492D03360C26F4714B57EF882` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
+| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.61 MB** | System WebKit (`BUILD_LITE=true`) | `E1ED678A7EE4B87D199F5A58E63525EE4B0FD94492D03360C26F4714B57EF882` | Minimal storage and memory footprint with zero bundled native binaries. |
+| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.57 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `8780166D99969B82C099B838E015D8F724167232FDD6AA6DB5811EFCF708E582` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
 
 > **Requirements:** Android 8.0 (API 26) or higher. Sideload the APK and launch immediately — no account, sign-in, or setup required.
 
@@ -122,13 +122,13 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 ### Build Commands
 ```bash
-# Run the complete test suite (196 unit tests across 29 test suites)
+# Run the complete test suite (203 unit tests across 29 test suites)
 ./gradlew testDebugUnitTest
 
-# Assemble Featherweight / Universal Release APK (9.60 MB)
+# Assemble Featherweight / Universal Release APK (9.61 MB)
 ./gradlew assembleRelease -PBUILD_LITE=true
 
-# Assemble Compressed GeckoView ARM64 Release APK (85.56 MB)
+# Assemble Compressed GeckoView ARM64 Release APK (85.57 MB)
 ./gradlew assembleRelease -PTARGET_ABI=arm64-v8a
 
 # Install to connected device or emulator
@@ -158,6 +158,7 @@ Musify is developed through an evidence-based, test-gated phase plan. Every comp
 | **25** | **SABR Protobuf streaming interceptor & video backoff defense** | ✅ PASS | [PHASE-25](.brain/.report/PHASE-25-REPORT.md) |
 | **26** | **Universal tracking parameter sanitizer & bounce tracker defuser (clean URLs)** | ✅ PASS | [PHASE-26](.brain/.report/PHASE-26-REPORT.md) |
 | **27** | **Universal privacy shields harmonization & multi-variant release assembly** | ✅ PASS | [PHASE-27](.brain/.report/PHASE-27-REPORT.md) |
+| **28** | **M6 Exhibition UI/UX redesign, curated media bento grid & release packaging** | ✅ PASS | [PHASE-28](.brain/.report/PHASE-28-REPORT.md) |
 | **LIVE** | **Live Android emulator verification across real Brave-shielded websites** | ✅ PASS | [LIVE-REPORT](.brain/.report/LIVE-BRAVE-WEBSITE-TEST-REPORT.md) |
 
 ---

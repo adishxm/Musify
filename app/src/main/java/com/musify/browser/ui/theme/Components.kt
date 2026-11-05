@@ -27,6 +27,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Shared presentation primitives.
@@ -382,6 +383,119 @@ fun EmptyState(
                 color = TextMuted,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// M6 EXHIBITION PRESENTATION PRIMITIVES (Phase 28)
+// ---------------------------------------------------------------------------
+
+/**
+ * An architectural exhibition metadata tag (e.g. `[M6 // PRIVACY ARCHIVE]`).
+ */
+@Composable
+fun M6CatalogTag(
+    text: String,
+    modifier: Modifier = Modifier,
+    accentColor: Color = M6Emerald,
+    backgroundColor: Color = M6Elevated
+) {
+    Box(
+        modifier = modifier
+            .background(backgroundColor, RoundedCornerShape(4.dp))
+            .border(1.dp, accentColor.copy(alpha = 0.45f), RoundedCornerShape(4.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = accentColor,
+            style = M6Typography_CatalogTag
+        )
+    }
+}
+
+/**
+ * Curated M6 Exhibition Bento Container.
+ * Architectural framing with hairline edges, elevated fill, and optional glow highlight.
+ */
+@Composable
+fun M6ExhibitionCard(
+    modifier: Modifier = Modifier,
+    containerColor: Color = M6Card,
+    borderColor: Color = M6Hairline,
+    onClick: (() -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    content: @Composable () -> Unit
+) {
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = modifier
+            .background(containerColor, shape)
+            .border(1.dp, borderColor, shape)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                }
+            )
+            .padding(contentPadding)
+    ) {
+        content()
+    }
+}
+
+/**
+ * Real-time kinetic metric indicator for privacy shield defense telemetry.
+ */
+@Composable
+fun M6SeismographBar(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    accentColor: Color = M6SignalOrange,
+    sublabel: String? = null
+) {
+    Column(
+        modifier = modifier
+            .background(M6Elevated, RoundedCornerShape(8.dp))
+            .border(1.dp, M6Hairline, RoundedCornerShape(8.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label.uppercase(),
+                color = M6TextMuted,
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp)
+            )
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .background(accentColor, androidx.compose.foundation.shape.CircleShape)
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = value,
+            color = TextPrimary,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.5).sp
+            )
+        )
+        if (sublabel != null) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = sublabel,
+                color = M6TextSecondary,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }

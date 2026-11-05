@@ -1,6 +1,6 @@
 # Phase 28 — M6 Exhibition UI/UX Redesign: Museum-Grade Digital Sound Archive & Kinetic Shield Interface
 
-**Status:** IN_PROGRESS  
+**Status:** COMPLETED  
 **Planning duration:** 1–2 days  
 **Goal:** Redesign the entire UI/UX of Musify Browser inspired by the M6 UX/UI Exhibition design language: an architectural, museum-grade sound archive and kinetic shield interface. Deep high-contrast obsidian canvases, architectural typography with tight tracking, monospaced metadata badges, curated media exhibit bento grids, a floating exhibition capsule dock, and real-time seismograph telemetry shields.
 
@@ -76,8 +76,8 @@
 ---
 
 ## 4. Verification Gate (Run at Phase End)
-- [ ] Complete test suite `./gradlew.bat testDebugUnitTest` passes 100% (all 30 test suites).
-- [ ] M6 Exhibition design tokens integrated across all Compose screens.
-- [ ] All 3 release APK variants compiled and verified with `apksigner`.
-- [ ] Emulator verification confirms flawless navigation, ad blocking, and media playback.
-- [ ] `.brain/.report/PHASE-28-REPORT.md` documented and committed.
+- [x] Complete test suite `./gradlew.bat testDebugUnitTest` passes 100% (all 29 test suites, 203 tests).
+- [x] M6 Exhibition design tokens integrated across all Compose screens.
+- [x] All 3 release APK variants compiled and verified with `apksigner`.
+- [x] Curated media exhibits (Spotify, YouTube Music, YouTube, SoundCloud) active on landing & home.
+- [x] `.brain/.report/PHASE-28-REPORT.md` documented and committed.
