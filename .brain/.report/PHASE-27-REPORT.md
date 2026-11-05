@@ -84,9 +84,9 @@ All three release artifacts were built using Android Gradle Plugin release optim
 
 | Release Variant | Artifact Path | Size (Bytes) | Size (MB) | Engine Architecture | SHA256 Checksum | Signature Status |
 |---|---|---|---|---|---|---|
-| **Musify** (Primary Release) | `Musify.apk` | 10,071,147 | **9.60 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `7042897CC805A2B775D4E54BD9B151A2E537A0BFD1AAEC5D9672A35C6B0514FF` | Verified (`apksigner` v2/v3) |
-| **Musify-Lite** (Featherweight) | `Musify-Lite.apk` | 10,071,147 | **9.60 MB** | Stripped Gecko binaries / System WebKit | `7042897CC805A2B775D4E54BD9B151A2E537A0BFD1AAEC5D9672A35C6B0514FF` | Verified (`apksigner` v2/v3) |
-| **Musify-ARM64** (GeckoView Engine) | `Musify-ARM64.apk` | 89,720,197 | **85.56 MB** | Full Mozilla GeckoView (`arm64-v8a` compressed) | `514483C75606177C230837B0C88BDBE79599C1EEEFBF3C7526CC7FA9B2B0DF61` | Verified (`apksigner` v2/v3) |
+| **Musify** (Primary Release) | `Musify.apk` | 10,071,144 | **9.60 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `F9AD0605CF1367F92C988B494D4A14329E64ACAC18E56E618AB8E6EA89C4DF70` | Verified (`apksigner` v2/v3) |
+| **Musify-Lite** (Featherweight) | `Musify-Lite.apk` | 10,071,144 | **9.60 MB** | Stripped Gecko binaries / System WebKit | `F9AD0605CF1367F92C988B494D4A14329E64ACAC18E56E618AB8E6EA89C4DF70` | Verified (`apksigner` v2/v3) |
+| **Musify-ARM64** (GeckoView Engine) | `Musify-ARM64.apk` | 89,720,192 | **85.56 MB** | Full Mozilla GeckoView (`arm64-v8a` compressed) | `031B2708D1A964FCE12486D463E3C7F32C5C3DB390491352CF438F8558569D4D` | Verified (`apksigner` v2/v3) |
 
 ---
 
