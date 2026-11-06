@@ -47,7 +47,8 @@ data class ShieldMetrics(
  */
 class UnifiedShieldController(
     private val exceptionRepository: ShieldExceptionRepository? = null,
-    private val filterEngine: FilterEngine? = null
+    private val filterEngine: FilterEngine? = null,
+    val compiledFilterIndex: CompiledFilterIndex? = null
 ) {
     private val requestsEvaluatedCounter = AtomicLong(0)
     private val trackersBlockedCounter = AtomicLong(0)
@@ -152,18 +153,35 @@ class UnifiedShieldController(
             return UnifiedShieldAction.MockResponse(APPLICATION_JSON, EMPTY_JSON)
         }
 
-        // 7. Known ad network trackers
+        // 7. Check CompiledFilterIndex (Zero-copy Domain Trie, Token Index & Bloom Filter)
+        if (compiledFilterIndex != null) {
+            when (val decision = compiledFilterIndex.evaluate(requestUrl)) {
+                is FilterDecision.Blocked -> {
+                    trackersBlockedCounter.incrementAndGet()
+                    return UnifiedShieldAction.Block(
+                        reason = "CompiledFilterIndex rule: ${decision.rule}",
+                        category = ShieldCategories.ADS_AND_TRACKERS
+                    )
+                }
+                is FilterDecision.Exception -> {
+                    return UnifiedShieldAction.Allow("CompiledFilterIndex exception rule: ${decision.rule}")
+                }
+                is FilterDecision.Allowed -> {}
+            }
+        }
+
+        // 8. Known ad network trackers
         if (KNOWN_AD_DOMAINS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.Block("Blocked known advertising domain", ShieldCategories.ADS_AND_TRACKERS)
         }
 
-        // 8. Allow essential first-party endpoints and auth
+        // 9. Allow essential first-party endpoints and auth
         if (classification == ResourceClassification.FIRST_PARTY_OR_AUTH) {
             return UnifiedShieldAction.Allow("First-party authentication or essential service")
         }
 
-        // 9. Consult FilterEngine if registered
+        // 10. Consult FilterEngine if registered
         if (filterEngine != null) {
             when (val decision = filterEngine.evaluate(requestUrl)) {
                 is FilterDecision.Blocked -> {

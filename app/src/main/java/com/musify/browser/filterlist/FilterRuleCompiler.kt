@@ -19,47 +19,28 @@ class CompiledFilterList(
     private val pathPatternBlocks: List<String>,
     private val pathPatternExceptions: List<String>
 ) {
-    /**
-     * Evaluates whether a target URL is blocked, permitted, or an exception.
-     */
-    fun evaluate(url: String): FilterDecision {
-        if (url.isBlank() || url.startsWith("about:") || url.startsWith("data:") || url.startsWith("blob:")) {
-            return FilterDecision.Allowed("Internal or non-network URL")
-        }
+    private val filterIndex = com.musify.browser.shield.CompiledFilterIndex()
 
-        val host = extractHostFromUrl(url)
-
-        // 1. Check domain and pattern exceptions first
-        if (host != null && matchesHost(host, domainExceptions)) {
-            return FilterDecision.Exception("Domain exception matched for $host", metadata.id)
+    init {
+        for (domain in domainExceptions) {
+            filterIndex.addDomainRule(domain, isException = true, listId = metadata.id)
         }
         for (pattern in pathPatternExceptions) {
-            if (matchesPattern(url, pattern)) {
-                return FilterDecision.Exception("Pattern exception matched: $pattern", metadata.id)
-            }
+            filterIndex.addPatternRule(pattern, isException = true, listId = metadata.id)
         }
-
-        // 2. Check domain blocks (O(1) set lookup on host and parent domains)
-        if (host != null && matchesHost(host, domainBlocks)) {
-            return FilterDecision.Blocked(
-                rule = "||$host^",
-                listId = metadata.id,
-                matchedTarget = host
-            )
+        for (domain in domainBlocks) {
+            filterIndex.addDomainRule(domain, isException = false, listId = metadata.id)
         }
-
-        // 3. Check path pattern blocks
         for (pattern in pathPatternBlocks) {
-            if (matchesPattern(url, pattern)) {
-                return FilterDecision.Blocked(
-                    rule = pattern,
-                    listId = metadata.id,
-                    matchedTarget = pattern
-                )
-            }
+            filterIndex.addPatternRule(pattern, isException = false, listId = metadata.id)
         }
+    }
 
-        return FilterDecision.Allowed()
+    /**
+     * Evaluates whether a target URL is blocked, permitted, or an exception using CompiledFilterIndex.
+     */
+    fun evaluate(url: String): FilterDecision {
+        return filterIndex.evaluate(url)
     }
 
     private fun matchesPattern(url: String, pattern: String): Boolean {
