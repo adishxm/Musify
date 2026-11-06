@@ -203,3 +203,13 @@ Third-Party Software and Content Notices:
 3. Peter Lowe's Ad and Tracking Server List
    - License: Permissive / MIT-compatible
    - Source: https://pgl.yoyo.org/adservers/
+
+4. DM Serif Display Font Family
+   - License: SIL Open Font License, Version 1.1 (OFL-1.1)
+   - Source: https://github.com/google/fonts/tree/main/ofl/dmserifdisplay
+   - Copyright (c) 2020 The DM Serif Display Project Authors
+
+5. Inter Font Family
+   - License: SIL Open Font License, Version 1.1 (OFL-1.1)
+   - Source: https://github.com/rsms/inter
+   - Copyright (c) 2016-2024 The Inter Project Authors

@@ -33,9 +33,9 @@ if not exist "%ADB_EXE%" (
 
 :: Select APK to test
 echo Select APK variant to install:
-echo   [1] Musify.apk (Universal Release Build - 9.62 MB, Default)
-echo   [2] Musify-ARM64.apk (Full GeckoView Engine Build - 85.58 MB)
-echo   [3] Musify-Lite.apk (Featherweight System WebView Build - 9.62 MB)
+echo   [1] Musify.apk (Universal Release Build - 9.70 MB, Default)
+echo   [2] Musify-ARM64.apk (Full GeckoView Engine Build - 85.66 MB)
+echo   [3] Musify-Lite.apk (Featherweight System WebView Build - 9.70 MB)
 echo   [4] app-debug.apk (Debug Build with Logcat Instrumentation)
 echo   [5] Wipe AVD Userdata ^& Fresh Cold Boot (Fix disk or snapshot issues)
 echo.
@@ -155,6 +155,7 @@ echo  Target Package: !PACKAGE_NAME!
 echo  Ready to verify Brave-Aligned Shields:
 echo.
 echo  Quick Test Shortcuts:
+echo    [H] Launch Editorial New-Tab Home Screen (about:blank)
 echo    [S] Open Spotify Web Player (open.spotify.com)
 echo    [Y] Open YouTube (m.youtube.com)
 echo    [M] Open YouTube Music (music.youtube.com)
@@ -166,7 +167,12 @@ echo ========================================================
 echo.
 
 :menu_loop
-set /p "TEST_CMD=Choose website test [S/Y/M/B/C/D/Q]: "
+set /p "TEST_CMD=Choose website test [H/S/Y/M/B/C/D/Q]: "
+if /i "!TEST_CMD!"=="H" (
+    echo Opening Editorial New-Tab Home Screen...
+    "%ADB_EXE%" shell am start -n !PACKAGE_NAME!/com.musify.browser.MainActivity
+    goto menu_loop
+)
 if /i "!TEST_CMD!"=="S" (
     echo Opening Spotify Web Player...
     "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://open.spotify.com" !PACKAGE_NAME!
