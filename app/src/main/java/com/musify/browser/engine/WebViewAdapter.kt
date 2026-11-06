@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.ByteArrayInputStream
+import com.musify.browser.shield.VastVmapInterceptor
+import com.musify.browser.shield.VastVmapAction
 
 /**
  * WebViewAdapter: Bounded prototype, comparison and fallback adapter.
@@ -224,6 +226,50 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     // Safeguard: Never block protected media, Widevine DRM licenses, or manifests
                     if (MediaSafeResourcePolicy.isMediaOrLicenseRequest(requestUrl)) {
                         return super.shouldInterceptRequest(view, request)
+                    }
+
+                    // Intercept VAST & VMAP Video Ads with Synthetic Mocks (Brave Shields reverse-engineered)
+                    val vastAction = VastVmapInterceptor.intercept(requestUrl)
+                    if (vastAction != null) {
+                        _shieldState.value = _shieldState.value.copy(
+                            blockedCount = _shieldState.value.blockedCount + 1,
+                            lastBlockedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(requestUrl),
+                            lastBlockCategory = "Video Advertisement (VAST/VMAP)"
+                        )
+                        return when (vastAction) {
+                            is VastVmapAction.VastXml -> WebResourceResponse(
+                                "text/xml",
+                                "UTF-8",
+                                200,
+                                "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to "text/xml"),
+                                ByteArrayInputStream(vastAction.xml.toByteArray(Charsets.UTF_8))
+                            )
+                            is VastVmapAction.VmapXml -> WebResourceResponse(
+                                "text/xml",
+                                "UTF-8",
+                                200,
+                                "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to "text/xml"),
+                                ByteArrayInputStream(VastVmapAction.VmapXml.xml.toByteArray(Charsets.UTF_8))
+                            )
+                            is VastVmapAction.DoubleClickAdStatus -> WebResourceResponse(
+                                "application/javascript",
+                                "UTF-8",
+                                200,
+                                "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to "application/javascript"),
+                                ByteArrayInputStream(VastVmapAction.DoubleClickAdStatus.script.toByteArray(Charsets.UTF_8))
+                            )
+                            is VastVmapAction.SilentAudio -> WebResourceResponse(
+                                vastAction.mimeType,
+                                null,
+                                200,
+                                "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*"),
+                                ByteArrayInputStream(vastAction.data)
+                            )
+                        }
                     }
 
                     // Intercept Spotify Audio & Visual Ad networks (checked BEFORE isFirstParty bypass)

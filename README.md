@@ -11,7 +11,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#-tech-stack)
 [![UI](https://img.shields.io/badge/UI-Jetpack_Compose_M6_Exhibition-4285F4?logo=jetpackcompose&logoColor=white)](#-tech-stack)
 [![Engine](https://img.shields.io/badge/Engine-GeckoView_135_%2B_Android_WebView-FF7139?logo=firefoxbrowser&logoColor=white)](#-tech-stack)
-[![Tests](https://img.shields.io/badge/Unit_Tests-203%2F203_passing-success)](#-building--testing)
+[![Tests](https://img.shields.io/badge/Unit_Tests-211%2F211_passing-success)](#-building--testing)
 [![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
 [**⬇️ Download APKs**](#-download) · [**✨ Features**](#-features) · [**🛡️ Privacy & Ad Shields**](#-brave-aligned-privacy--ad-shielding) · [**🎨 Design System**](#-obsidian-design-system) · [**🛠️ Build & Test**](#-building--testing) · [**🗺️ Phased Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
@@ -39,6 +39,7 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 - 🎵 **Spotify Web & Anti-Freeze Protection** — Brave-inspired multi-tier content shield, declarative cosmetic ad hiding, and synthetic `200 OK` empty JSON mocking for `/ad-logic/` without playback interruption.
 - 📺 **YouTube & YouTube Music Ad Defense** — Player response scrubbing (`playerAds`, `adPlacements`, `adSlots`), cosmetic CSS hiding, and background playback keepalive (`_lact` timer + Page Visibility API spoofing).
 - ⚡ **SABR Protobuf Backoff Interceptor** — Zero-latency streaming bypass and Protobuf Field 4 (`0x20` varint) rewriting for YouTube SABR streams (`googlevideo.com?sabr=1`), defeating intentional 4–16s buffering freezes.
+- 🎬 **VAST & VMAP Video Ad Interception** — Brave-aligned synthetic XML mock response engine (`<VAST version="3.0"/>`, `<vmap:VMAP .../>`), DoubleClick in-stream status stubs (`google_ad_status = 1`), and silent media buffers (`noop-0.1s.mp3`), defeating video player stalls across web portals.
 - 🔗 **Bounce Tracking Defuser & Clean URLs** — Ports Brave's `debounce.json` and `query-filter.json` to bypass affiliate redirect hops (`dpbolvw.net`, `howl.me`, `tkqlhce.com`) and strip tracking parameters (`fbclid`, `gclid`, `msclkid`, `_gl`, `mc_eid`).
 - 🎨 **M6 Exhibition Design Language & Curated Media Bento Grid** — Museum-grade architectural aesthetic inspired by the M6 UX/UI Exhibition. Deep `#08080A` obsidian canvas, monospaced metadata badges (`[M6 // SOUND ARCHIVE]`, `[WIDEVINE // DRM ACTIVE]`), floating capsule navigation dock, real-time seismograph telemetry meters, and curated media exhibits (Spotify Web, YouTube Music, YouTube, SoundCloud).
 - 🌐 **HTTPS-First & Enforced Strict TLS** — Automatic HTTPS upgrades with cleartext disabled in the Android Network Security Config. Zero silent SSL overrides.
@@ -46,7 +47,7 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 - ♻️ **Zero-Leak Session Recovery** — Persists and recovers browsing tabs across process restarts using strictly minimal metadata (UUID, URL, title, timestamp) — never DOM trees, form data, cookies, or secrets.
 - ⬇️ **Sandboxed Off-Thread Downloads** — User-confirmed background download management mediated via `FileProvider` with file-type inspection and executable threat alerts.
 - 📡 **AdGuard DNS Companion Integration** — System-wide Android Private DNS support cleanly separated from in-page Shields metrics.
-- 🧪 **203/203 Unit Tests Passing (100% Pass Rate)** — Fully validated across 29 test suites spanning security, engine isolation, media safety, UI components, and network policy.
+- 🧪 **211/211 Unit Tests Passing (100% Pass Rate)** — Fully validated across 30 test suites spanning security, engine isolation, media safety, UI components, and network policy.
 - 🆓 **100% Free & Open Source** — Licensed under Apache 2.0 with completely independent design and branding.
 
 ---
@@ -90,9 +91,9 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 | Release Variant | Artifact File | File Size | Engine Architecture | SHA-256 Checksum | Best Used For |
 |---|---|---|---|---|---|
-| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.61 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `E1ED678A7EE4B87D199F5A58E63525EE4B0FD94492D03360C26F4714B57EF882` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
-| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.61 MB** | System WebKit (`BUILD_LITE=true`) | `E1ED678A7EE4B87D199F5A58E63525EE4B0FD94492D03360C26F4714B57EF882` | Minimal storage and memory footprint with zero bundled native binaries. |
-| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.57 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `8780166D99969B82C099B838E015D8F724167232FDD6AA6DB5811EFCF708E582` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
+| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.62 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `B8A27181A5B2E596C5CB8C1797460B5555CF6311ECCF1A627ED7F1C68C3507EC` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
+| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.62 MB** | System WebKit (`BUILD_LITE=true`) | `B8A27181A5B2E596C5CB8C1797460B5555CF6311ECCF1A627ED7F1C68C3507EC` | Minimal storage and memory footprint with zero bundled native binaries. |
+| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.58 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `780A9CCB117E66A8C5A58FB4969334F80E4316D54D922D2A6774A1565513F78C` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
 
 > **Requirements:** Android 8.0 (API 26) or higher. Sideload the APK and launch immediately — no account, sign-in, or setup required.
 
@@ -122,13 +123,13 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 ### Build Commands
 ```bash
-# Run the complete test suite (203 unit tests across 29 test suites)
+# Run the complete test suite (211 unit tests across 30 test suites)
 ./gradlew testDebugUnitTest
 
-# Assemble Featherweight / Universal Release APK (9.61 MB)
+# Assemble Featherweight / Universal Release APK (9.62 MB)
 ./gradlew assembleRelease -PBUILD_LITE=true
 
-# Assemble Compressed GeckoView ARM64 Release APK (85.57 MB)
+# Assemble Compressed GeckoView ARM64 Release APK (85.58 MB)
 ./gradlew assembleRelease -PTARGET_ABI=arm64-v8a
 
 # Install to connected device or emulator
@@ -159,6 +160,7 @@ Musify is developed through an evidence-based, test-gated phase plan. Every comp
 | **26** | **Universal tracking parameter sanitizer & bounce tracker defuser (clean URLs)** | ✅ PASS | [PHASE-26](.brain/.report/PHASE-26-REPORT.md) |
 | **27** | **Universal privacy shields harmonization & multi-variant release assembly** | ✅ PASS | [PHASE-27](.brain/.report/PHASE-27-REPORT.md) |
 | **28** | **M6 Exhibition UI/UX redesign, curated media bento grid & release packaging** | ✅ PASS | [PHASE-28](.brain/.report/PHASE-28-REPORT.md) |
+| **29** | **VAST & VMAP video ad interception, DoubleClick in-stream status mocks & silent media noops** | ✅ PASS | [PHASE-29](.brain/.report/PHASE-29-REPORT.md) |
 | **LIVE** | **Live Android emulator verification across real Brave-shielded websites** | ✅ PASS | [LIVE-REPORT](.brain/.report/LIVE-BRAVE-WEBSITE-TEST-REPORT.md) |
 
 ---

@@ -34,7 +34,15 @@
         // General trackers
         'scorecardresearch.com',
         'doubleclick.net',
-        'google-analytics.com'
+        'google-analytics.com',
+        // VAST & VMAP video ad providers
+        'pubads.g.doubleclick.net/gampad/ads',
+        'securepubads.g.doubleclick.net/gampad/ads',
+        'imasdk.googleapis.com',
+        'innovid.com/v1/endpoints/vast',
+        'springserve.com/vast',
+        'spotxchange.com/vast',
+        'tremorhub.com/live/vast'
     ];
 
     const MEDIA_LICENSE_SAFEGUARD = [
@@ -78,6 +86,25 @@
                 // Priority 2: Intercept ad & tracker endpoints
                 if (isAdOrTracker(url)) {
                     const lower = url.toLowerCase();
+                    // For DoubleClick instream ad status, return window.google_ad_status = 1;
+                    if (lower.includes('doubleclick.net/instream/ad_status') || lower.includes('google_ad_status.js')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,window.google_ad_status%20%3D%201%3B'
+                        };
+                    }
+
+                    // For VAST/VMAP video advertising tags, return synthetic empty XML (Brave noop-vast3 / noop-vmap1)
+                    if (lower.includes('/vmap') || lower.includes('output=vmap')) {
+                        return {
+                            redirectUrl: 'data:text/xml,%3Cvmap%3AVMAP%20xmlns%3Avmap%3D%22http%3A%2F%2Fwww.iab.net%2Fvideosuite%2Fvmap%22%20version%3D%221.0%22%3E%3C%2Fvmap%3AVMAP%3E'
+                        };
+                    }
+                    if (lower.includes('/vast') || lower.includes('output=vast') || lower.includes('output=xml_vast') || lower.includes('format=vast') || lower.includes('env=vp')) {
+                        return {
+                            redirectUrl: 'data:text/xml,%3CVAST%20version%3D%223.0%22%3E%3C%2FVAST%3E'
+                        };
+                    }
+
                     // For JSON ad-logic metadata endpoints, redirect to synthetic empty JSON {}
                     // to prevent player freeze loops
                     if (

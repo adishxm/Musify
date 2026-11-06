@@ -1,6 +1,6 @@
 # Phase 29 — VAST & VMAP Video Ad Interception & Silent Noop Media Substitution
 
-**Status:** IN_PROGRESS  
+**Status:** COMPLETED  
 **Planning duration:** 1–2 days  
 **Goal:** Implement Brave-aligned synthetic XML and media interception for VAST (2.0/3.0/4.0) and VMAP (1.0) video advertising requests, DoubleClick in-stream status mocks, and silent media noops (`noop-0.1s.mp3`, `noop-1s.mp4`). This prevents video players on news, sports, Twitch, and web portals from stalling or displaying 30–60s connection error spinners when commercial breaks are suppressed.
 
@@ -55,9 +55,9 @@ Reverse engineering Brave Browser (`mfddibmblmbccpadfndgakiopmmhebop/resources.j
 ---
 
 ## 3. Verification Gate (Run at Phase End)
-- [ ] `VastVmapInterceptor` correctly matches VAST and VMAP request patterns.
-- [ ] Returns valid `<VAST version="3.0"></VAST>` and `<vmap:VMAP ...></vmap:VMAP>`.
-- [ ] Returns `window.google_ad_status = 1;` on DoubleClick in-stream status calls.
-- [ ] Widevine DRM streams and functional video streams are 100% unaffected.
-- [ ] Complete unit test suite passes 100% (30 test suites).
-- [ ] `.brain/.report/PHASE-29-REPORT.md` documented and committed.
+- [x] `VastVmapInterceptor` correctly matches VAST and VMAP request patterns.
+- [x] Returns valid `<VAST version="3.0"></VAST>` and `<vmap:VMAP ...></vmap:VMAP>`.
+- [x] Returns `window.google_ad_status = 1;` on DoubleClick in-stream status calls.
+- [x] Widevine DRM streams and functional video streams are 100% unaffected.
+- [x] Complete unit test suite passes 100% (30 test suites, 211 tests).
+- [x] `.brain/.report/PHASE-29-REPORT.md` documented and committed.

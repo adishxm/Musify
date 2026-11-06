@@ -28,7 +28,8 @@ data class ShieldMetrics(
     val protectedMediaAllowed: Long = 0L,
     val trackingParamsCleaned: Long = 0L,
     val bounceHopsDefused: Long = 0L,
-    val sabrStreamsProtected: Long = 0L
+    val sabrStreamsProtected: Long = 0L,
+    val vastVmapMocksServed: Long = 0L
 )
 
 /**
@@ -49,6 +50,7 @@ class UnifiedShieldController(
     private val trackingParamsCleanedCounter = AtomicLong(0)
     private val bounceHopsDefusedCounter = AtomicLong(0)
     private val sabrStreamsProtectedCounter = AtomicLong(0)
+    private val vastVmapMocksServedCounter = AtomicLong(0)
 
     companion object {
         private const val EMPTY_JSON = "{}"
@@ -99,13 +101,26 @@ class UnifiedShieldController(
 
         val lowerUrl = requestUrl.lowercase()
 
-        // 3. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
+        // 3. VAST & VMAP Video Ad Interception (Synthetic empty XML/JS stubs)
+        val vastAction = VastVmapInterceptor.intercept(requestUrl)
+        if (vastAction != null) {
+            trackersBlockedCounter.incrementAndGet()
+            vastVmapMocksServedCounter.incrementAndGet()
+            return when (vastAction) {
+                is VastVmapAction.VastXml -> UnifiedShieldAction.MockResponse(vastAction.mimeType, vastAction.xml)
+                is VastVmapAction.VmapXml -> UnifiedShieldAction.MockResponse(VastVmapAction.VmapXml.mimeType, VastVmapAction.VmapXml.xml)
+                is VastVmapAction.DoubleClickAdStatus -> UnifiedShieldAction.MockResponse(VastVmapAction.DoubleClickAdStatus.mimeType, VastVmapAction.DoubleClickAdStatus.script)
+                is VastVmapAction.SilentAudio -> UnifiedShieldAction.MockResponse(vastAction.mimeType, "")
+            }
+        }
+
+        // 4. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
         if (MOCK_EMPTY_JSON_ENDPOINTS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.MockResponse(APPLICATION_JSON, EMPTY_JSON)
         }
 
-        // 4. Known ad network trackers
+        // 5. Known ad network trackers
         if (KNOWN_AD_DOMAINS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.Block("Blocked known advertising domain", ShieldCategories.ADS_AND_TRACKERS)
@@ -170,7 +185,8 @@ class UnifiedShieldController(
             protectedMediaAllowed = protectedMediaAllowedCounter.get(),
             trackingParamsCleaned = trackingParamsCleanedCounter.get(),
             bounceHopsDefused = bounceHopsDefusedCounter.get(),
-            sabrStreamsProtected = sabrStreamsProtectedCounter.get()
+            sabrStreamsProtected = sabrStreamsProtectedCounter.get(),
+            vastVmapMocksServed = vastVmapMocksServedCounter.get()
         )
     }
 
@@ -184,6 +200,7 @@ class UnifiedShieldController(
         trackingParamsCleanedCounter.set(0)
         bounceHopsDefusedCounter.set(0)
         sabrStreamsProtectedCounter.set(0)
+        vastVmapMocksServedCounter.set(0)
     }
 }
 
