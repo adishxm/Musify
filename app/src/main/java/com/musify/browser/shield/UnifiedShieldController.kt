@@ -29,7 +29,9 @@ data class ShieldMetrics(
     val trackingParamsCleaned: Long = 0L,
     val bounceHopsDefused: Long = 0L,
     val sabrStreamsProtected: Long = 0L,
-    val vastVmapMocksServed: Long = 0L
+    val vastVmapMocksServed: Long = 0L,
+    val sdkMocksServed: Long = 0L,
+    val antiAdblockDefused: Long = 0L
 )
 
 /**
@@ -39,6 +41,7 @@ data class ShieldMetrics(
  * 3. YouTube SABR Stream Protocol Defense (Protobuf Field 4 Varint Rewriting)
  * 4. URL Navigation Cleaning (TrackingParamSanitizer + DebounceInterceptor)
  * 5. Reversible Per-Origin Exemption Management (ShieldExceptionRepository)
+ * 6. Brave Scriptlet Mocks & Anti-Adblock Defusers (AdSdkMockRepository)
  */
 class UnifiedShieldController(
     private val exceptionRepository: ShieldExceptionRepository? = null,
@@ -51,6 +54,8 @@ class UnifiedShieldController(
     private val bounceHopsDefusedCounter = AtomicLong(0)
     private val sabrStreamsProtectedCounter = AtomicLong(0)
     private val vastVmapMocksServedCounter = AtomicLong(0)
+    private val sdkMocksServedCounter = AtomicLong(0)
+    private val antiAdblockDefusedCounter = AtomicLong(0)
 
     companion object {
         private const val EMPTY_JSON = "{}"
@@ -114,24 +119,36 @@ class UnifiedShieldController(
             }
         }
 
-        // 4. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
+        // 4. Ad SDK & Anti-Adblock Defusers (Brave Shields reverse-engineered scriptlet mocks)
+        val mockScript = AdSdkMockRepository.matchMockScript(requestUrl)
+        if (mockScript != null) {
+            trackersBlockedCounter.incrementAndGet()
+            if (mockScript.isAntiAdblockDefuser) {
+                antiAdblockDefusedCounter.incrementAndGet()
+            } else {
+                sdkMocksServedCounter.incrementAndGet()
+            }
+            return UnifiedShieldAction.MockResponse(mockScript.mimeType, mockScript.scriptContent)
+        }
+
+        // 5. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
         if (MOCK_EMPTY_JSON_ENDPOINTS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.MockResponse(APPLICATION_JSON, EMPTY_JSON)
         }
 
-        // 5. Known ad network trackers
+        // 6. Known ad network trackers
         if (KNOWN_AD_DOMAINS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.Block("Blocked known advertising domain", ShieldCategories.ADS_AND_TRACKERS)
         }
 
-        // 5. Allow essential first-party endpoints and auth
+        // 7. Allow essential first-party endpoints and auth
         if (classification == ResourceClassification.FIRST_PARTY_OR_AUTH) {
             return UnifiedShieldAction.Allow("First-party authentication or essential service")
         }
 
-        // 6. Consult FilterEngine if registered
+        // 8. Consult FilterEngine if registered
         if (filterEngine != null) {
             when (val decision = filterEngine.evaluate(requestUrl)) {
                 is FilterDecision.Blocked -> {
@@ -186,7 +203,9 @@ class UnifiedShieldController(
             trackingParamsCleaned = trackingParamsCleanedCounter.get(),
             bounceHopsDefused = bounceHopsDefusedCounter.get(),
             sabrStreamsProtected = sabrStreamsProtectedCounter.get(),
-            vastVmapMocksServed = vastVmapMocksServedCounter.get()
+            vastVmapMocksServed = vastVmapMocksServedCounter.get(),
+            sdkMocksServed = sdkMocksServedCounter.get(),
+            antiAdblockDefused = antiAdblockDefusedCounter.get()
         )
     }
 
@@ -201,6 +220,8 @@ class UnifiedShieldController(
         bounceHopsDefusedCounter.set(0)
         sabrStreamsProtectedCounter.set(0)
         vastVmapMocksServedCounter.set(0)
+        sdkMocksServedCounter.set(0)
+        antiAdblockDefusedCounter.set(0)
     }
 }
 

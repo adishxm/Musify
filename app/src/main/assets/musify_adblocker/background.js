@@ -35,6 +35,14 @@
         'scorecardresearch.com',
         'doubleclick.net',
         'google-analytics.com',
+        // Ad SDKs & Anti-Adblock Defusers (Brave Shields reverse-engineered)
+        'googletagservices.com',
+        'pagead2.googlesyndication.com',
+        'amazon-adsystem.com',
+        'fuckadblock',
+        'blockadblock',
+        'prebid-ads.js',
+        'canrunads.js',
         // VAST & VMAP video ad providers
         'pubads.g.doubleclick.net/gampad/ads',
         'securepubads.g.doubleclick.net/gampad/ads',
@@ -102,6 +110,48 @@
                     if (lower.includes('/vast') || lower.includes('output=vast') || lower.includes('output=xml_vast') || lower.includes('format=vast') || lower.includes('env=vp')) {
                         return {
                             redirectUrl: 'data:text/xml,%3CVAST%20version%3D%223.0%22%3E%3C%2FVAST%3E'
+                        };
+                    }
+
+                    // For Google Publisher Tag (GPT), redirect to synthetic stub that executes cmd.push callbacks
+                    if (lower.includes('gpt.js') || lower.includes('googletagservices.com')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,(function()%7Bwindow.googletag%3Dwindow.googletag%7C%7C%7B%7D%3Bgoogletag.cmd%3Dgoogletag.cmd%7C%7C%5B%5D%3Bgoogletag.cmd.push%3Dfunction(fn)%7Bif(typeof%20fn%3D%3D%3D%27function%27)try%7Bfn()%7Dcatch(e)%7B%7Dreturn%201%3B%7D%3Bgoogletag.pubadsReady%3Dtrue%3Bgoogletag.display%3Dfunction()%7B%7D%3Bgoogletag.enableServices%3Dfunction()%7B%7D%3Bgoogletag.defineSlot%3Dfunction()%7Breturn%7BaddService%3Afunction()%7Breturn%20this%7D%2CsetTargeting%3Afunction()%7Breturn%20this%7D%7D%7D%3B%7D)()'
+                        };
+                    }
+
+                    // For Google AdSense, redirect to synthetic loaded object
+                    if (lower.includes('adsbygoogle')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,(function()%7Bself.adsbygoogle%3Dself.adsbygoogle%7C%7C%7Bloaded%3Atrue%2Cpush%3Afunction()%7B%7D%7D%3B%7D)()'
+                        };
+                    }
+
+                    // For FuckAdBlock / BlockAdBlock, redirect to defuser
+                    if (lower.includes('fuckadblock') || lower.includes('nofab.js')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,(function()%7Bvar%20f%3Dfunction()%7B%7D%3Bf.prototype%3D%7Bon%3Afunction(d%2Ccb)%7Bif(!d%26%26cb)cb()%3Breturn%20this%3B%7D%2ConDetected%3Afunction()%7Breturn%20this%3B%7D%2ConNotDetected%3Afunction(cb)%7Bif(cb)cb()%3Breturn%20this%3B%7D%2Ccheck%3Afunction()%7Breturn%20false%3B%7D%7D%3Bwindow.FuckAdBlock%3Df%3Bwindow.BlockAdBlock%3Df%3Bwindow.fuckAdBlock%3Dnew%20f()%3Bwindow.blockAdBlock%3Dnew%20f()%3B%7D)()'
+                        };
+                    }
+
+                    // For BlockAdBlock v2 honeypot
+                    if (lower.includes('blockadblock') || lower.includes('nobab2.js') || lower.includes('nobab.js')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,window.nH7eXzOsG%20%3D%20858%3B'
+                        };
+                    }
+
+                    // For Prebid / CanRunAds bait
+                    if (lower.includes('prebid-ads.js') || lower.includes('canrunads.js') || lower.includes('can-run-ads.js')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,window.canRunAds%20%3D%20true%3Bwindow.isAdBlockActive%20%3D%20false%3B'
+                        };
+                    }
+
+                    // For Amazon APSTag
+                    if (lower.includes('apstag.js')) {
+                        return {
+                            redirectUrl: 'data:application/javascript,(function()%7Bwindow.apstag%3D%7BfetchBids%3Afunction(c%2Ccb)%7Bif(typeof%20cb%3D%3D%3D%27function%27)cb(%5B%5D)%3B%7D%2Cinit%3Afunction()%7B%7D%2CsetDisplayBids%3Afunction()%7B%7D%2CtargetingKeys%3Afunction()%7Breturn%5B%5D%3B%7D%7D%3B%7D)()'
                         };
                     }
 

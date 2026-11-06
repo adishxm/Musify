@@ -109,10 +109,10 @@ class LiveBraveWebsiteAdblockVerificationTest {
         val action = shieldController.evaluateResource(audioChunkUrl, ytmOrigin)
         assertTrue("YTM audio chunk must be allowed", action is UnifiedShieldAction.Allow)
 
-        // Ad tracking blocked
+        // Ad tracking blocked / mocked with Brave synthetic scriptlet stub
         val trackerUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
         val trackerAction = shieldController.evaluateResource(trackerUrl, ytmOrigin)
-        assertTrue("PageAd must be blocked", trackerAction is UnifiedShieldAction.Block)
+        assertTrue("PageAd must be blocked or served synthetic mock", trackerAction is UnifiedShieldAction.Block || trackerAction is UnifiedShieldAction.MockResponse)
     }
 
     @Test
@@ -145,13 +145,15 @@ class LiveBraveWebsiteAdblockVerificationTest {
     fun testAdblockBenchmarkDomains() {
         val testOrigin = "https://d3ward.github.io"
 
-        // Google AdSense
+        // Google AdSense (Intercepted with Brave adsbygoogle.js synthetic mock)
         val adsenseUrl = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
-        assertTrue(shieldController.evaluateResource(adsenseUrl, testOrigin) is UnifiedShieldAction.Block)
+        val adsenseAction = shieldController.evaluateResource(adsenseUrl, testOrigin)
+        assertTrue(adsenseAction is UnifiedShieldAction.Block || adsenseAction is UnifiedShieldAction.MockResponse)
 
-        // Amazon AdSystem
+        // Amazon AdSystem (Intercepted with Brave apstag.js synthetic mock)
         val amazonAdUrl = "https://c.amazon-adsystem.com/aax2/apstag.js"
-        assertTrue(shieldController.evaluateResource(amazonAdUrl, testOrigin) is UnifiedShieldAction.Block)
+        val amazonAction = shieldController.evaluateResource(amazonAdUrl, testOrigin)
+        assertTrue(amazonAction is UnifiedShieldAction.Block || amazonAction is UnifiedShieldAction.MockResponse)
 
         // Criteo
         val criteoUrl = "https://static.criteo.net/js/ld/ld.js"

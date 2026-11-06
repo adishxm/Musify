@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.io.ByteArrayInputStream
 import com.musify.browser.shield.VastVmapInterceptor
 import com.musify.browser.shield.VastVmapAction
+import com.musify.browser.shield.AdSdkMockRepository
 
 /**
  * WebViewAdapter: Bounded prototype, comparison and fallback adapter.
@@ -270,6 +271,24 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                                 ByteArrayInputStream(vastAction.data)
                             )
                         }
+                    }
+
+                    // Intercept Ad SDKs & Anti-Adblock Defusers with Synthetic Mocks (Brave Shields reverse-engineered)
+                    val mockScript = AdSdkMockRepository.matchMockScript(requestUrl)
+                    if (mockScript != null) {
+                        _shieldState.value = _shieldState.value.copy(
+                            blockedCount = _shieldState.value.blockedCount + 1,
+                            lastBlockedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(requestUrl),
+                            lastBlockCategory = if (mockScript.isAntiAdblockDefuser) "Anti-Adblock Defuser" else "Ad SDK Mock"
+                        )
+                        return WebResourceResponse(
+                            mockScript.mimeType,
+                            "UTF-8",
+                            200,
+                            "OK",
+                            mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to mockScript.mimeType),
+                            ByteArrayInputStream(mockScript.scriptContent.toByteArray(Charsets.UTF_8))
+                        )
                     }
 
                     // Intercept Spotify Audio & Visual Ad networks (checked BEFORE isFirstParty bypass)
