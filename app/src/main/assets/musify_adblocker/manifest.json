@@ -39,6 +39,16 @@
       ],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "annoyance_blocker.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
     }
   ]
 }

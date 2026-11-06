@@ -38,3 +38,4 @@ Brave uses `adblock-rust` to pre-compile rules into a memory-mapped binary FlatB
 - [ ] Heap memory overhead $< 15\text{ MB}$.
 - [ ] Complete unit test suite passes 100%.
 - [ ] `.brain/.report/PHASE-32-REPORT.md` documented and committed.
+

@@ -41,6 +41,7 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 - ⚡ **SABR Protobuf Backoff Interceptor** — Zero-latency streaming bypass and Protobuf Field 4 (`0x20` varint) rewriting for YouTube SABR streams (`googlevideo.com?sabr=1`), defeating intentional 4–16s buffering freezes.
 - 🎬 **VAST & VMAP Video Ad Interception** — Brave-aligned synthetic XML mock response engine (`<VAST version="3.0"/>`, `<vmap:VMAP .../>`), DoubleClick in-stream status stubs (`google_ad_status = 1`), and silent media buffers (`noop-0.1s.mp3`), defeating video player stalls across web portals.
 - 🛡️ **Brave Mock Scriptlet SDKs & Anti-Adblock Defusers** — Bundles Brave's exact reverse-engineered JavaScript mock SDKs (`googletagservices_gpt.js`, `adsbygoogle.js`, `amazon_apstag.js`, `amazon_ads.js`, `google-analytics_analytics.js`) and anti-adblock defusers (`nofab.js` for FuckAdBlock, `nobab2.js` for BlockAdBlock, `prebid-ads.js`), eliminating "Adblocker Detected" warning dialogs and paywall walls without executing tracking scripts.
+- 🍪 **Brave Cookie Notice & Mobile Annoyance Shielding** — Reverse-engineered from Brave components `cdbbhgbmjhfnhnmgeddbliobbofkgdhe` and `bfpgedeaaibpoidldhjcknekahbikncb`. Suppresses GDPR consent walls (OneTrust, Cookiebot, TrustArc, Didomi, Quantcast, Usercentrics) and mobile app download nags ("Open in App", Smart Banners, Reddit PWA sheets), with procedural scroll unfreezing (`html, body { overflow: auto !important; position: static !important; }`).
 - 🔗 **Bounce Tracking Defuser & Clean URLs** — Ports Brave's `debounce.json` and `query-filter.json` to bypass affiliate redirect hops (`dpbolvw.net`, `howl.me`, `tkqlhce.com`) and strip tracking parameters (`fbclid`, `gclid`, `msclkid`, `_gl`, `mc_eid`).
 - 🎨 **M6 Exhibition Design Language & Curated Media Bento Grid** — Museum-grade architectural aesthetic inspired by the M6 UX/UI Exhibition. Deep `#08080A` obsidian canvas, monospaced metadata badges (`[M6 // SOUND ARCHIVE]`, `[WIDEVINE // DRM ACTIVE]`), floating capsule navigation dock, real-time seismograph telemetry meters, and curated media exhibits (Spotify Web, YouTube Music, YouTube, SoundCloud).
 - 🌐 **HTTPS-First & Enforced Strict TLS** — Automatic HTTPS upgrades with cleartext disabled in the Android Network Security Config. Zero silent SSL overrides.
@@ -48,7 +49,7 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 - ♻️ **Zero-Leak Session Recovery** — Persists and recovers browsing tabs across process restarts using strictly minimal metadata (UUID, URL, title, timestamp) — never DOM trees, form data, cookies, or secrets.
 - ⬇️ **Sandboxed Off-Thread Downloads** — User-confirmed background download management mediated via `FileProvider` with file-type inspection and executable threat alerts.
 - 📡 **AdGuard DNS Companion Integration** — System-wide Android Private DNS support cleanly separated from in-page Shields metrics.
-- 🧪 **221/221 Unit Tests Passing (100% Pass Rate)** — Fully validated across 32 test suites spanning security, engine isolation, media safety, UI components, and network policy.
+- 🧪 **229/229 Unit Tests Passing (100% Pass Rate)** — Fully validated across 33 test suites spanning security, engine isolation, media safety, UI components, and network policy.
 - 🆓 **100% Free & Open Source** — Licensed under Apache 2.0 with completely independent design and branding.
 
 ---
@@ -92,9 +93,9 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 | Release Variant | Artifact File | File Size | Engine Architecture | SHA-256 Checksum | Best Used For |
 |---|---|---|---|---|---|
-| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.62 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `B99F6EB1588EF6F5A337C8FFE7ABA8618C22F04EBB0C31708471B9558ED757BA` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
-| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.62 MB** | System WebKit (`BUILD_LITE=true`) | `B99F6EB1588EF6F5A337C8FFE7ABA8618C22F04EBB0C31708471B9558ED757BA` | Minimal storage and memory footprint with zero bundled native binaries. |
-| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.58 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `92729028E1C8787C1606DF9B67899A5C375E2C14F9A137895AD0631406A3D668` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
+| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.63 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `60943AAD133BD5528B64A8A188AEE137F503B278135D8379B43DE9091DFD9FDA` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
+| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.63 MB** | System WebKit (`BUILD_LITE=true`) | `60943AAD133BD5528B64A8A188AEE137F503B278135D8379B43DE9091DFD9FDA` | Minimal storage and memory footprint with zero bundled native binaries. |
+| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.59 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `4A243CDC6067FFDA8A9A73372C91FFB3FF9498ABA7D0853B47DD8FC100CA5660` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
 
 > **Requirements:** Android 8.0 (API 26) or higher. Sideload the APK and launch immediately — no account, sign-in, or setup required.
 

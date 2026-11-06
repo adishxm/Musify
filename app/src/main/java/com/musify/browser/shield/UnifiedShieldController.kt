@@ -31,7 +31,9 @@ data class ShieldMetrics(
     val sabrStreamsProtected: Long = 0L,
     val vastVmapMocksServed: Long = 0L,
     val sdkMocksServed: Long = 0L,
-    val antiAdblockDefused: Long = 0L
+    val antiAdblockDefused: Long = 0L,
+    val cookieBannersBlocked: Long = 0L,
+    val appPromosBlocked: Long = 0L
 )
 
 /**
@@ -56,6 +58,8 @@ class UnifiedShieldController(
     private val vastVmapMocksServedCounter = AtomicLong(0)
     private val sdkMocksServedCounter = AtomicLong(0)
     private val antiAdblockDefusedCounter = AtomicLong(0)
+    private val cookieBannersBlockedCounter = AtomicLong(0)
+    private val appPromosBlockedCounter = AtomicLong(0)
 
     companion object {
         private const val EMPTY_JSON = "{}"
@@ -131,24 +135,35 @@ class UnifiedShieldController(
             return UnifiedShieldAction.MockResponse(mockScript.mimeType, mockScript.scriptContent)
         }
 
-        // 5. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
+        // 5. Cookie Notice & Mobile Annoyance Network Interception
+        if (AnnoyanceFilterRepository.isAnnoyanceRequest(requestUrl)) {
+            trackersBlockedCounter.incrementAndGet()
+            if (lowerUrl.contains("app") || lowerUrl.contains("mobile")) {
+                appPromosBlockedCounter.incrementAndGet()
+            } else {
+                cookieBannersBlockedCounter.incrementAndGet()
+            }
+            return UnifiedShieldAction.Block("Blocked cookie consent or mobile annoyance request", ShieldCategories.ADS_AND_TRACKERS)
+        }
+
+        // 6. Anti-freeze JSON mock responses for ad endpoints that would crash playback if 403'd
         if (MOCK_EMPTY_JSON_ENDPOINTS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.MockResponse(APPLICATION_JSON, EMPTY_JSON)
         }
 
-        // 6. Known ad network trackers
+        // 7. Known ad network trackers
         if (KNOWN_AD_DOMAINS.any { lowerUrl.contains(it) }) {
             trackersBlockedCounter.incrementAndGet()
             return UnifiedShieldAction.Block("Blocked known advertising domain", ShieldCategories.ADS_AND_TRACKERS)
         }
 
-        // 7. Allow essential first-party endpoints and auth
+        // 8. Allow essential first-party endpoints and auth
         if (classification == ResourceClassification.FIRST_PARTY_OR_AUTH) {
             return UnifiedShieldAction.Allow("First-party authentication or essential service")
         }
 
-        // 8. Consult FilterEngine if registered
+        // 9. Consult FilterEngine if registered
         if (filterEngine != null) {
             when (val decision = filterEngine.evaluate(requestUrl)) {
                 is FilterDecision.Blocked -> {
@@ -205,7 +220,9 @@ class UnifiedShieldController(
             sabrStreamsProtected = sabrStreamsProtectedCounter.get(),
             vastVmapMocksServed = vastVmapMocksServedCounter.get(),
             sdkMocksServed = sdkMocksServedCounter.get(),
-            antiAdblockDefused = antiAdblockDefusedCounter.get()
+            antiAdblockDefused = antiAdblockDefusedCounter.get(),
+            cookieBannersBlocked = cookieBannersBlockedCounter.get(),
+            appPromosBlocked = appPromosBlockedCounter.get()
         )
     }
 
@@ -222,6 +239,8 @@ class UnifiedShieldController(
         vastVmapMocksServedCounter.set(0)
         sdkMocksServedCounter.set(0)
         antiAdblockDefusedCounter.set(0)
+        cookieBannersBlockedCounter.set(0)
+        appPromosBlockedCounter.set(0)
     }
 }
 

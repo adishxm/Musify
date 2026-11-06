@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream
 import com.musify.browser.shield.VastVmapInterceptor
 import com.musify.browser.shield.VastVmapAction
 import com.musify.browser.shield.AdSdkMockRepository
+import com.musify.browser.shield.AnnoyanceFilterRepository
 
 /**
  * WebViewAdapter: Bounded prototype, comparison and fallback adapter.
@@ -168,6 +169,9 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     if (url?.contains("spotify.com", ignoreCase = true) == true && _shieldState.value.isProtectionEnabled) {
                         injectSpotifyAdBlockerScript(view)
                     }
+                    if (_shieldState.value.isProtectionEnabled) {
+                        injectAnnoyanceShieldScript(view)
+                    }
                 }
 
                 override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
@@ -288,6 +292,23 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                             "OK",
                             mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to mockScript.mimeType),
                             ByteArrayInputStream(mockScript.scriptContent.toByteArray(Charsets.UTF_8))
+                        )
+                    }
+
+                    // Intercept Cookie Banners & Mobile App Promos (Brave annoyance filters)
+                    if (AnnoyanceFilterRepository.isAnnoyanceRequest(requestUrl)) {
+                        _shieldState.value = _shieldState.value.copy(
+                            blockedCount = _shieldState.value.blockedCount + 1,
+                            lastBlockedUrl = MediaSafeResourcePolicy.sanitizeUrlForDiagnostics(requestUrl),
+                            lastBlockCategory = "Cookie Notice & Mobile Annoyance"
+                        )
+                        return WebResourceResponse(
+                            "application/javascript",
+                            "UTF-8",
+                            200,
+                            "OK",
+                            mapOf("Access-Control-Allow-Origin" to "*", "Content-Type" to "application/javascript"),
+                            ByteArrayInputStream("/* musify annoyance blocked */".toByteArray(Charsets.UTF_8))
                         )
                     }
 
@@ -681,6 +702,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
             })();
         """.trimIndent()
         view?.evaluateJavascript(js, null)
+    }
+
+    private fun injectAnnoyanceShieldScript(view: WebView?) {
+        val script = AnnoyanceFilterRepository.getInjectionScript(blockCookies = true, blockPromos = true)
+        view?.evaluateJavascript(script, null)
     }
 
     override fun destroy() {

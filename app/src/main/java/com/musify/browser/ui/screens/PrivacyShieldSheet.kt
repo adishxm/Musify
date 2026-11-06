@@ -262,6 +262,61 @@ fun PrivacyShieldSheet(
                 }
             }
 
+            // Annoyance Protections (Cookie Notices & Mobile Promos)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Ink),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Annoyance Protections",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    var blockCookies by remember { mutableStateOf(true) }
+                    var blockPromos by remember { mutableStateOf(true) }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Block Cookie Notices", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text("Hides GDPR consent banners and unlocks page scrolling.", color = TextSecondary, fontSize = 10.sp)
+                        }
+                        Switch(
+                            checked = blockCookies,
+                            onCheckedChange = { blockCookies = it },
+                            colors = SwitchDefaults.colors(checkedThumbColor = Success, checkedTrackColor = Success.copy(alpha = 0.4f))
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Block 'Open in App' Promos", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text("Suppresses sticky app download interstitials and smart banners.", color = TextSecondary, fontSize = 10.sp)
+                        }
+                        Switch(
+                            checked = blockPromos,
+                            onCheckedChange = { blockPromos = it },
+                            colors = SwitchDefaults.colors(checkedThumbColor = Success, checkedTrackColor = Success.copy(alpha = 0.4f))
+                        )
+                    }
+                }
+            }
+
             // Blocked Requests Counter Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
