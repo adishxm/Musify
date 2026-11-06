@@ -156,84 +156,88 @@ fun BrowserShellScreen(
             onCloseSwitcher = { showTabSwitcher = false }
         )
     } else {
+        val isHome = activeTab?.url == "about:blank" && activeTab.isLoading != true
+
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .background(Ink)
         ) {
-            // Omnibar Top Chrome
-            SurfaceDarkHeader(
-                activeTab = activeTab,
-                tabCount = tabsState.tabCount,
-                maxTabs = tabsState.maxTabs,
-                addressInput = addressInput,
-                isAddressBarFocused = isAddressBarFocused,
-                isBookmarked = isBookmarked,
-                shieldBlockedCount = activeShieldState.blockedCount,
-                isShieldEnabled = viewModel.isShieldEnabledForCurrentTab(),
-                isDesktop = isDesktop,
-                onToggleDesktopMode = { viewModel.toggleContentModeCurrentTab() },
-                onOpenPlaybackCompatibility = { showPlaybackDialog = true },
-                onAddressChange = { addressInput = it },
-                onFocusChange = { isAddressBarFocused = it },
-                onSubmit = {
-                    if (addressInput.isNotBlank()) {
-                        viewModel.navigateActiveTab(addressInput)
+            // Omnibar Top Chrome (only on web pages, replaced by HomeHeader on Home tab)
+            if (!isHome) {
+                SurfaceDarkHeader(
+                    activeTab = activeTab,
+                    tabCount = tabsState.tabCount,
+                    maxTabs = tabsState.maxTabs,
+                    addressInput = addressInput,
+                    isAddressBarFocused = isAddressBarFocused,
+                    isBookmarked = isBookmarked,
+                    shieldBlockedCount = activeShieldState.blockedCount,
+                    isShieldEnabled = viewModel.isShieldEnabledForCurrentTab(),
+                    isDesktop = isDesktop,
+                    onToggleDesktopMode = { viewModel.toggleContentModeCurrentTab() },
+                    onOpenPlaybackCompatibility = { showPlaybackDialog = true },
+                    onAddressChange = { addressInput = it },
+                    onFocusChange = { isAddressBarFocused = it },
+                    onSubmit = {
+                        if (addressInput.isNotBlank()) {
+                            viewModel.navigateActiveTab(addressInput)
+                            focusManager.clearFocus()
+                        }
+                    },
+                    onToggleBookmark = {
+                        isBookmarked = viewModel.toggleBookmarkCurrentTab()
+                    },
+                    onOpenTabSwitcher = { showTabSwitcher = true },
+                    onNewTab = {
+                        val created = viewModel.createNewTab(
+                            url = "about:blank",
+                            isPrivate = activeTab?.isPrivate == true,
+                            selectImmediately = true
+                        )
+                        if (created) addressInput = ""
+                    },
+                    onGoBack = { viewModel.goBack() },
+                    onGoForward = { viewModel.goForward() },
+                    onReloadOrStop = {
+                        if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
+                    },
+                    onToggleShield = { showShieldSheet = !showShieldSheet },
+                    onOpenBookmarks = onOpenBookmarks,
+                    onOpenHistory = onOpenHistory,
+                    onOpenDataControl = onOpenDataControl,
+                    onOpenFilterLists = onOpenFilterLists,
+                    onOpenDownloads = onOpenDownloads,
+                    onOpenSitePermissions = onOpenSitePermissions,
+                    onFindInPage = { viewModel.findInPageManager.startFind() },
+                    onSharePage = {
+                        val urlToShare = activeTab?.url
+                        if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
+                            try {
+                                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                    putExtra(Intent.EXTRA_TEXT, urlToShare)
+                                    type = "text/plain"
+                                }
+                                context.startActivity(Intent.createChooser(sendIntent, "Share Page"))
+                            } catch (_: Exception) {
+                            }
+                        }
+                    },
+                    onNewPrivateTab = {
+                        viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
+                        addressInput = ""
+                    },
+                    onOpenRoadmap = onOpenRoadmap,
+                    onOpenSpikeDebug = onOpenSpikeDebug,
+                    onOpenReleaseInfo = onOpenReleaseInfo,
+                    onOpenWelcome = onOpenWelcome,
+                    onOpenActionMenu = { showActionGrid = true },
+                    onNavigate = { target ->
+                        viewModel.navigateActiveTab(target)
                         focusManager.clearFocus()
                     }
-                },
-                onToggleBookmark = {
-                    isBookmarked = viewModel.toggleBookmarkCurrentTab()
-                },
-                onOpenTabSwitcher = { showTabSwitcher = true },
-                onNewTab = {
-                    val created = viewModel.createNewTab(
-                        url = "about:blank",
-                        isPrivate = activeTab?.isPrivate == true,
-                        selectImmediately = true
-                    )
-                    if (created) addressInput = ""
-                },
-                onGoBack = { viewModel.goBack() },
-                onGoForward = { viewModel.goForward() },
-                onReloadOrStop = {
-                    if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
-                },
-                onToggleShield = { showShieldSheet = !showShieldSheet },
-                onOpenBookmarks = onOpenBookmarks,
-                onOpenHistory = onOpenHistory,
-                onOpenDataControl = onOpenDataControl,
-                onOpenFilterLists = onOpenFilterLists,
-                onOpenDownloads = onOpenDownloads,
-                onOpenSitePermissions = onOpenSitePermissions,
-                onFindInPage = { viewModel.findInPageManager.startFind() },
-                onSharePage = {
-                    val urlToShare = activeTab?.url
-                    if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
-                        try {
-                            val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                                putExtra(Intent.EXTRA_TEXT, urlToShare)
-                                type = "text/plain"
-                            }
-                            context.startActivity(Intent.createChooser(sendIntent, "Share Page"))
-                        } catch (_: Exception) {
-                        }
-                    }
-                },
-                onNewPrivateTab = {
-                    viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
-                    addressInput = ""
-                },
-                onOpenRoadmap = onOpenRoadmap,
-                onOpenSpikeDebug = onOpenSpikeDebug,
-                onOpenReleaseInfo = onOpenReleaseInfo,
-                onOpenWelcome = onOpenWelcome,
-                onOpenActionMenu = { showActionGrid = true },
-                onNavigate = { target ->
-                    viewModel.navigateActiveTab(target)
-                    focusManager.clearFocus()
-                }
-            )
+                )
+            }
 
             // Find In Page Active Search Bar
             AnimatedVisibility(visible = findState.isActive) {
@@ -281,13 +285,28 @@ fun BrowserShellScreen(
                     )
                 }
 
-                // Blank Tab Home Screen
-                if (activeTab?.url == "about:blank" && !activeTab.isLoading) {
+                // Blank Tab Home Screen (Phase 34 Editorial Redesign)
+                if (isHome) {
                     MusifyHomeScreen(
-                        isPrivate = activeTab.isPrivate,
+                        isPrivate = activeTab?.isPrivate == true,
+                        tabCount = tabsState.tabCount,
+                        canGoBack = activeTab?.canGoBack == true,
+                        addressInput = addressInput,
+                        onAddressChange = { addressInput = it },
+                        onSubmit = {
+                            if (addressInput.isNotBlank()) {
+                                viewModel.navigateActiveTab(addressInput)
+                                focusManager.clearFocus()
+                            }
+                        },
                         onNavigate = { target ->
                             viewModel.navigateActiveTab(target)
-                        }
+                            focusManager.clearFocus()
+                        },
+                        onGoBack = { viewModel.goBack() },
+                        onOpenTabSwitcher = { showTabSwitcher = true },
+                        onOpenActionMenu = { showActionGrid = true },
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
@@ -378,16 +397,18 @@ fun BrowserShellScreen(
                     }
                 }
 
-                // The bar is mounted first so the scrim, drawn afterwards, covers it.
-                MusifyActionBar(
-                    quickActions = quickActions,
-                    isExpanded = showActionGrid,
-                    onExpandToggle = { showActionGrid = !showActionGrid },
-                    onAction = runAction,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 18.dp)
-                )
+                // The bar is mounted first so the scrim, drawn afterwards, covers it (on web pages only).
+                if (!isHome) {
+                    MusifyActionBar(
+                        quickActions = quickActions,
+                        isExpanded = showActionGrid,
+                        onExpandToggle = { showActionGrid = !showActionGrid },
+                        onAction = runAction,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 18.dp)
+                    )
+                }
 
                 MusifyActionGrid(
                     actions = gridActions,
@@ -1075,130 +1096,6 @@ private fun QuickChip(
 }
 
 @Composable
-private fun MusifyHomeScreen(isPrivate: Boolean = false, onNavigate: (String) -> Unit) {
-    val scrollState = rememberScrollState()
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(com.musify.browser.ui.theme.M6Canvas)
-            .padding(horizontal = 20.dp, vertical = 24.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-            com.musify.browser.ui.theme.M6CatalogTag(
-                text = if (isPrivate) "[M6 // EPHEMERAL ARCHIVE]" else "[M6 // SOUND ARCHIVE]",
-                accentColor = if (isPrivate) com.musify.browser.ui.theme.M6SoundViolet else com.musify.browser.ui.theme.M6Emerald
-            )
-            Text(
-                text = if (isPrivate) "M6 PRIVATE ARCHIVE" else "M6 SOUND ARCHIVE",
-                style = com.musify.browser.ui.theme.M6Typography_ExhibitionTitle,
-                color = TextPrimary
-            )
-            Text(
-                text = if (isPrivate)
-                    "RAM-Only Ephemeral Mode • Session Disposed on Close"
-                else
-                    "Lossless Media Streaming • Zero-Latency Anti-Freeze Shields",
-                style = com.musify.browser.ui.theme.M6Typography_ExhibitionSubtitle,
-                color = com.musify.browser.ui.theme.M6TextSecondary,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Exhibition Media Bento Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                M6HomeTile(
-                    title = "Spotify Web",
-                    category = "DRM // LOSSLESS",
-                    accent = com.musify.browser.ui.theme.M6Emerald,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onNavigate("https://open.spotify.com") }
-                )
-                M6HomeTile(
-                    title = "YouTube Music",
-                    category = "BG // PLAYBACK",
-                    accent = com.musify.browser.ui.theme.M6SignalOrange,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onNavigate("https://music.youtube.com") }
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                M6HomeTile(
-                    title = "YouTube Video",
-                    category = "SABR // DEFENSE",
-                    accent = com.musify.browser.ui.theme.M6SignalOrange,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onNavigate("https://m.youtube.com") }
-                )
-                M6HomeTile(
-                    title = "SoundCloud",
-                    category = "DIRECT // CDN",
-                    accent = com.musify.browser.ui.theme.M6SoundViolet,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onNavigate("https://soundcloud.com") }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            MusifyGlowButton(
-                label = "DuckDuckGo Search",
-                icon = MusifyIcons.Search,
-                variant = MusifyButtonVariant.Plate,
-                meta = "SECURE SEARCH",
-                onClick = { onNavigate("https://duckduckgo.com") }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun M6HomeTile(
-    title: String,
-    category: String,
-    accent: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    com.musify.browser.ui.theme.M6ExhibitionCard(
-        modifier = modifier,
-        containerColor = com.musify.browser.ui.theme.M6Card,
-        borderColor = com.musify.browser.ui.theme.M6Hairline,
-        onClick = onClick,
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = category,
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
-                color = accent
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = TextPrimary
-            )
-        }
-    }
-}
-
-@Composable
 private fun RendererCrashOverlay(onRecover: () -> Unit) {
     Box(
         modifier = Modifier
@@ -1218,20 +1115,13 @@ private fun RendererCrashOverlay(onRecover: () -> Unit) {
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onRecover,
-                colors = ButtonDefaults.buttonColors(containerColor = Accent),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                IconLabel(
-                    MusifyIcons.Reload,
-                    "Recover Tab",
-                    tint = Ink,
-                    iconSize = 16.dp,
-                    spacing = 8.dp,
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
+            MusifyGlowButton(
+                label = "Recover Tab",
+                icon = MusifyIcons.Reload,
+                variant = MusifyButtonVariant.Plate,
+                meta = "RESTORE ENGINE",
+                onClick = onRecover
+            )
         }
     }
 }

@@ -114,14 +114,12 @@ class Phase28M6ExhibitionDesignTest {
     }
 
     @Test
-    fun testM6BrowserShellNewTabPavilionIntegration() {
+    fun testBrowserShellNewTabHomeScreenIntegration() {
         val shellFile = resolveSourceFile("app/src/main/java/com/musify/browser/ui/screens/BrowserShellScreen.kt")
         assertTrue("BrowserShellScreen.kt must exist", shellFile.exists())
         val source = shellFile.readText()
 
-        assertTrue("Must contain M6 SOUND ARCHIVE home screen title", source.contains("M6 SOUND ARCHIVE"))
-        assertTrue("Must feature M6HomeTile bento layout", source.contains("M6HomeTile"))
-        assertTrue("Must use M6Canvas background", source.contains("M6Canvas"))
-        assertTrue("Must feature M6CatalogTag in home screen", source.contains("M6CatalogTag"))
+        assertTrue("Must integrate MusifyHomeScreen", source.contains("MusifyHomeScreen"))
+        assertTrue("Must conditionally switch on isHome", source.contains("isHome"))
     }
 }

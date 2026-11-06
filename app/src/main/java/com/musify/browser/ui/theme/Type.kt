@@ -260,3 +260,83 @@ val M6Typography_ExhibitionSubtitle = TextStyle(
     lineHeight = 18.sp,
     letterSpacing = (-0.2).sp
 )
+
+// ---------------------------------------------------------------------------
+// Editorial Home Typography Styles (Phase 34)
+// ---------------------------------------------------------------------------
+
+/**
+ * DM Serif Display — bundled for editorial headlines, brand wordmarks,
+ * and high-contrast titles.
+ */
+val DmSerifDisplay = FontFamily(
+    Font(
+        resId = R.font.dm_serif_display_regular,
+        weight = FontWeight.Normal,
+        style = FontStyle.Normal
+    )
+)
+
+/** Wordmark in header: "Musify" (30 sp). */
+val EditorialTypography_Wordmark = TextStyle(
+    fontFamily = DmSerifDisplay,
+    fontWeight = FontWeight.Normal,
+    fontSize = 30.sp,
+    lineHeight = 36.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/** Hero Headline: "Find your sound." (46 sp). */
+val EditorialTypography_Headline = TextStyle(
+    fontFamily = DmSerifDisplay,
+    fontWeight = FontWeight.Normal,
+    fontSize = 46.sp,
+    lineHeight = 52.sp,
+    letterSpacing = (-0.2).sp
+)
+
+/** Editorial Subtitle: "A quieter way to browse." (20 sp). */
+val EditorialTypography_Subtitle = TextStyle(
+    fontFamily = DmSerifDisplay,
+    fontWeight = FontWeight.Normal,
+    fontSize = 20.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.sp
+)
+
+/** Section Header: "Your places" (24 sp). */
+val EditorialTypography_SectionHeader = TextStyle(
+    fontFamily = DmSerifDisplay,
+    fontWeight = FontWeight.Normal,
+    fontSize = 24.sp,
+    lineHeight = 28.sp,
+    letterSpacing = (-0.3).sp
+)
+
+/** Shortcut card service title (16 sp). */
+val EditorialTypography_ShortcutTitle = TextStyle(
+    fontFamily = DmSerifDisplay,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.sp
+)
+
+/** Shortcut card domain URL (12.5 sp). */
+val EditorialTypography_ShortcutDomain = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 12.5.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.sp
+)
+
+/** Metadata tag (e.g., "HOME", "MUSIC + THE WEB", "04"). */
+val EditorialTypography_Metadata = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Medium,
+    fontSize = 11.sp,
+    lineHeight = 15.sp,
+    letterSpacing = 1.4.sp
+)
+

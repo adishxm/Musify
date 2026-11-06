@@ -176,3 +176,41 @@ val StatusGreen = Success
 val StatusOrange = Warning
 val StatusRed = Danger
 val CardBorder = Hairline
+
+// ---------------------------------------------------------------------------
+// EDITORIAL DARK PALETTE TOKENS (Phase 34 / Part 1 Reference)
+// ---------------------------------------------------------------------------
+
+/** Deep warm obsidian background (#09090A). */
+val HomeCanvas = Color(0xFF09090A)
+
+/** Search field and fallback dock surface (#18181A). */
+val HomeSurface = Color(0xFF18181A)
+
+/** Pressed / raised interactive surfaces (#242326). */
+val HomeSurfaceRaised = Color(0xFF242326)
+
+/** Ivory white primary text (#F3EEEA). */
+val HomeTextPrimary = Color(0xFFF3EEEA)
+
+/** Muted grey secondary text and domains (#B4AFB2). */
+val HomeTextSecondary = Color(0xFFB4AFB2)
+
+/** Subtle hairline divider rules and card borders (#3C3A3E). */
+val HomeDivider = Color(0xFF3C3A3E)
+
+/** Control outline and focus border (#A9A5AA). */
+val HomeControlOutline = Color(0xFFA9A5AA)
+
+/** Floating dock translucent dark background (approx 94% opacity of #1B1A1C). */
+val HomeDockSurface = Color(0xF01B1A1C)
+
+/** Floating dock 1dp border. */
+val HomeDockBorder = Color(0x33F3EEEA)
+
+/** Editorial Caution indicator (#F0BE63). */
+val HomeWarning = Color(0xFFF0BE63)
+
+/** Editorial Destructive / Error indicator (#F17E74). */
+val HomeDanger = Color(0xFFF17E74)
+
