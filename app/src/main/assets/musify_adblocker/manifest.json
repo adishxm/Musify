@@ -45,7 +45,8 @@
         "<all_urls>"
       ],
       "js": [
-        "annoyance_blocker.js"
+        "annoyance_blocker.js",
+        "procedural_defusers.js"
       ],
       "run_at": "document_start",
       "all_frames": false

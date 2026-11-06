@@ -153,6 +153,10 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         tlsError = null,
                         isBypassAllowed = false // Strict security gate: never allow bypass
                     )
+
+                    if (_shieldState.value.isProtectionEnabled) {
+                        injectProceduralDefuserScript(view)
+                    }
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -171,6 +175,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     }
                     if (_shieldState.value.isProtectionEnabled) {
                         injectAnnoyanceShieldScript(view)
+                        injectProceduralDefuserScript(view)
                     }
                 }
 
@@ -706,6 +711,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
 
     private fun injectAnnoyanceShieldScript(view: WebView?) {
         val script = AnnoyanceFilterRepository.getInjectionScript(blockCookies = true, blockPromos = true)
+        view?.evaluateJavascript(script, null)
+    }
+
+    private fun injectProceduralDefuserScript(view: WebView?) {
+        val script = com.musify.browser.shield.ProceduralScriptletEngine.buildStandardDefuserSuite()
         view?.evaluateJavascript(script, null)
     }
 
