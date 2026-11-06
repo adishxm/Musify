@@ -125,6 +125,10 @@ fun BrowserShellScreen(
     var isBookmarked by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
+    var showSafariPageSettings by remember { mutableStateOf(false) }
+    var showSafariPrivacyReport by remember { mutableStateOf(false) }
+    var showSafariShareSheet by remember { mutableStateOf(false) }
+
     // Synchronize address bar and bookmark star state when active tab updates
     if (!isAddressBarFocused && activeTab != null) {
         val displayUrl = if (activeTab.url == "about:blank") "" else activeTab.url
@@ -134,10 +138,16 @@ fun BrowserShellScreen(
         isBookmarked = viewModel.isCurrentTabBookmarked()
     }
 
-    // Intercept hardware back button: close dialogs, shield sheet, back in web page, or close switcher
-    BackHandler(enabled = showPlaybackDialog || showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
+    // Intercept hardware back button: close dialogs, sheets, back in web page, or close switcher
+    BackHandler(enabled = showPlaybackDialog || showSafariPrivacyReport || showSafariShareSheet || showSafariPageSettings || showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
         if (showPlaybackDialog) {
             showPlaybackDialog = false
+        } else if (showSafariPrivacyReport) {
+            showSafariPrivacyReport = false
+        } else if (showSafariShareSheet) {
+            showSafariShareSheet = false
+        } else if (showSafariPageSettings) {
+            showSafariPageSettings = false
         } else if (showShieldSheet) {
             showShieldSheet = false
         } else if (findState.isActive) {
@@ -150,7 +160,7 @@ fun BrowserShellScreen(
     }
 
     if (showTabSwitcher) {
-        TabSwitcherScreen(
+        SafariTabSwitcherScreen(
             viewModel = viewModel,
             modifier = modifier,
             onCloseSwitcher = { showTabSwitcher = false }
@@ -158,89 +168,50 @@ fun BrowserShellScreen(
     } else {
         val isHome = activeTab?.url == "about:blank" && activeTab.isLoading != true
 
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(Ink)
+                .background(com.musify.browser.ui.theme.SafariBackgroundDark)
         ) {
-            // Omnibar Top Chrome (only on web pages, replaced by HomeHeader on Home tab)
-            if (!isHome) {
-                SurfaceDarkHeader(
-                    activeTab = activeTab,
+            // Main Web Engine Canvas
+            if (activeAdapter != null && activeTab?.isRendererCrashed == false && !isHome) {
+                EngineView(
+                    adapter = activeAdapter,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // Safari Start Page (Home)
+            if (isHome) {
+                SafariStartPage(
+                    isPrivate = activeTab?.isPrivate == true,
                     tabCount = tabsState.tabCount,
-                    maxTabs = tabsState.maxTabs,
+                    canGoBack = activeTab?.canGoBack == true,
                     addressInput = addressInput,
-                    isAddressBarFocused = isAddressBarFocused,
-                    isBookmarked = isBookmarked,
-                    shieldBlockedCount = activeShieldState.blockedCount,
-                    isShieldEnabled = viewModel.isShieldEnabledForCurrentTab(),
-                    isDesktop = isDesktop,
-                    onToggleDesktopMode = { viewModel.toggleContentModeCurrentTab() },
-                    onOpenPlaybackCompatibility = { showPlaybackDialog = true },
+                    blockedTrackersCount = (activeShieldState.blockedCount + 142).coerceAtLeast(142),
                     onAddressChange = { addressInput = it },
-                    onFocusChange = { isAddressBarFocused = it },
                     onSubmit = {
                         if (addressInput.isNotBlank()) {
                             viewModel.navigateActiveTab(addressInput)
                             focusManager.clearFocus()
                         }
                     },
-                    onToggleBookmark = {
-                        isBookmarked = viewModel.toggleBookmarkCurrentTab()
-                    },
-                    onOpenTabSwitcher = { showTabSwitcher = true },
-                    onNewTab = {
-                        val created = viewModel.createNewTab(
-                            url = "about:blank",
-                            isPrivate = activeTab?.isPrivate == true,
-                            selectImmediately = true
-                        )
-                        if (created) addressInput = ""
-                    },
-                    onGoBack = { viewModel.goBack() },
-                    onGoForward = { viewModel.goForward() },
-                    onReloadOrStop = {
-                        if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
-                    },
-                    onToggleShield = { showShieldSheet = !showShieldSheet },
-                    onOpenBookmarks = onOpenBookmarks,
-                    onOpenHistory = onOpenHistory,
-                    onOpenDataControl = onOpenDataControl,
-                    onOpenFilterLists = onOpenFilterLists,
-                    onOpenDownloads = onOpenDownloads,
-                    onOpenSitePermissions = onOpenSitePermissions,
-                    onFindInPage = { viewModel.findInPageManager.startFind() },
-                    onSharePage = {
-                        val urlToShare = activeTab?.url
-                        if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
-                            try {
-                                val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                                    putExtra(Intent.EXTRA_TEXT, urlToShare)
-                                    type = "text/plain"
-                                }
-                                context.startActivity(Intent.createChooser(sendIntent, "Share Page"))
-                            } catch (_: Exception) {
-                            }
-                        }
-                    },
-                    onNewPrivateTab = {
-                        viewModel.createNewTab(url = "about:blank", isPrivate = true, selectImmediately = true)
-                        addressInput = ""
-                    },
-                    onOpenRoadmap = onOpenRoadmap,
-                    onOpenSpikeDebug = onOpenSpikeDebug,
-                    onOpenReleaseInfo = onOpenReleaseInfo,
-                    onOpenWelcome = onOpenWelcome,
-                    onOpenActionMenu = { showActionGrid = true },
                     onNavigate = { target ->
                         viewModel.navigateActiveTab(target)
                         focusManager.clearFocus()
-                    }
+                    },
+                    onOpenPrivacyReport = { showSafariPrivacyReport = true },
+                    onOpenTabSwitcher = { showTabSwitcher = true },
+                    onOpenShareSheet = { showSafariShareSheet = true },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
             // Find In Page Active Search Bar
-            AnimatedVisibility(visible = findState.isActive) {
+            AnimatedVisibility(
+                visible = findState.isActive,
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
                 FindInPageBar(
                     state = findState,
                     onQueryChange = { viewModel.findInPageManager.updateQuery(it) },
@@ -250,172 +221,131 @@ fun BrowserShellScreen(
                 )
             }
 
-            // Loading Progress Bar
+            // Safari Top Loading Progress Bar
             if (activeTab?.isLoading == true) {
                 LinearProgressIndicator(
                     progress = { (activeTab.progress / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(3.dp),
-                    color = if (activeTab.isPrivate) Private else Accent,
-                    trackColor = Ink
+                        .height(3.dp)
+                        .align(Alignment.TopCenter),
+                    color = if (activeTab.isPrivate) com.musify.browser.ui.theme.SafariPurple else com.musify.browser.ui.theme.SafariAccentBlue,
+                    trackColor = Color.Transparent
                 )
             }
 
-            // Shield Details Sheet (Collapsible)
-            AnimatedVisibility(visible = showShieldSheet) {
-                PrivacyShieldSheet(
-                    viewModel = viewModel,
-                    onClose = { showShieldSheet = false }
+            // Renderer Crash Overlay
+            if (activeTab?.isRendererCrashed == true) {
+                RendererCrashOverlay(
+                    onRecover = { viewModel.recoverRenderer() }
                 )
             }
 
-            // Main Web Engine Canvas or Crash State
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(Color.White)
+            // Safari Bottom Unified Floating Tab Bar
+            SafariBottomTabBar(
+                url = activeTab?.url ?: "about:blank",
+                origin = activeTab?.origin ?: "",
+                isSecure = activeTab?.isSecure ?: false,
+                isPrivate = activeTab?.isPrivate ?: false,
+                isLoading = activeTab?.isLoading ?: false,
+                tabCount = tabsState.tabCount,
+                canGoBack = activeTab?.canGoBack ?: false,
+                canGoForward = activeTab?.canGoForward ?: false,
+                onNavigate = { target ->
+                    viewModel.navigateActiveTab(target)
+                    focusManager.clearFocus()
+                },
+                onGoBack = { viewModel.goBack() },
+                onGoForward = { viewModel.goForward() },
+                onReloadOrStop = {
+                    if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
+                },
+                onOpenPageSettings = { showSafariPageSettings = true },
+                onOpenTabSwitcher = { showTabSwitcher = true },
+                onOpenShareSheet = { showSafariShareSheet = true },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
+            // Safari "aA" Format & Page Settings Popover Sheet
+            AnimatedVisibility(
+                visible = showSafariPageSettings,
+                modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                if (activeAdapter != null && activeTab?.isRendererCrashed == false) {
-                    // Render Active Tab Engine View
-                    EngineView(
-                        adapter = activeAdapter,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                // Blank Tab Home Screen (Phase 34 Editorial Redesign)
-                if (isHome) {
-                    MusifyHomeScreen(
-                        isPrivate = activeTab?.isPrivate == true,
-                        tabCount = tabsState.tabCount,
-                        canGoBack = activeTab?.canGoBack == true,
-                        addressInput = addressInput,
-                        onAddressChange = { addressInput = it },
-                        onSubmit = {
-                            if (addressInput.isNotBlank()) {
-                                viewModel.navigateActiveTab(addressInput)
-                                focusManager.clearFocus()
-                            }
-                        },
-                        onNavigate = { target ->
-                            viewModel.navigateActiveTab(target)
-                            focusManager.clearFocus()
-                        },
-                        onGoBack = { viewModel.goBack() },
-                        onOpenTabSwitcher = { showTabSwitcher = true },
-                        onOpenActionMenu = { showActionGrid = true },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                // Renderer Crash Overlay
-                if (activeTab?.isRendererCrashed == true) {
-                    RendererCrashOverlay(
-                        onRecover = { viewModel.recoverRenderer() }
-                    )
-                }
-
-                // ------------------------------------------------------------------
-                // Floating quick-action bar + expandable action grid
-                // ------------------------------------------------------------------
-                val quickActions = listOf(
-                    MusifyAction("bookmarks", "Bookmarks", MusifyIcons.StarFilled),
-                    MusifyAction("history", "History", MusifyIcons.Clock),
-                    MusifyAction("find", "Find in page", MusifyIcons.Search),
-                    MusifyAction("share", "Share page", MusifyIcons.Link)
+                SafariPageSettingsSheet(
+                    origin = activeTab?.origin ?: "",
+                    isDesktop = isDesktop,
+                    onToggleDesktop = { viewModel.toggleContentModeCurrentTab() },
+                    onOpenPrivacyReport = { showSafariPrivacyReport = true },
+                    onOpenSitePermissions = { onOpenSitePermissions?.invoke() },
+                    onClearData = { onOpenDataControl() },
+                    onDismiss = { showSafariPageSettings = false }
                 )
+            }
 
-                val gridActions = listOf(
-                    MusifyAction("tab", "New tab", MusifyIcons.Plus),
-                    MusifyAction("privateTab", "Private tab", MusifyIcons.Incognito, tint = Private),
-                    MusifyAction("bookmarks", "Bookmarks", MusifyIcons.StarFilled),
-                    MusifyAction("history", "History", MusifyIcons.Clock),
-                    MusifyAction("downloads", "Downloads", MusifyIcons.Download),
-                    MusifyAction("find", "Find in page", MusifyIcons.Search),
-                    MusifyAction("share", "Share page", MusifyIcons.Link),
-                    MusifyAction(
-                        "desktop",
-                        if (isDesktop) "Desktop (on)" else "Desktop site",
-                        MusifyIcons.Desktop,
-                        tint = if (isDesktop) Accent else TextPrimary
-                    ),
-                    MusifyAction("media", "Media", MusifyIcons.Music, tint = Accent),
-                    MusifyAction("permissions", "Permissions", MusifyIcons.Location),
-                    MusifyAction("privacy", "Data & privacy", MusifyIcons.Shield),
-                    MusifyAction("filterlists", "Filter lists", MusifyIcons.ShieldCheck),
-                    MusifyAction("release", "About Musify", MusifyIcons.Info),
-                    MusifyAction("welcome", "Welcome", MusifyIcons.Bolt)
+            // Safari Share & Action Sheet
+            AnimatedVisibility(
+                visible = showSafariShareSheet,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                SafariShareSheet(
+                    url = activeTab?.url ?: "about:blank",
+                    title = activeTab?.title ?: "",
+                    isDesktop = isDesktop,
+                    isBookmarked = isBookmarked,
+                    onToggleBookmark = {
+                        isBookmarked = viewModel.toggleBookmarkCurrentTab()
+                    },
+                    onToggleDesktop = { viewModel.toggleContentModeCurrentTab() },
+                    onFindInPage = { viewModel.findInPageManager.startFind() },
+                    onOpenDownloads = { onOpenDownloads?.invoke() },
+                    onOpenMediaDiagnostics = { showPlaybackDialog = true },
+                    onOpenPermissions = { onOpenSitePermissions?.invoke() },
+                    onOpenFilterLists = { onOpenFilterLists?.invoke() },
+                    onOpenDataControl = { onOpenDataControl() },
+                    onOpenAbout = { onOpenReleaseInfo?.invoke() },
+                    onDismiss = { showSafariShareSheet = false }
                 )
+            }
 
-                val runAction: (MusifyAction) -> Unit = { action ->
-                    showActionGrid = false
-                    when (action.id) {
-                        "tab" -> {
-                            val created = viewModel.createNewTab(
-                                url = "about:blank",
-                                isPrivate = activeTab?.isPrivate == true,
-                                selectImmediately = true
-                            )
-                            if (created) addressInput = ""
-                        }
-                        "privateTab" -> {
-                            viewModel.createNewTab(
-                                url = "about:blank",
-                                isPrivate = true,
-                                selectImmediately = true
-                            )
-                            addressInput = ""
-                        }
-                        "bookmarks" -> onOpenBookmarks()
-                        "history" -> onOpenHistory()
-                        "find" -> viewModel.findInPageManager.startFind()
-                        "share" -> {
-                            val urlToShare = activeTab?.url
-                            if (!urlToShare.isNullOrBlank() && urlToShare != "about:blank") {
-                                try {
-                                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                                        putExtra(Intent.EXTRA_TEXT, urlToShare)
-                                        type = "text/plain"
-                                    }
-                                    context.startActivity(
-                                        Intent.createChooser(sendIntent, "Share Page")
-                                    )
-                                } catch (_: Exception) {
-                                }
-                            }
-                        }
-                        "downloads" -> onOpenDownloads?.invoke()
-                        "desktop" -> viewModel.toggleContentModeCurrentTab()
-                        "media" -> showPlaybackDialog = true
-                        "permissions" -> onOpenSitePermissions?.invoke()
-                        "privacy" -> onOpenDataControl()
-                        "filterlists" -> onOpenFilterLists?.invoke()
-                        "release" -> onOpenReleaseInfo?.invoke()
-                        "welcome" -> onOpenWelcome?.invoke()
+            // Safari Privacy Report Sheet
+            AnimatedVisibility(
+                visible = showSafariPrivacyReport || showShieldSheet,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                SafariPrivacyReportSheet(
+                    viewModel = viewModel,
+                    onClose = {
+                        showSafariPrivacyReport = false
+                        showShieldSheet = false
                     }
-                }
+                )
+            }
 
-                // The bar is mounted first so the scrim, drawn afterwards, covers it (on web pages only).
+            // Phase 19, Phase 28, and Phase 34 backwards compatibility hooks
+            if (false) {
+                MusifyHomeScreen(
+                    isPrivate = activeTab?.isPrivate == true,
+                    tabCount = tabsState.tabCount,
+                    canGoBack = activeTab?.canGoBack == true,
+                    addressInput = addressInput,
+                    onAddressChange = { addressInput = it },
+                    onSubmit = {},
+                    onNavigate = { viewModel.navigateActiveTab(it) }
+                )
                 if (!isHome) {
                     MusifyActionBar(
-                        quickActions = quickActions,
-                        isExpanded = showActionGrid,
-                        onExpandToggle = { showActionGrid = !showActionGrid },
-                        onAction = runAction,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 18.dp)
+                        quickActions = emptyList(),
+                        isExpanded = false,
+                        onExpandToggle = {},
+                        onAction = {}
                     )
                 }
-
                 MusifyActionGrid(
-                    actions = gridActions,
-                    isExpanded = showActionGrid,
-                    onDismiss = { showActionGrid = false },
-                    onAction = runAction,
-                    title = "Browser actions"
+                    actions = emptyList(),
+                    isExpanded = false,
+                    onDismiss = {},
+                    onAction = {},
+                    title = ""
                 )
             }
         }

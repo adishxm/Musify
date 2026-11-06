@@ -45,6 +45,7 @@ All 33 phases have completed with **100% test pass rate**, verified across 35 te
 | **32** | [PHASE-32-REPORT.md](PHASE-32-REPORT.md) | ✅ PASS | Compiled zero-copy filter engine (`CompiledFilterIndex`), 32 KB Bloom filter, reversed domain trie, token inverted index |
 | **33** | [PHASE-33-REPORT.md](PHASE-33-REPORT.md) | ✅ PASS | Advanced procedural DOM scriptlets (`set-constant`, `json-prune`, `abort-current-script`, `prevent-addEventListener`) |
 | **34** | [PHASE-34-REPORT.md](PHASE-34-REPORT.md) | ✅ PASS | Editorial dark-mode new-tab home screen (`01_Home_Dark_Selected.png`), DM Serif Display typography, procedural vinyl hero, 2x2 Bento shortcuts, floating capsule dock |
+| **35** | [PHASE-35-REPORT.md](PHASE-35-REPORT.md) | ✅ PASS | Apple Safari-inspired UI/UX overhaul, floating bottom tab bar (`SafariBottomTabBar`), start page, share sheet, tab switcher & privacy report |
 | **LIVE** | [LIVE-BRAVE-WEBSITE-TEST-REPORT.md](LIVE-BRAVE-WEBSITE-TEST-REPORT.md) | ✅ PASS | Live Android emulator verification across Spotify, YouTube, benchmarks |
 
 ---

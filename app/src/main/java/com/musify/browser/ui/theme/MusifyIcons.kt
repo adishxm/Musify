@@ -803,4 +803,141 @@ object MusifyIcons {
             line(width = 1.5f) { circle(9.6f, 16.2f, 1.5f) }
         }
     }
+
+    // -- Apple Safari UI Glyphs (Phase 35) ----------------------------------
+
+    /** Safari "aA" text format and page settings icon. */
+    val FormatAA: ImageVector by lazy {
+        icon("Safari.FormatAA") {
+            // Capital 'A'
+            line(width = 1.6f) {
+                moveTo(7f, 5.5f)
+                lineTo(3.2f, 18.5f)
+            }
+            line(width = 1.6f) {
+                moveTo(7f, 5.5f)
+                lineTo(10.8f, 18.5f)
+            }
+            line(width = 1.5f) {
+                moveTo(4.8f, 14.5f)
+                lineTo(9.2f, 14.5f)
+            }
+            // Small 'a'
+            line(width = 1.5f) {
+                moveTo(19.2f, 10.5f)
+                lineTo(19.2f, 18.5f)
+            }
+            line(width = 1.5f) {
+                circle(16.5f, 14.5f, 3.2f)
+            }
+        }
+    }
+
+    /** Safari Reading List spectacles glyph. */
+    val ReadingList: ImageVector by lazy {
+        icon("Safari.ReadingList") {
+            line(width = 1.6f) {
+                circle(7.5f, 12f, 3.8f)
+            }
+            line(width = 1.6f) {
+                circle(16.5f, 12f, 3.8f)
+            }
+            line(width = 1.6f) {
+                moveTo(11.3f, 11.5f)
+                curveTo(12.2f, 10.5f, 12.8f, 10.5f, 13.7f, 11.5f)
+            }
+            line(width = 1.4f) {
+                moveTo(3.7f, 12f)
+                lineTo(2.2f, 10.5f)
+            }
+            line(width = 1.4f) {
+                moveTo(20.3f, 12f)
+                lineTo(21.8f, 10.5f)
+            }
+        }
+    }
+
+    /** iOS Share action icon (upward arrow emerging from container). */
+    val ShareIOS: ImageVector by lazy {
+        icon("Safari.ShareIOS") {
+            line(width = 1.6f) {
+                moveTo(5f, 11.5f)
+                lineTo(5f, 19.5f)
+                curveTo(5f, 20.6f, 5.9f, 21.5f, 7f, 21.5f)
+                lineTo(17f, 21.5f)
+                curveTo(18.1f, 21.5f, 19f, 20.6f, 19f, 19.5f)
+                lineTo(19f, 11.5f)
+            }
+            line(width = 1.6f) {
+                moveTo(12f, 16f)
+                lineTo(12f, 3f)
+            }
+            line(width = 1.6f) {
+                moveTo(7.5f, 7.5f)
+                lineTo(12f, 3f)
+                lineTo(16.5f, 7.5f)
+            }
+        }
+    }
+
+    /** Safari Tab Switcher overlapping cards glyph. */
+    val TabsGrid: ImageVector by lazy {
+        icon("Safari.TabsGrid") {
+            line(width = 1.6f) {
+                moveTo(7.5f, 4f)
+                lineTo(18.5f, 4f)
+                curveTo(19.3f, 4f, 20f, 4.7f, 20f, 5.5f)
+                lineTo(20f, 15.5f)
+                curveTo(20f, 16.3f, 19.3f, 17f, 18.5f, 17f)
+                lineTo(16.5f, 17f)
+            }
+            line(width = 1.6f) {
+                moveTo(4f, 8.5f)
+                curveTo(4f, 7.7f, 4.7f, 7f, 5.5f, 7f)
+                lineTo(15f, 7f)
+                curveTo(15.8f, 7f, 16.5f, 7.7f, 16.5f, 8.5f)
+                lineTo(16.5f, 18.5f)
+                curveTo(16.5f, 19.3f, 15.8f, 20f, 15f, 20f)
+                lineTo(5.5f, 20f)
+                curveTo(4.7f, 20f, 4f, 19.3f, 4f, 18.5f)
+                close()
+            }
+        }
+    }
+
+    /** Safari Compass emblem. */
+    val Compass: ImageVector by lazy {
+        icon("Safari.Compass") {
+            line(width = 1.6f) {
+                circle(12f, 12f, 9f)
+            }
+            line(width = 1.5f) {
+                moveTo(15.5f, 8.5f)
+                lineTo(13.8f, 13.8f)
+                lineTo(8.5f, 15.5f)
+                lineTo(10.2f, 10.2f)
+                close()
+            }
+        }
+    }
+
+    /** Open Book glyph for Bookmarks. */
+    val BookOpen: ImageVector by lazy {
+        icon("Safari.BookOpen") {
+            line(width = 1.6f) {
+                moveTo(12f, 6.5f)
+                curveTo(10f, 5f, 5f, 5f, 3.5f, 5.5f)
+                lineTo(3.5f, 18.5f)
+                curveTo(5f, 18f, 10f, 18f, 12f, 19.5f)
+                curveTo(14f, 18f, 19f, 18f, 20.5f, 18.5f)
+                lineTo(20.5f, 5.5f)
+                curveTo(19f, 5f, 14f, 5f, 12f, 6.5f)
+                close()
+            }
+            line(width = 1.5f) {
+                moveTo(12f, 6.5f)
+                lineTo(12f, 19.5f)
+            }
+        }
+    }
 }

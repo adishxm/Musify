@@ -340,3 +340,80 @@ val EditorialTypography_Metadata = TextStyle(
     letterSpacing = 1.4.sp
 )
 
+// ---------------------------------------------------------------------------
+// APPLE SAFARI HIG TYPOGRAPHY TOKENS (Phase 35)
+// ---------------------------------------------------------------------------
+
+/** Safari Large Title: Start Page main headline (32 sp, Bold). */
+val SafariTypography_LargeTitle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Bold,
+    fontSize = 32.sp,
+    lineHeight = 38.sp,
+    letterSpacing = (-0.4).sp
+)
+
+/** Safari Title: Section headers like "Favorites", "Privacy Report" (22 sp, Bold). */
+val SafariTypography_Title = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Bold,
+    fontSize = 22.sp,
+    lineHeight = 28.sp,
+    letterSpacing = (-0.3).sp
+)
+
+/** Safari Headline: Card titles, toolbar domain labels (17 sp, SemiBold). */
+val SafariTypography_Headline = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 17.sp,
+    lineHeight = 22.sp,
+    letterSpacing = (-0.2).sp
+)
+
+/** Safari Body: Main readable text and dialog body copy (17 sp, Regular). */
+val SafariTypography_Body = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 17.sp,
+    lineHeight = 22.sp,
+    letterSpacing = 0.sp
+)
+
+/** Safari Callout: Emphasized list items and buttons (16 sp, Regular). */
+val SafariTypography_Callout = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 21.sp,
+    letterSpacing = 0.sp
+)
+
+/** Safari Subhead: Action descriptions, secondary sheet labels (15 sp, Regular). */
+val SafariTypography_Subhead = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 15.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.sp
+)
+
+/** Safari Footnote: Metadata, domain subtext, tracker category tags (13 sp, Regular). */
+val SafariTypography_Footnote = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 13.sp,
+    lineHeight = 18.sp,
+    letterSpacing = 0.sp
+)
+
+/** Safari Caption: Shortcut labels, tiny badges, microcopy (11 sp, Medium). */
+val SafariTypography_Caption = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Medium,
+    fontSize = 11.sp,
+    lineHeight = 14.sp,
+    letterSpacing = 0.2.sp
+)
+
+

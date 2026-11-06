@@ -214,3 +214,67 @@ val HomeWarning = Color(0xFFF0BE63)
 /** Editorial Destructive / Error indicator (#F17E74). */
 val HomeDanger = Color(0xFFF17E74)
 
+// ---------------------------------------------------------------------------
+// APPLE SAFARI HIG DESIGN TOKENS (Phase 35)
+// ---------------------------------------------------------------------------
+
+/** Apple Safari pure black background canvas (#000000). */
+val SafariCanvas = Color(0xFF000000)
+val SafariBackgroundDark = SafariCanvas
+
+/** Apple Safari secondary system background for cards and tiles (#1C1C1E). */
+val SafariCard = Color(0xFF1C1C1E)
+val SafariCardDark = SafariCard
+
+/** Apple Safari tertiary system background for elevated plates and inputs (#2C2C2E). */
+val SafariCardElevated = Color(0xFF2C2C2E)
+
+/** Apple Safari quaternary system fill (#3A3A3C). */
+val SafariCardTertiary = Color(0xFF3A3A3C)
+
+/** Apple Safari system separator and hairline (#38383A). */
+val SafariBorder = Color(0xFF38383A)
+val SafariBorderDark = SafariBorder
+
+/** Apple Safari subtle divider rule (#2C2C2E). */
+val SafariDivider = Color(0xFF2C2C2E)
+
+/** Apple Safari signature iOS blue accent (#007AFF). */
+val SafariBlue = Color(0xFF007AFF)
+val SafariAccentBlue = SafariBlue
+
+/** Apple Safari secure lock and verified shields green (#34C759). */
+val SafariGreen = Color(0xFF34C759)
+val SafariSuccessGreen = SafariGreen
+
+/** Apple Safari security warning and insecure origin orange (#FF9500). */
+val SafariOrange = Color(0xFFFF9500)
+val SafariWarningOrange = SafariOrange
+
+/** Apple Safari destructive action and tracker alert red (#FF3B30). */
+val SafariRed = Color(0xFFFF3B30)
+val SafariDangerRed = SafariRed
+
+/** Apple Safari private browsing purple accent (#AF52DE). */
+val SafariPurple = Color(0xFFAF52DE)
+
+/** Apple Safari translucent frosted glass surface for bottom tab bar (92% #1C1C1E). */
+val SafariGlass = Color(0xEB1C1C1E)
+val SafariBarGlass = SafariGlass
+
+/** Apple Safari translucent frosted glass border. */
+val SafariGlassBorder = Color(0x33FFFFFF)
+val SafariBarBorder = SafariGlassBorder
+
+/** Apple Safari primary label (#FFFFFF). */
+val SafariTextPrimary = Color(0xFFFFFFFF)
+
+/** Apple Safari secondary label (#8E8E93). */
+val SafariTextSecondary = Color(0xFF8E8E93)
+val SafariFootnote = SafariTextSecondary
+
+/** Apple Safari tertiary label (#636366). */
+val SafariTextTertiary = Color(0xFF636366)
+
+
+
