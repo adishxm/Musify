@@ -76,3 +76,4 @@ All APK variants compiled, optimized, signed, and verified:
 | `Musify-ARM64.apk` | Full GeckoView Engine | 85.60 MB (89,761,461 B) | Verified True | `B5434AF6C7B8172D9F8816D2E0A04CD9F7FB107D2D79DA0A2981D26AB780142B` |
 
 *Constraint Compliance:* All release artifacts remain strictly below the 100 MB budget ceiling.
+
