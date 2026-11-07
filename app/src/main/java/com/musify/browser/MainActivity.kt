@@ -140,7 +140,7 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ScreenState.HISTORY_BOOKMARKS
                                 },
                                 onOpenHistory = {
-                                    historyBookmarksTab = 1
+                                    historyBookmarksTab = 2
                                     currentScreen = ScreenState.HISTORY_BOOKMARKS
                                 },
                                 onOpenDataControl = {

@@ -503,6 +503,8 @@ object MusifyIcons {
         }
     }
 
+    val History: ImageVector get() = Clock
+
     val Download: ImageVector by lazy {
         icon("Musify.Download") {
             line {

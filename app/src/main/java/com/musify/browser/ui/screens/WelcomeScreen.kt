@@ -4,121 +4,251 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.musify.browser.R
+import com.musify.browser.ui.theme.MusifyIcons
+import com.musify.browser.ui.theme.SafariAccentBlue
+import com.musify.browser.ui.theme.SafariBackgroundDark
+import com.musify.browser.ui.theme.SafariBorderDark
+import com.musify.browser.ui.theme.SafariCardDark
+import com.musify.browser.ui.theme.SafariGreen
+import com.musify.browser.ui.theme.SafariPurple
+import com.musify.browser.ui.theme.SafariTextPrimary
+import com.musify.browser.ui.theme.SafariTextSecondary
+import com.musify.browser.ui.theme.SafariTypography_Body
+import com.musify.browser.ui.theme.SafariTypography_Caption
+import com.musify.browser.ui.theme.SafariTypography_Footnote
+import com.musify.browser.ui.theme.SafariTypography_Headline
+import com.musify.browser.ui.theme.SafariTypography_LargeTitle
+import com.musify.browser.ui.theme.SafariTypography_Subhead
 import com.musify.browser.ui.theme.TextPrimary
 import com.musify.browser.ui.theme.WelcomeSurface
 
 /**
- * The launch screen — the first frame of the app, and the last screen that was
- * still carrying the old branding.
+ * Safari Welcome & First-Run Screen (Phase 36).
  *
- * Deliberately bare. A flat field, two lines of type sitting at 30% of the
- * height, and the credit line at 85%. That is the whole composition; the
- * positions are held as fractions of the screen so it lands the same way on a
- * short phone as on a tall one.
- *
- * There is no button. The entire surface is the tap target — see [onEnter].
- *
- * Typography comes from the theme (Inter, see Type.kt); the explicit sizes here
- * are the reference measurements, not new values.
+ * Implements Apple Safari's clean first-launch experience:
+ * - Safari Compass emblem with specular glow.
+ * - Cupertino typography: "Welcome to Safari", "Fast. Private. Beautiful."
+ * - Inset squircle feature rows:
+ *   1. Lightning-Fast Browsing & Media (Safari Blue)
+ *   2. Intelligent Tracking Prevention (Safari Green)
+ *   3. Floating Bottom Tab Bar (Safari Purple)
+ * - Full-width vibrant Safari Blue "Continue" action button.
  */
 @Composable
 fun WelcomeScreen(
     onEnter: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // One fade. No scale, no slide — the screen is already quiet, and movement
-    // would be the loudest thing on it.
     val contentAlpha = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         contentAlpha.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 620, easing = FastOutSlowInEasing)
+            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
         )
     }
 
-    val interactionSource = remember { MutableInteractionSource() }
-
-    BoxWithConstraints(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(WelcomeSurface)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onEnter
-            )
-            .semantics {
-                role = Role.Button
-                contentDescription = "Enter Musify"
-            }
+            .background(SafariBackgroundDark)
+            .semantics { contentDescription = "Welcome to Safari" }
+            .testTag("safari.welcome.root")
     ) {
-        val screenHeight = maxHeight
-
         Column(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 34.dp)
-                .offset(y = screenHeight * 0.28f)
-                .alpha(contentAlpha.value)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .alpha(contentAlpha.value),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            com.musify.browser.ui.theme.M6CatalogTag(
-                text = "[M6 // SOUND ARCHIVE]",
-                accentColor = com.musify.browser.ui.theme.M6Emerald
-            )
-            Spacer(Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(56.dp))
+
+            // 1. Safari Compass Emblem
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(Color(0x1F007AFF))
+                    .border(1.5.dp, SafariAccentBlue.copy(alpha = 0.5f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = MusifyIcons.Compass,
+                    contentDescription = "Safari Compass",
+                    tint = SafariAccentBlue,
+                    modifier = Modifier.size(46.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 2. Titles
             Text(
-                text = stringResource(R.string.welcome_hello),
-                color = TextPrimary,
-                fontSize = 24.sp,
-                lineHeight = 29.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = (-0.5).sp
+                text = "Welcome to Safari",
+                style = SafariTypography_LargeTitle,
+                color = SafariTextPrimary,
+                textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
-                text = stringResource(R.string.welcome_musify_title),
-                color = TextPrimary,
-                fontSize = 24.sp,
-                lineHeight = 29.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = (-0.5).sp
+                text = "Fast. Private. Beautiful.",
+                style = SafariTypography_Headline,
+                color = SafariTextSecondary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // 3. Feature Highlights (Inset Grouped Rows)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(22.dp)
+            ) {
+                SafariFeatureRow(
+                    icon = MusifyIcons.Compass,
+                    iconBg = SafariAccentBlue,
+                    title = "Lightning-Fast Browsing",
+                    subtitle = "Stream music, videos, and browse the web with industry-leading speed and battery efficiency."
+                )
+
+                SafariFeatureRow(
+                    icon = MusifyIcons.Shield,
+                    iconBg = SafariGreen,
+                    title = "Intelligent Tracking Prevention",
+                    subtitle = "Safari uses machine learning to stop cross-site tracking, audio commercials, and profiling."
+                )
+
+                SafariFeatureRow(
+                    icon = MusifyIcons.TabsGrid,
+                    iconBg = SafariPurple,
+                    title = "Floating Bottom Tab Bar",
+                    subtitle = "Designed for effortless one-handed reachability. Easily swipe and search with your thumb."
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 4. Primary "Continue" Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(SafariAccentBlue)
+                    .clickable(
+                        role = Role.Button,
+                        onClick = onEnter
+                    )
+                    .semantics {
+                        contentDescription = "Continue to Safari"
+                        role = Role.Button
+                    }
+                    .testTag("safari.welcome.continue"),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Continue",
+                    style = SafariTypography_Headline.copy(fontWeight = FontWeight.SemiBold),
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Customize your favorites and search engine anytime in Settings.",
+                style = SafariTypography_Caption,
+                color = SafariTextSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SafariFeatureRow(
+    icon: ImageVector,
+    iconBg: Color,
+    title: String,
+    subtitle: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(11.dp))
+                .background(iconBg.copy(alpha = 0.18f))
+                .border(1.dp, iconBg.copy(alpha = 0.35f), RoundedCornerShape(11.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconBg,
+                modifier = Modifier.size(24.dp)
             )
         }
 
-        Text(
-            text = stringResource(R.string.welcome_crafted_by),
-            color = TextPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = screenHeight * 0.135f)
-                .alpha(contentAlpha.value)
-        )
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = SafariTypography_Headline.copy(fontSize = 16.sp),
+                color = SafariTextPrimary
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = SafariTypography_Subhead,
+                color = SafariTextSecondary,
+                lineHeight = 20.sp
+            )
+        }
     }
 }

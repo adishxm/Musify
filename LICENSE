@@ -213,3 +213,6 @@ Third-Party Software and Content Notices:
    - License: SIL Open Font License, Version 1.1 (OFL-1.1)
    - Source: https://github.com/rsms/inter
    - Copyright (c) 2016-2024 The Inter Project Authors
+
+6. Safari & Cupertino Human Interface References
+   - Visual ergonomics, bottom floating capsule tab bar, Start Page squircle tiles, Intelligent Tracking Prevention (ITP) privacy card, and format sheets inspired by Apple Safari and iOS Human Interface Guidelines (clean-room native Kotlin/Compose implementation).

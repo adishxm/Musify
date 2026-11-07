@@ -1,7 +1,9 @@
 package com.musify.browser.ui.screens
 
-import androidx.compose.foundation.BorderStroke
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,11 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,22 +27,46 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.musify.browser.permissions.SitePermission
 import com.musify.browser.permissions.SitePermissionDecision
 import com.musify.browser.permissions.SitePermissionRepository
-import com.musify.browser.ui.theme.Ink
-import com.musify.browser.ui.theme.Hairline
-import com.musify.browser.ui.theme.MusifyIcon
 import com.musify.browser.ui.theme.MusifyIcons
-import com.musify.browser.ui.theme.Success
-import com.musify.browser.ui.theme.Danger
-import com.musify.browser.ui.theme.Surface
-import com.musify.browser.ui.theme.TextMuted
-import com.musify.browser.ui.theme.TextPrimary
-import com.musify.browser.ui.theme.TextSecondary
+import com.musify.browser.ui.theme.SafariAccentBlue
+import com.musify.browser.ui.theme.SafariBackgroundDark
+import com.musify.browser.ui.theme.SafariBorderDark
+import com.musify.browser.ui.theme.SafariCardDark
+import com.musify.browser.ui.theme.SafariCardElevated
+import com.musify.browser.ui.theme.SafariDangerRed
+import com.musify.browser.ui.theme.SafariGreen
+import com.musify.browser.ui.theme.SafariTextPrimary
+import com.musify.browser.ui.theme.SafariTextSecondary
+import com.musify.browser.ui.theme.SafariTypography_Body
+import com.musify.browser.ui.theme.SafariTypography_Callout
+import com.musify.browser.ui.theme.SafariTypography_Caption
+import com.musify.browser.ui.theme.SafariTypography_Footnote
+import com.musify.browser.ui.theme.SafariTypography_Headline
+import com.musify.browser.ui.theme.SafariTypography_Subhead
+import com.musify.browser.ui.theme.SafariTypography_Title
+
+/**
+ * Safari Website Settings & Permissions Screen (Phase 36).
+ *
+ * Implements Apple Safari's Settings -> Safari -> Website Settings:
+ * - Top Bar: "Done" text button, "Website Settings" title, and "Reset" action.
+ * - Inset grouped iOS list of origin permissions with status badges.
+ * - Clean iOS empty state ("No Website Permissions").
+ */
 @Composable
 fun SitePermissionsScreen(
     repository: SitePermissionRepository,
@@ -53,91 +75,137 @@ fun SitePermissionsScreen(
 ) {
     val permissions by repository.permissionsFlow.collectAsState()
 
-    Column(
+    BackHandler { onClose() }
+
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Ink)
-            .padding(16.dp)
+            .background(SafariBackgroundDark)
+            .semantics { contentDescription = "Safari Website Permissions" }
+            .testTag("safari.permissions.root")
     ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Surface)
-                ) {
-                    MusifyIcon(MusifyIcons.ArrowLeft, size = 20.dp, tint = TextPrimary)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Site Permissions",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Per-origin camera, mic, location & notification controls",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(14.dp))
 
-            if (permissions.isNotEmpty()) {
-                OutlinedButton(
-                    onClick = { repository.clearAll() },
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, Hairline)
-                ) {
-                    Text("Clear All", color = Danger, fontSize = 12.sp)
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (permissions.isEmpty()) {
-            Box(
+            // 1. Top Navigation Bar
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .height(48.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    MusifyIcon(MusifyIcons.Lock, size = 48.dp, tint = TextMuted)
-                    Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clickable(
+                            role = Role.Button,
+                            onClick = onClose
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .testTag("safari.permissions.done"),
+                    contentAlignment = Alignment.CenterStart
+                ) {
                     Text(
-                        text = "No Site Permissions Stored",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Bold
+                        text = "Done",
+                        style = SafariTypography_Headline.copy(
+                            color = SafariAccentBlue,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
+                Text(
+                    text = "Website Settings",
+                    style = SafariTypography_Title.copy(fontSize = 19.sp),
+                    color = SafariTextPrimary
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clickable(
+                            enabled = permissions.isNotEmpty(),
+                            role = Role.Button,
+                            onClick = { repository.clearAll() }
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .testTag("safari.permissions.reset"),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
                     Text(
-                        text = "Websites requesting device permissions will prompt you before access.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
+                        text = "Reset",
+                        style = SafariTypography_Headline.copy(
+                            color = if (permissions.isNotEmpty()) SafariDangerRed else SafariTextSecondary.copy(alpha = 0.4f),
+                            fontWeight = FontWeight.Normal
+                        )
                     )
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(permissions) { perm ->
-                    SitePermissionCard(
-                        permission = perm,
-                        onRevoke = { repository.revoke(perm.origin, perm.type) }
-                    )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 2. Permissions List or Empty State
+            if (permissions.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(68.dp)
+                                .clip(CircleShape)
+                                .background(SafariCardDark),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = MusifyIcons.Lock,
+                                contentDescription = null,
+                                tint = SafariTextSecondary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No Website Permissions",
+                            style = SafariTypography_Title,
+                            color = SafariTextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Permissions granted to websites for camera, microphone, or location will be listed here.",
+                            style = SafariTypography_Subhead,
+                            color = SafariTextSecondary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = "CONFIGURED WEBSITES",
+                    style = SafariTypography_Footnote.copy(fontWeight = FontWeight.Medium),
+                    color = SafariTextSecondary,
+                    modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)
+                )
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(permissions, key = { "${it.origin}_${it.type}" }) { perm ->
+                        SafariPermissionCard(
+                            permission = perm,
+                            onRevoke = {
+                                repository.revoke(perm.origin, perm.type)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -145,68 +213,75 @@ fun SitePermissionsScreen(
 }
 
 @Composable
-private fun SitePermissionCard(
+private fun SafariPermissionCard(
     permission: SitePermission,
     onRevoke: () -> Unit
 ) {
-    val isGranted = permission.decision == SitePermissionDecision.GRANTED
-    val badgeColor = if (isGranted) Success else Danger
-    val badgeText = if (isGranted) "Granted" else "Denied"
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Surface),
-        border = BorderStroke(1.dp, Hairline)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(SafariCardDark)
+            .border(0.5.dp, SafariBorderDark, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                Text(text = permission.type.icon, fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = permission.origin,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = permission.type.label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
-                    )
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = permission.origin,
+                    style = SafariTypography_Headline.copy(fontSize = 15.sp),
+                    color = SafariTextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${permission.type.name.lowercase().capitalize()} Access",
+                    style = SafariTypography_Footnote,
+                    color = SafariTextSecondary
+                )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(badgeColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = badgeText,
-                        color = badgeColor,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = onRevoke,
-                    shape = RoundedCornerShape(6.dp),
-                    border = BorderStroke(1.dp, Hairline)
-                ) {
-                    Text("Revoke", color = Danger, fontSize = 11.sp)
-                }
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Decision Badge
+            val (badgeText, badgeColor) = when (permission.decision) {
+                SitePermissionDecision.GRANTED -> "Allowed" to SafariGreen
+                SitePermissionDecision.DENIED -> "Blocked" to SafariDangerRed
+                else -> "Ask" to SafariTextSecondary
             }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(badgeColor.copy(alpha = 0.16f))
+                    .border(0.5.dp, badgeColor.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = badgeText,
+                    style = SafariTypography_Footnote.copy(
+                        color = badgeColor,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Delete / Revoke Action
+            Icon(
+                imageVector = MusifyIcons.Close,
+                contentDescription = "Revoke permission",
+                tint = SafariTextSecondary,
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable(onClick = onRevoke)
+            )
         }
     }
 }

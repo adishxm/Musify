@@ -33,9 +33,9 @@ if not exist "%ADB_EXE%" (
 
 :: Select APK to test
 echo Select APK variant to install:
-echo   [1] Musify.apk (Universal Release Build - 9.70 MB, Default)
-echo   [2] Musify-ARM64.apk (Full GeckoView Engine Build - 85.66 MB)
-echo   [3] Musify-Lite.apk (Featherweight System WebView Build - 9.70 MB)
+echo   [1] Musify.apk (Universal Release Build - 9.77 MB, Default)
+echo   [2] Musify-ARM64.apk (Full GeckoView Engine Build - 85.73 MB)
+echo   [3] Musify-Lite.apk (Featherweight System WebView Build - 9.77 MB)
 echo   [4] app-debug.apk (Debug Build with Logcat Instrumentation)
 echo   [5] Wipe AVD Userdata ^& Fresh Cold Boot (Fix disk or snapshot issues)
 echo.

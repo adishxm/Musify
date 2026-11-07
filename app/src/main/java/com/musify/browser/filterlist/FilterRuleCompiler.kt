@@ -12,12 +12,12 @@ import java.security.MessageDigest
  * CompiledFilterList holds compiled in-memory rules and offers O(1) domain lookup and pattern matching.
  */
 class CompiledFilterList(
-    val metadata: FilterListMetadata,
+    var metadata: FilterListMetadata,
     val stats: RuleParseStats,
-    private val domainBlocks: Set<String>,
-    private val domainExceptions: Set<String>,
-    private val pathPatternBlocks: List<String>,
-    private val pathPatternExceptions: List<String>
+    val domainBlocks: Set<String> = emptySet(),
+    val domainExceptions: Set<String> = emptySet(),
+    val pathPatternBlocks: List<String> = emptyList(),
+    val pathPatternExceptions: List<String> = emptyList()
 ) {
     private val filterIndex = com.musify.browser.shield.CompiledFilterIndex()
 

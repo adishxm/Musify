@@ -9,9 +9,9 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?logo=android&logoColor=white)](#-download)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#-tech-stack)
-[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_M6_Exhibition-4285F4?logo=jetpackcompose&logoColor=white)](#-tech-stack)
+[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_Apple_Safari-007AFF?logo=safari&logoColor=white)](#-tech-stack)
 [![Engine](https://img.shields.io/badge/Engine-GeckoView_135_%2B_Android_WebView-FF7139?logo=firefoxbrowser&logoColor=white)](#-tech-stack)
-[![Tests](https://img.shields.io/badge/Unit_Tests-221%2F221_passing-success)](#-building--testing)
+[![Tests](https://img.shields.io/badge/Unit_Tests-266%2F266_passing-success)](#-building--testing)
 [![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
 [**⬇️ Download APKs**](#-download) · [**✨ Features**](#-features) · [**🛡️ Privacy & Ad Shields**](#-brave-aligned-privacy--ad-shielding) · [**🎨 Design System**](#-obsidian-design-system) · [**🛠️ Build & Test**](#-building--testing) · [**🗺️ Phased Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
@@ -96,9 +96,9 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 | Release Variant | Artifact File | File Size | Engine Architecture | SHA-256 Checksum | Best Used For |
 |---|---|---|---|---|---|
-| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **9.70 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `FEE656883AF5D18224BBF68947E8B53F8E03C14C0D75910B78B537F0A856E9EA` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
-| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **9.70 MB** | System WebKit (`BUILD_LITE=true`) | `FEE656883AF5D18224BBF68947E8B53F8E03C14C0D75910B78B537F0A856E9EA` | Minimal storage and memory footprint with zero bundled native binaries. |
-| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **85.66 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `9EE2F9C51CF13C48E80B7ABEBDD872E4D57BA02E5CB14965FCD41183B0BE01DC` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
+| **Musify** (Universal Release) | [**Musify.apk**](Musify.apk) | **10.25 MB** | System WebKit / Android WebView (`WebViewAdapter`) | `B17C75CCD9F5B4C3D7020A005804FB515484CA4E19487248628199624EC5B3E3` | **Recommended for most users.** Ultra-fast install, 36X smaller download, full ad-shielding. |
+| **Musify-Lite** (Featherweight) | [**Musify-Lite.apk**](Musify-Lite.apk) | **10.25 MB** | System WebKit (`BUILD_LITE=true`) | `B17C75CCD9F5B4C3D7020A005804FB515484CA4E19487248628199624EC5B3E3` | Minimal storage and memory footprint with zero bundled native binaries. |
+| **Musify-ARM64** (GeckoView Engine) | [**Musify-ARM64.apk**](Musify-ARM64.apk) | **89.90 MB** | Mozilla GeckoView 135 (`arm64-v8a` compressed) | `CF43AF2A3E1AD8E430611860B60A43BE5E887776A12AB790F5197FC22B2A6601` | Modern 64-bit devices requiring full Mozilla Gecko engine and hardware Widevine DRM CDM. |
 
 > **Requirements:** Android 8.0 (API 26) or higher. Sideload the APK and launch immediately — no account, sign-in, or setup required.
 
@@ -128,13 +128,13 @@ All release APKs are compiled with release optimizations, signed, and verified w
 
 ### Build Commands
 ```bash
-# Run the complete test suite (221 unit tests across 32 test suites)
+# Run the complete test suite (266 unit tests across 38 test suites)
 ./gradlew testDebugUnitTest
 
-# Assemble Featherweight / Universal Release APK (9.62 MB)
+# Assemble Featherweight / Universal Release APK (10.25 MB)
 ./gradlew assembleRelease -PBUILD_LITE=true
 
-# Assemble Compressed GeckoView ARM64 Release APK (85.58 MB)
+# Assemble Compressed GeckoView ARM64 Release APK (89.90 MB)
 ./gradlew assembleRelease -PTARGET_ABI=arm64-v8a
 
 # Install to connected device or emulator
@@ -167,6 +167,12 @@ Musify is developed through an evidence-based, test-gated phase plan. Every comp
 | **28** | **M6 Exhibition UI/UX redesign, curated media bento grid & release packaging** | ✅ PASS | [PHASE-28](.brain/.report/PHASE-28-REPORT.md) |
 | **29** | **VAST & VMAP video ad interception, DoubleClick in-stream status mocks & silent media noops** | ✅ PASS | [PHASE-29](.brain/.report/PHASE-29-REPORT.md) |
 | **30** | **Brave mock scriptlet SDKs (`gpt.js`, `adsbygoogle.js`, `apstag.js`) & anti-adblock defusers (`nofab.js`, `nobab2.js`)** | ✅ PASS | [PHASE-30](.brain/.report/PHASE-30-REPORT.md) |
+| **31** | **Brave cookie notice blocker, mobile app promo blocker & procedural body unfreezing** | ✅ PASS | [PHASE-31](.brain/.report/PHASE-31-REPORT.md) |
+| **32** | **Zero-copy Bloom filter, reversed domain trie & token inverted index (`CompiledFilterIndex`)** | ✅ PASS | [PHASE-32](.brain/.report/PHASE-32-REPORT.md) |
+| **33** | **Procedural DOM scriptlets (`set-constant`, `json-prune`, `abort-current-script`, `prevent-addEventListener`)** | ✅ PASS | [PHASE-33](.brain/.report/PHASE-33-REPORT.md) |
+| **34** | **Editorial dark-mode home screen (`01_Home_Dark_Selected.png`), DM Serif Display & lathe vinyl hero** | ✅ PASS | [PHASE-34](.brain/.report/PHASE-34-REPORT.md) |
+| **35** | **Apple Safari-inspired bottom tab bar, start page, format sheet & tab switcher overview** | ✅ PASS | [PHASE-35](.brain/.report/PHASE-35-REPORT.md) |
+| **36** | **Universal Apple Safari & Editorial Dark overhaul across all screens (`Welcome`, `Downloads`, `History`, `Settings`)** | ✅ PASS | [PHASE-36](.brain/.report/PHASE-36-REPORT.md) |
 | **LIVE** | **Live Android emulator verification across real Brave-shielded websites** | ✅ PASS | [LIVE-REPORT](.brain/.report/LIVE-BRAVE-WEBSITE-TEST-REPORT.md) |
 
 ---

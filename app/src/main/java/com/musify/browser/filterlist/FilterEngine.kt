@@ -72,6 +72,15 @@ class FilterEngine(
     fun getCompiledList(listId: String): CompiledFilterList? = compiledLists[listId]
 
     /**
+     * Updates the enabled state of a filter list by ID.
+     */
+    fun setListEnabled(listId: String, isEnabled: Boolean) {
+        val current = compiledLists[listId] ?: return
+        current.metadata = current.metadata.copy(isEnabled = isEnabled)
+        refreshState()
+    }
+
+    /**
      * Returns the current total count of active supported rules across loaded lists.
      */
     fun getTotalActiveRules(): Int {
