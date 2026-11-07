@@ -114,6 +114,7 @@ fun SafariStartPage(
     onOpenPrivacyReport: () -> Unit = {},
     onOpenTabSwitcher: () -> Unit = {},
     onOpenShareSheet: () -> Unit = {},
+    onOpenCustomization: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -225,11 +226,19 @@ fun SafariStartPage(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "Favorites",
-                    style = SafariTypography_LargeTitle,
-                    color = SafariTextPrimary
-                )
+                Column {
+                    Text(
+                        text = "Favorites",
+                        style = SafariTypography_LargeTitle,
+                        color = SafariTextPrimary
+                    )
+                    Text(
+                        text = "Designed & Engineered by adishxm",
+                        style = SafariTypography_Caption,
+                        color = SafariAccentBlue,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
                 if (isPrivate) {
                     Box(
@@ -239,7 +248,7 @@ fun SafariStartPage(
                             .border(1.dp, SafariPurple.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                             .semantics {
-                                contentDescription = "Safari Private Browsing Mode"
+                                contentDescription = "10,000x Cryptographic Private Mode"
                             }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -250,7 +259,7 @@ fun SafariStartPage(
                             )
                             Spacer(Modifier.width(5.dp))
                             Text(
-                                text = "Private",
+                                text = "10,000x Private",
                                 style = SafariTypography_Caption,
                                 color = SafariPurple,
                                 fontWeight = FontWeight.Bold
@@ -293,11 +302,11 @@ fun SafariStartPage(
                     .clip(RoundedCornerShape(18.dp))
                     .background(SafariCardDark)
                     .border(1.dp, SafariBorderDark, RoundedCornerShape(18.dp))
-                    .clickable { /* Customize Start Page settings */ }
+                    .clickable { onOpenCustomization() }
                     .padding(horizontal = 24.dp, vertical = 10.dp)
                     .semantics {
                         role = Role.Button
-                        contentDescription = "Edit Safari Start Page"
+                        contentDescription = "Customize UI and Start Page"
                     }
             ) {
                 Text(

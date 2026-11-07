@@ -71,6 +71,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
     private var webView: WebView? = null
     private var isInitialized = false
     private var pendingUrl: String? = null
+    override var onScrollVisibilityListener: ((Boolean) -> Unit)? = null
 
     // Known tracker indicators for the WebView fallback spike demonstration
     private val blockedTrackerKeywords = listOf(
@@ -86,12 +87,7 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
         "googleads.g.doubleclick.net",
         "pagead2.googlesyndication.com",
         "adservice.google.com",
-        "youtube.com/pagead",
-        "youtube.com/api/stats/ads",
-        "youtube.com/get_midroll_info",
-        "youtube.com/ptracking",
-        "s0.2mdn.net",
-        "s.youtube.com"
+        "s0.2mdn.net"
     )
 
     private val spotifyAdKeywords = listOf(
@@ -117,19 +113,49 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
 
+            // Hardware-accelerated compositing for 60/120Hz smooth scrolling
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            isVerticalScrollBarEnabled = true
+            isHorizontalScrollBarEnabled = false
+            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+                    val dy = scrollY - oldScrollY
+                    if (dy > 18) {
+                        onScrollVisibilityListener?.invoke(false)
+                    } else if (dy < -18 || scrollY <= 15) {
+                        onScrollVisibilityListener?.invoke(true)
+                    }
+                }
+            }
+
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
+                databaseEnabled = true
                 // Strict sandbox settings
                 allowFileAccess = false
                 allowContentAccess = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 cacheMode = WebSettings.LOAD_DEFAULT
+
+                // Fluid responsive rendering (Safari / Brave performance parity)
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                mediaPlaybackRequiresUserGesture = false
+                setSupportZoom(true)
+                builtInZoomControls = true
+                displayZoomControls = false
+                defaultTextEncodingName = "UTF-8"
+
                 if (_contentMode.value == ContentMode.DESKTOP) {
                     userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-                    useWideViewPort = true
-                    loadWithOverviewMode = true
                 }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                WebView.setWebContentsDebuggingEnabled(true)
             }
 
             webViewClient = object : WebViewClient() {
@@ -425,6 +451,14 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 override fun onReceivedTitle(view: WebView?, title: String?) {
                     _navigationState.value = _navigationState.value.copy(title = title ?: "")
                 }
+
+                override fun onConsoleMessage(consoleMessage: android.webkit.ConsoleMessage?): Boolean {
+                    android.util.Log.d(
+                        "MusifyConsole",
+                        "[${consoleMessage?.messageLevel()}] ${consoleMessage?.message()} (${consoleMessage?.sourceId()}:${consoleMessage?.lineNumber()})"
+                    )
+                    return super.onConsoleMessage(consoleMessage)
+                }
             }
         }
 
@@ -554,30 +588,42 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 if (window.__musifyAdBlockerInjected) return;
                 window.__musifyAdBlockerInjected = true;
                 
-                function cleanYouTubeAds() {
-                    var selectors = [
+                // 1. Declarative CSS injection (Native browser compositing engine hides ad elements at 120 FPS)
+                var style = document.getElementById('musify-yt-ad-style');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'musify-yt-ad-style';
+                    style.textContent = [
                         '.video-ads', '.ytp-ad-module', '.ytp-ad-overlay-container',
                         'ytm-promoted-sparkles-web-renderer', 'ytm-companion-ad-renderer',
                         '.ad-container', '.ad-div', 'ytm-statement-banner-renderer',
                         'ytm-banner-promo-renderer', '.ytp-ad-action-interstitial',
-                        'ytm-promoted-video-renderer'
-                    ];
-                    selectors.forEach(function(sel) {
-                        var els = document.querySelectorAll(sel);
-                        els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
-                    });
-                    
+                        'ytm-promoted-video-renderer', '#player-ads', '.ytd-merch-shelf-renderer',
+                        '.sparkles-light-cta', 'ytd-banner-promo-renderer'
+                    ].join(', ') + ' { display: none !important; visibility: hidden !important; }';
+                    (document.head || document.documentElement).appendChild(style);
+                }
+                
+                // 2. Video ad auto-skip via native video event listeners (zero CPU polling)
+                function skipYouTubeAd() {
                     var skipBtns = document.querySelectorAll('.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, .ytp-ad-skip-button-slot');
-                    skipBtns.forEach(function(btn) { btn.click(); });
-
+                    for (var i = 0; i < skipBtns.length; i++) {
+                        skipBtns[i].click();
+                    }
                     var video = document.querySelector('video');
-                    var adShowing = document.querySelector('.ad-interrupting, .html5-ad-product');
-                    if (video && adShowing && video.duration > 0) {
+                    var adShowing = document.querySelector('.ad-interrupting, .html5-ad-product, .ytp-ad-player-overlay');
+                    if (video && adShowing && isFinite(video.duration) && video.duration > 0) {
                         video.currentTime = video.duration;
                     }
                 }
-                
-                setInterval(cleanYouTubeAds, 500);
+
+                document.addEventListener('play', function(e) {
+                    if (e.target && e.target.tagName === 'VIDEO') {
+                        e.target.addEventListener('timeupdate', skipYouTubeAd, { passive: true });
+                    }
+                }, true);
+
+                setInterval(skipYouTubeAd, 1500);
             })();
         """.trimIndent()
         view?.evaluateJavascript(js, null)
@@ -598,23 +644,12 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                 if (window.__musifySpotifyBlockerInjected) return;
                 window.__musifySpotifyBlockerInjected = true;
 
-                function isSpotifyAdActive() {
-                    if (document.querySelector('[aria-label="Advertisement"], [data-testid="ad-companion-banner"], [data-testid="ad-iframe"]')) return true;
-                    var nowPlaying = document.querySelector('[data-testid="now-playing-widget"]');
-                    if (nowPlaying) {
-                        var text = nowPlaying.innerText || "";
-                        if (text.indexOf("Advertisement") !== -1 || text.indexOf("Spotify Premium") !== -1) return true;
-                    }
-                    var adHeading = Array.from(document.querySelectorAll('h1, h2, h3, header, p, span, div')).some(function(el) {
-                        return el.childNodes.length === 1 && el.textContent.trim() === "Advertisement";
-                    });
-                    if (adHeading) return true;
-                    return false;
-                }
-
-                function cleanSpotifyAds() {
-                    // 1. Hide visual ad banners, companion iframes, interstitials, and app install nags
-                    var selectors = [
+                // 1. Declarative CSS injection for visual Spotify ads and app nags
+                var style = document.getElementById('musify-spotify-ad-style');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'musify-spotify-ad-style';
+                    style.textContent = [
                         '[data-testid="ad-companion-banner"]',
                         '[data-testid="ad-iframe"]',
                         '.Root__ads-container',
@@ -658,36 +693,11 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                         'a[href^="spotify:"]',
                         'a[href*="spotify.link"]',
                         'a[href*="spotify.com/download"]'
-                    ];
-                    selectors.forEach(function(sel) {
-                        var els = document.querySelectorAll(sel);
-                        els.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
-                    });
+                    ].join(', ') + ' { display: none !important; visibility: hidden !important; }';
+                    (document.head || document.documentElement).appendChild(style);
+                }
 
-                    // Hide any button or link whose text is 'Open App', 'Install App', 'Get the app'
-                    var clickables = document.querySelectorAll('button, a, div[role="button"], span');
-                    clickables.forEach(function(el) {
-                        var testId = el.getAttribute('data-testid') || '';
-                        if (testId.indexOf('control') !== -1 || testId.indexOf('play') !== -1 || testId.indexOf('pause') !== -1 || testId.indexOf('skip') !== -1) {
-                            return;
-                        }
-                        var txt = (el.textContent || '').trim().toLowerCase();
-                        if (
-                            txt === 'open app' ||
-                            txt === 'open in app' ||
-                            txt === 'open in spotify' ||
-                            txt === 'install app' ||
-                            txt === 'install spotify' ||
-                            txt === 'get the app' ||
-                            txt === 'get app' ||
-                            txt === 'switch to the app'
-                        ) {
-                            var target = el.closest('button, a, div[role="button"]') || el;
-                            target.style.setProperty('display', 'none', 'important');
-                        }
-                    });
-
-                    // 2. Dismiss or close modal dialogues promoting ads / premium / app install
+                function dismissSpotifyModals() {
                     var modals = document.querySelectorAll('[data-testid="modal-container"], div[role="dialog"]');
                     modals.forEach(function(modal) {
                         var text = (modal.innerText || "").toLowerCase();
@@ -702,8 +712,8 @@ class WebViewAdapter(val isPrivate: Boolean = false) : EngineAdapter {
                     });
                 }
 
-                setInterval(cleanSpotifyAds, 500);
-                cleanSpotifyAds();
+                setInterval(dismissSpotifyModals, 2000);
+                dismissSpotifyModals();
             })();
         """.trimIndent()
         view?.evaluateJavascript(js, null)

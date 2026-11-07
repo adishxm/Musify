@@ -52,12 +52,14 @@ enum class ScreenState {
     RELEASE_INFO,
     LANDING,
     SPIKE,
-    WELCOME
+    WELCOME,
+    UI_CUSTOMIZATION
 }
 
 class MainActivity : ComponentActivity() {
 
     private var activeTabsViewModel: TabsViewModel? = null
+    private var appPreferencesRepository: com.musify.browser.storage.AppPreferencesRepository? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,13 +97,20 @@ class MainActivity : ComponentActivity() {
 
         val preferencesFile = File(filesDir, "musify_preferences.json")
         val preferencesRepository = LocalAppPreferencesRepository(preferencesFile)
+        appPreferencesRepository = preferencesRepository
 
         setContent {
             MusifyTheme {
                 var currentScreen by remember { mutableStateOf(ScreenState.WELCOME) }
-                var hasEnteredBrowser by remember { mutableStateOf(false) }
+                val hasCompletedWelcome = remember { preferencesRepository.hasCompletedOnboarding() }
+                androidx.compose.runtime.LaunchedEffect(hasCompletedWelcome) {
+                    if (hasCompletedWelcome) {
+                        currentScreen = ScreenState.BROWSER
+                    }
+                }
+                var hasEnteredBrowser by remember { mutableStateOf(hasCompletedWelcome) }
                 var historyBookmarksTab by remember { mutableIntStateOf(0) }
-                var showOnboarding by remember { mutableStateOf(!preferencesRepository.hasCompletedOnboarding()) }
+                var showOnboarding by remember { mutableStateOf(false) }
 
                 val tabsViewModel = remember {
                     TabsViewModel(
@@ -135,6 +144,7 @@ class MainActivity : ComponentActivity() {
                             BrowserShellScreen(
                                 viewModel = tabsViewModel,
                                 modifier = Modifier.padding(innerPadding),
+                                preferencesRepository = preferencesRepository,
                                 onOpenBookmarks = {
                                     historyBookmarksTab = 0
                                     currentScreen = ScreenState.HISTORY_BOOKMARKS
@@ -160,7 +170,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenSpikeDebug = { currentScreen = ScreenState.SPIKE },
                                 onOpenRoadmap = { currentScreen = ScreenState.LANDING },
-                                onOpenWelcome = { currentScreen = ScreenState.WELCOME }
+                                onOpenWelcome = { currentScreen = ScreenState.WELCOME },
+                                onOpenUiCustomization = { currentScreen = ScreenState.UI_CUSTOMIZATION }
                             )
                         }
                         ScreenState.HISTORY_BOOKMARKS -> {
@@ -236,8 +247,17 @@ class MainActivity : ComponentActivity() {
                             WelcomeScreen(
                                 onEnter = {
                                     hasEnteredBrowser = true
+                                    preferencesRepository.setCompletedOnboarding(true)
                                     currentScreen = ScreenState.BROWSER
                                 }
+                            )
+                        }
+                        ScreenState.UI_CUSTOMIZATION -> {
+                            BackHandler { currentScreen = ScreenState.BROWSER }
+                            com.musify.browser.ui.screens.UiCustomizationScreen(
+                                preferencesRepository = preferencesRepository,
+                                onClose = { currentScreen = ScreenState.BROWSER },
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                     }
@@ -254,6 +274,23 @@ class MainActivity : ComponentActivity() {
                             preferencesRepository.setCompletedOnboarding(true)
                         }
                     )
+                }
+            }
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val prefs = appPreferencesRepository?.getPreferences()
+            if (prefs?.showPipHoverOnBack == true) {
+                try {
+                    val params = android.app.PictureInPictureParams.Builder()
+                        .setAspectRatio(android.util.Rational(16, 9))
+                        .build()
+                    enterPictureInPictureMode(params)
+                } catch (_: Throwable) {
+                    // Ignore if device doesn't support or activity not in valid PiP state
                 }
             }
         }

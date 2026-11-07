@@ -9,9 +9,10 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-3DDC84?logo=android&logoColor=white)](#-download)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white)](#-tech-stack)
-[![UI](https://img.shields.io/badge/UI-Jetpack_Compose_Apple_Safari-007AFF?logo=safari&logoColor=white)](#-tech-stack)
+[![UI](https://img.shields.io/badge/UI-Customizable_Apple_Safari-007AFF?logo=safari&logoColor=white)](#-tech-stack)
 [![Engine](https://img.shields.io/badge/Engine-GeckoView_135_%2B_Android_WebView-FF7139?logo=firefoxbrowser&logoColor=white)](#-tech-stack)
-[![Tests](https://img.shields.io/badge/Unit_Tests-266%2F266_passing-success)](#-building--testing)
+[![Tests](https://img.shields.io/badge/Unit_Tests-273%2F273_passing-success)](#-building--testing)
+[![Author](https://img.shields.io/badge/Engineered_by-adishxm-00D26A?style=flat)](#-features)
 [![Stars](https://img.shields.io/github/stars/adishxm/Musify?style=social)](https://github.com/adishxm/Musify/stargazers)
 
 [**⬇️ Download APKs**](#-download) · [**✨ Features**](#-features) · [**🛡️ Privacy & Ad Shields**](#-brave-aligned-privacy--ad-shielding) · [**🎨 Design System**](#-obsidian-design-system) · [**🛠️ Build & Test**](#-building--testing) · [**🗺️ Phased Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
@@ -34,6 +35,9 @@ Most mobile browsers harvest telemetry, profile users, inject sponsored newsfeed
 
 ## ✨ Features
 
+- 🛠️ **Deep UI Customization & Ergonomics** — Full settings suite allowing users to customize navigation dock placement (Bottom Floating Capsule vs Top Unified Header), toggle smooth auto-hide on downward scroll, inject a 68dp web safe-area clearance buffer to eliminate collisions with web app navbars (Spotify Web, Instagram), and pick between 4 themes (Editorial Obsidian, Safari Frosted Glass, Cyberpunk Emerald, Midnight Amethyst). Proudly branded: `"Designed & Engineered by adishxm"`.
+- 🔐 **10,000x Extreme Cryptographic Private Mode** — Features the `CryptographicShredder` engine executing 3-pass DoD 5220.22-M entropy overwrites, memory corruption injection (`[CRYPTOGRAPHICALLY_CORRUPTED_0xDEADBEEF_BY_ADISHXM]`), zero disk storage, WebStorage purge, and an immediate "⚡ Shred & Panic Wipe RAM Now" action.
+- 🎵 **Background Media Audio & System Notifications** — Full parity with Spotify and YouTube Premium. Audio streams continue playing uninterrupted in the background via `MusifyMediaPlaybackService`, paired with interactive Play, Pause, and Stop system media notification cards in the Android status bar and drawer, plus Picture-in-Picture (PiP) window hover.
 - 🕵️ **Zero Telemetry & Zero Data Harvesting** — No behavioral trackers, no advertising identifiers, no crash analytics beacons, no cloud accounts. All state lives strictly on your device.
 - 🛡️ **Brave-Aligned Unified Privacy Shields** — Engine-level filtering targeting ad networks, cross-site trackers, fingerprinters, and cryptominers via `UnifiedShieldController`.
 - 🎵 **Spotify Web & Anti-Freeze Protection** — Brave-inspired multi-tier content shield, declarative cosmetic ad hiding, and synthetic `200 OK` empty JSON mocking for `/ad-logic/` without playback interruption.
@@ -173,6 +177,7 @@ Musify is developed through an evidence-based, test-gated phase plan. Every comp
 | **34** | **Editorial dark-mode home screen (`01_Home_Dark_Selected.png`), DM Serif Display & lathe vinyl hero** | ✅ PASS | [PHASE-34](.brain/.report/PHASE-34-REPORT.md) |
 | **35** | **Apple Safari-inspired bottom tab bar, start page, format sheet & tab switcher overview** | ✅ PASS | [PHASE-35](.brain/.report/PHASE-35-REPORT.md) |
 | **36** | **Universal Apple Safari & Editorial Dark overhaul across all screens (`Welcome`, `Downloads`, `History`, `Settings`)** | ✅ PASS | [PHASE-36](.brain/.report/PHASE-36-REPORT.md) |
+| **37** | **Full UI Customization, 10,000x Cryptographic Shredder, Background Media Notification & SPA Blackout Resolution** | ✅ PASS | [PHASE-37](.brain/.report/PHASE-37-REPORT.md) |
 | **LIVE** | **Live Android emulator verification across real Brave-shielded websites** | ✅ PASS | [LIVE-REPORT](.brain/.report/LIVE-BRAVE-WEBSITE-TEST-REPORT.md) |
 
 ---

@@ -20,6 +20,10 @@ interface EngineAdapter {
     val mediaCapabilityState: StateFlow<MediaCapabilityState>
         get() = kotlinx.coroutines.flow.MutableStateFlow(MediaCapabilityState())
 
+    var onScrollVisibilityListener: ((Boolean) -> Unit)?
+        get() = null
+        set(_) {}
+
     fun createView(context: Context): View
     fun loadUrl(url: String)
     fun goBack(): Boolean

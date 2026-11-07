@@ -65,6 +65,10 @@ if "!APK_CHOICE!"=="5" (
     rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\hardware-qemu.ini.lock" >nul 2>&1
     del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone.avd\multiinstance.lock" >nul 2>&1
     rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot" >nul 2>&1
+    del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\*.lock" >nul 2>&1
+    rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\hardware-qemu.ini.lock" >nul 2>&1
+    del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\multiinstance.lock" >nul 2>&1
+    rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\snapshots\default_boot" >nul 2>&1
     pushd "%SDK_DIR%\emulator"
     start "Medium Phone - Musify Emulator - Wiped" /d "%SDK_DIR%\emulator" "%EMULATOR_EXE%" -avd "%AVD_NAME%" -wipe-data -no-snapshot-load
     popd
@@ -104,9 +108,16 @@ if "!EMULATOR_ONLINE!"=="0" (
     del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone.avd\*.lock" >nul 2>&1
     rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\hardware-qemu.ini.lock" >nul 2>&1
     del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone.avd\multiinstance.lock" >nul 2>&1
+    del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\*.lock" >nul 2>&1
+    rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\hardware-qemu.ini.lock" >nul 2>&1
+    del /f /q /a "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\multiinstance.lock" >nul 2>&1
     if exist "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot\ram.img.dirty" (
         echo Purging corrupted snapshot...
         rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone.avd\snapshots\default_boot" >nul 2>&1
+    )
+    if exist "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\snapshots\default_boot\ram.img.dirty" (
+        echo Purging corrupted snapshot...
+        rd /s /q "%USERPROFILE%\.android\avd\Medium_Phone_API_36.1.avd\snapshots\default_boot" >nul 2>&1
     )
     pushd "%SDK_DIR%\emulator"
     start "Medium Phone - Musify Emulator" /d "%SDK_DIR%\emulator" "%EMULATOR_EXE%" -avd "%AVD_NAME%" -no-snapshot-load
@@ -185,6 +196,7 @@ echo    [H] Launch Safari Start Page (musify://home)
 echo    [S] Open Spotify Web Player (open.spotify.com)
 echo    [Y] Open YouTube (m.youtube.com)
 echo    [M] Open YouTube Music (music.youtube.com)
+echo    [P] Test Background Audio & System Media Notification
 echo    [B] Open d3ward Adblock Benchmark (d3ward.github.io/toolz/adblock.html)
 echo    [C] Open CanYouBlockIt Test (canyoublockit.com/testing/)
 echo    [D] Open Bounce Tracking Redirect Test (dpbolvw.net)
@@ -194,7 +206,7 @@ echo.
 
 :menu_loop
 set "TEST_CMD="
-set /p "TEST_CMD=Choose website test [H/S/Y/M/B/C/D/Q]: "
+set /p "TEST_CMD=Choose website test [H/S/Y/M/P/B/C/D/Q]: "
 if not defined TEST_CMD goto menu_loop
 for /f "tokens=1" %%t in ("!TEST_CMD!") do set "TEST_CMD=%%t"
 if /i "!TEST_CMD!"=="H" (
@@ -204,32 +216,37 @@ if /i "!TEST_CMD!"=="H" (
 )
 if /i "!TEST_CMD!"=="S" (
     echo Opening Spotify Web Player...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://open.spotify.com" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://open.spotify.com" -n !PACKAGE_NAME!/.MainActivity
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="Y" (
     echo Opening YouTube...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://m.youtube.com" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://m.youtube.com" -n !PACKAGE_NAME!/.MainActivity
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="M" (
     echo Opening YouTube Music...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://music.youtube.com" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://music.youtube.com" -n !PACKAGE_NAME!/.MainActivity
+    goto menu_loop
+)
+if /i "!TEST_CMD!"=="P" (
+    echo Starting Background Media Service & Notification...
+    "%ADB_EXE%" shell am start-foreground-service -a com.musify.browser.media.START -e extra_track_title "Starboy - The Weeknd" -e extra_artist_or_site "Spotify • Designed by adishxm" -n !PACKAGE_NAME!/.media.MusifyMediaPlaybackService
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="B" (
     echo Opening d3ward Adblock Benchmark...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://d3ward.github.io/toolz/adblock.html" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://d3ward.github.io/toolz/adblock.html" -n !PACKAGE_NAME!/.MainActivity
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="C" (
     echo Opening CanYouBlockIt Test...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://canyoublockit.com/testing/" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://canyoublockit.com/testing/" -n !PACKAGE_NAME!/.MainActivity
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="D" (
     echo Opening Bounce Tracking Redirect Test...
-    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://dpbolvw.net/click-12345?url=https%%3A%%2F%%2Fmusify.app%%2Fdownload%%3Ffbclid%%3Dtracking_token_123" -p !PACKAGE_NAME!
+    "%ADB_EXE%" shell am start -a android.intent.action.VIEW -d "https://dpbolvw.net/click-12345?url=https%%3A%%2F%%2Fmusify.app%%2Fdownload%%3Ffbclid%%3Dtracking_token_123" -n !PACKAGE_NAME!/.MainActivity
     goto menu_loop
 )
 if /i "!TEST_CMD!"=="Q" (

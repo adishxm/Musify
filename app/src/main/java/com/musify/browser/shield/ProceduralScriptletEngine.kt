@@ -76,9 +76,12 @@ object ProceduralScriptletEngine {
 
                 var pruneKeys = [$pathArrayJs];
                 function pruneObject(obj) {
-                    if (!obj || typeof obj !== 'object') return;
+                    var depth = arguments[1] || 0;
+                    if (!obj || typeof obj !== 'object' || depth > 8) return;
                     if (Array.isArray(obj)) {
-                        for (var i = 0; i < obj.length; i++) pruneObject(obj[i]);
+                        for (var i = 0; i < obj.length; i++) {
+                            pruneObject(obj[i], depth + 1);
+                        }
                         return;
                     }
                     for (var k = 0; k < pruneKeys.length; k++) {
@@ -88,8 +91,8 @@ object ProceduralScriptletEngine {
                         }
                     }
                     for (var prop in obj) {
-                        if (Object.prototype.hasOwnProperty.call(obj, prop) && typeof obj[prop] === 'object') {
-                            pruneObject(obj[prop]);
+                        if (Object.prototype.hasOwnProperty.call(obj, prop) && typeof obj[prop] === 'object' && obj[prop] !== null) {
+                            pruneObject(obj[prop], depth + 1);
                         }
                     }
                 }
@@ -98,7 +101,7 @@ object ProceduralScriptletEngine {
                     var origParse = JSON.parse;
                     JSON.parse = function(text, reviver) {
                         var result = origParse.call(this, text, reviver);
-                        pruneObject(result);
+                        try { pruneObject(result, 0); } catch(e) {}
                         return result;
                     };
                 } catch(e) {}
@@ -108,7 +111,7 @@ object ProceduralScriptletEngine {
                         var origJson = Response.prototype.json;
                         Response.prototype.json = function() {
                             return origJson.apply(this, arguments).then(function(res) {
-                                pruneObject(res);
+                                try { pruneObject(res, 0); } catch(e) {}
                                 return res;
                             });
                         };

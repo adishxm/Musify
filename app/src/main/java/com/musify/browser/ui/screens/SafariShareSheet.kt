@@ -88,6 +88,7 @@ fun SafariShareSheet(
     onOpenFilterLists: () -> Unit,
     onOpenDataControl: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenCustomization: (() -> Unit)? = null,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -346,6 +347,18 @@ fun SafariShareSheet(
                         ) {
                             onDismiss()
                             onOpenDataControl()
+                        }
+
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SafariDivider))
+
+                        SafariShareRow(
+                            title = "UI Customization & Engine Settings",
+                            icon = MusifyIcons.Settings,
+                            iconTint = SafariAccentBlue,
+                            trailing = "adishxm"
+                        ) {
+                            onDismiss()
+                            onOpenCustomization?.invoke()
                         }
 
                         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SafariDivider))

@@ -92,6 +92,7 @@ import com.musify.browser.ui.theme.Warning
 fun BrowserShellScreen(
     viewModel: TabsViewModel,
     modifier: Modifier = Modifier,
+    preferencesRepository: com.musify.browser.storage.AppPreferencesRepository? = null,
     onOpenBookmarks: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenDataControl: () -> Unit,
@@ -101,7 +102,8 @@ fun BrowserShellScreen(
     onOpenSpikeDebug: (() -> Unit)? = null,
     onOpenRoadmap: (() -> Unit)? = null,
     onOpenReleaseInfo: (() -> Unit)? = null,
-    onOpenWelcome: (() -> Unit)? = null
+    onOpenWelcome: (() -> Unit)? = null,
+    onOpenUiCustomization: (() -> Unit)? = null
 ) {
     val tabsState by viewModel.tabsState.collectAsState()
     val activeTab = tabsState.selectedTab
@@ -128,6 +130,48 @@ fun BrowserShellScreen(
     var showSafariPageSettings by remember { mutableStateOf(false) }
     var showSafariPrivacyReport by remember { mutableStateOf(false) }
     var showSafariShareSheet by remember { mutableStateOf(false) }
+    var showCustomizationDialog by remember { mutableStateOf(false) }
+
+    val openCustomizationHandler: () -> Unit = {
+        if (onOpenUiCustomization != null) {
+            onOpenUiCustomization()
+        } else {
+            showCustomizationDialog = true
+        }
+    }
+
+    val currentPrefs = preferencesRepository?.getPreferences() ?: com.musify.browser.storage.AppPreferencesData()
+    var isNavBarVisible by remember { mutableStateOf(true) }
+
+    androidx.compose.runtime.LaunchedEffect(activeAdapter, currentPrefs.autoHideNavBarOnScroll) {
+        if (currentPrefs.autoHideNavBarOnScroll) {
+            activeAdapter?.onScrollVisibilityListener = { visible ->
+                isNavBarVisible = visible
+            }
+        } else {
+            activeAdapter?.onScrollVisibilityListener = null
+            isNavBarVisible = true
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(activeTab?.url, activeTab?.title, currentPrefs.backgroundPlaybackEnabled) {
+        val u = activeTab?.url ?: ""
+        if (currentPrefs.backgroundPlaybackEnabled && (u.contains("spotify.com") || u.contains("music.youtube.com") || u.contains("youtube.com") || u.contains("soundcloud.com"))) {
+            val siteName = when {
+                u.contains("spotify.com") -> "Spotify Web"
+                u.contains("music.youtube.com") -> "YouTube Music"
+                u.contains("youtube.com") -> "YouTube"
+                u.contains("soundcloud.com") -> "SoundCloud"
+                else -> "Musify Web"
+            }
+            com.musify.browser.media.MusifyMediaPlaybackService.startService(
+                context = context,
+                title = activeTab?.title?.takeIf { it.isNotBlank() } ?: "Now Playing",
+                site = "$siteName • Designed by adishxm",
+                isPlaying = true
+            )
+        }
+    }
 
     // Synchronize address bar and bookmark star state when active tab updates
     if (!isAddressBarFocused && activeTab != null) {
@@ -139,8 +183,10 @@ fun BrowserShellScreen(
     }
 
     // Intercept hardware back button: close dialogs, sheets, back in web page, or close switcher
-    BackHandler(enabled = showPlaybackDialog || showSafariPrivacyReport || showSafariShareSheet || showSafariPageSettings || showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
-        if (showPlaybackDialog) {
+    BackHandler(enabled = showCustomizationDialog || showPlaybackDialog || showSafariPrivacyReport || showSafariShareSheet || showSafariPageSettings || showShieldSheet || showTabSwitcher || findState.isActive || (activeTab?.canGoBack == true)) {
+        if (showCustomizationDialog) {
+            showCustomizationDialog = false
+        } else if (showPlaybackDialog) {
             showPlaybackDialog = false
         } else if (showSafariPrivacyReport) {
             showSafariPrivacyReport = false
@@ -173,11 +219,17 @@ fun BrowserShellScreen(
                 .fillMaxSize()
                 .background(com.musify.browser.ui.theme.SafariBackgroundDark)
         ) {
+            val isBottomDock = currentPrefs.navBarPosition != "TOP"
+            val bottomClearance = if (isBottomDock && currentPrefs.webBottomClearance && isNavBarVisible && !isHome) 68.dp else 0.dp
+            val topClearance = if (!isBottomDock && isNavBarVisible && !isHome) 68.dp else 0.dp
+
             // Main Web Engine Canvas
             if (activeAdapter != null && activeTab?.isRendererCrashed == false && !isHome) {
                 EngineView(
                     adapter = activeAdapter,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topClearance, bottom = bottomClearance)
                 )
             }
 
@@ -203,6 +255,7 @@ fun BrowserShellScreen(
                     onOpenPrivacyReport = { showSafariPrivacyReport = true },
                     onOpenTabSwitcher = { showTabSwitcher = true },
                     onOpenShareSheet = { showSafariShareSheet = true },
+                    onOpenCustomization = openCustomizationHandler,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -241,30 +294,36 @@ fun BrowserShellScreen(
                 )
             }
 
-            // Safari Bottom Unified Floating Tab Bar
-            SafariBottomTabBar(
-                url = activeTab?.url ?: "about:blank",
-                origin = activeTab?.origin ?: "",
-                isSecure = activeTab?.isSecure ?: false,
-                isPrivate = activeTab?.isPrivate ?: false,
-                isLoading = activeTab?.isLoading ?: false,
-                tabCount = tabsState.tabCount,
-                canGoBack = activeTab?.canGoBack ?: false,
-                canGoForward = activeTab?.canGoForward ?: false,
-                onNavigate = { target ->
-                    viewModel.navigateActiveTab(target)
-                    focusManager.clearFocus()
-                },
-                onGoBack = { viewModel.goBack() },
-                onGoForward = { viewModel.goForward() },
-                onReloadOrStop = {
-                    if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
-                },
-                onOpenPageSettings = { showSafariPageSettings = true },
-                onOpenTabSwitcher = { showTabSwitcher = true },
-                onOpenShareSheet = { showSafariShareSheet = true },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
+            // Safari Bottom/Top Unified Floating Tab Bar
+            AnimatedVisibility(
+                visible = isNavBarVisible || !currentPrefs.autoHideNavBarOnScroll || isHome,
+                enter = androidx.compose.animation.slideInVertically(initialOffsetY = { if (isBottomDock) it else -it }) + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { if (isBottomDock) it else -it }) + androidx.compose.animation.fadeOut(),
+                modifier = Modifier.align(if (isBottomDock) Alignment.BottomCenter else Alignment.TopCenter)
+            ) {
+                SafariBottomTabBar(
+                    url = activeTab?.url ?: "about:blank",
+                    origin = activeTab?.origin ?: "",
+                    isSecure = activeTab?.isSecure ?: false,
+                    isPrivate = activeTab?.isPrivate ?: false,
+                    isLoading = activeTab?.isLoading ?: false,
+                    tabCount = tabsState.tabCount,
+                    canGoBack = activeTab?.canGoBack ?: false,
+                    canGoForward = activeTab?.canGoForward ?: false,
+                    onNavigate = { target ->
+                        viewModel.navigateActiveTab(target)
+                        focusManager.clearFocus()
+                    },
+                    onGoBack = { viewModel.goBack() },
+                    onGoForward = { viewModel.goForward() },
+                    onReloadOrStop = {
+                        if (activeTab?.isLoading == true) viewModel.stop() else viewModel.reload()
+                    },
+                    onOpenPageSettings = { showSafariPageSettings = true },
+                    onOpenTabSwitcher = { showTabSwitcher = true },
+                    onOpenShareSheet = { showSafariShareSheet = true }
+                )
+            }
 
             // Safari "aA" Format & Page Settings Popover Sheet
             AnimatedVisibility(
@@ -278,6 +337,7 @@ fun BrowserShellScreen(
                     onOpenPrivacyReport = { showSafariPrivacyReport = true },
                     onOpenSitePermissions = { onOpenSitePermissions?.invoke() },
                     onClearData = { onOpenDataControl() },
+                    onOpenCustomization = openCustomizationHandler,
                     onDismiss = { showSafariPageSettings = false }
                 )
             }
@@ -303,6 +363,7 @@ fun BrowserShellScreen(
                     onOpenFilterLists = { onOpenFilterLists?.invoke() },
                     onOpenDataControl = { onOpenDataControl() },
                     onOpenAbout = { onOpenReleaseInfo?.invoke() },
+                    onOpenCustomization = openCustomizationHandler,
                     onDismiss = { showSafariShareSheet = false }
                 )
             }
@@ -318,6 +379,15 @@ fun BrowserShellScreen(
                         showSafariPrivacyReport = false
                         showShieldSheet = false
                     }
+                )
+            }
+
+            // UI Customization Settings Screen Overlay
+            if (showCustomizationDialog) {
+                UiCustomizationScreen(
+                    preferencesRepository = preferencesRepository ?: com.musify.browser.storage.LocalAppPreferencesRepository(),
+                    onClose = { showCustomizationDialog = false },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 

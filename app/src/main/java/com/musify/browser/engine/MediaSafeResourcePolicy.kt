@@ -49,7 +49,18 @@ object MediaSafeResourcePolicy {
         "ap.spotify.com",
         "dealer.spotify.com",
         "gew-dealer.spotify.com",
-        "gew-spclient.spotify.com"
+        "gew-spclient.spotify.com",
+        "accounts.google.com",
+        "youtube.com",
+        "music.youtube.com",
+        "m.youtube.com",
+        "www.youtube.com",
+        "i.ytimg.com",
+        "s.ytimg.com",
+        "yt3.ggpht.com",
+        "fonts.gstatic.com",
+        "fonts.googleapis.com",
+        "play.google.com"
     )
 
     /**

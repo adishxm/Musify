@@ -72,6 +72,7 @@ fun SafariPageSettingsSheet(
     onOpenPrivacyReport: () -> Unit,
     onOpenSitePermissions: () -> Unit,
     onClearData: () -> Unit,
+    onOpenCustomization: (() -> Unit)? = null,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -211,6 +212,22 @@ fun SafariPageSettingsSheet(
                             onOpenSitePermissions()
                         }
                     )
+
+                    if (onOpenCustomization != null) {
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SafariDivider))
+
+                        // UI & App Customization
+                        SafariMenuRow(
+                            title = "UI & App Customization",
+                            icon = MusifyIcons.Settings,
+                            iconTint = SafariAccentBlue,
+                            trailingText = "adishxm",
+                            onClick = {
+                                onDismiss()
+                                onOpenCustomization()
+                            }
+                        )
+                    }
 
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(SafariDivider))
 

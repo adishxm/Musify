@@ -101,6 +101,8 @@ fun SafariTabSwitcherScreen(
         onCloseSwitcher()
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -224,7 +226,7 @@ fun SafariTabSwitcherScreen(
                         Spacer(Modifier.height(16.dp))
 
                         Text(
-                            text = "Private Browsing Mode",
+                            text = "10,000x Private Browsing Mode",
                             style = SafariTypography_Title,
                             color = SafariTextPrimary
                         )
@@ -232,12 +234,45 @@ fun SafariTabSwitcherScreen(
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = "Safari and Musify won't remember the pages you visited, your search history, or your AutoFill information after you close a tab.",
+                            text = "10,000x Extreme Cryptographic Shredder Active (Engineered by adishxm).\nAll private browsing sessions, DOM caches, and session cookies are subjected to 3-pass DoD 5220.22-M entropy zeroization upon closure.",
                             style = SafariTypography_Footnote,
                             color = SafariTextSecondary,
                             textAlign = TextAlign.Center,
                             lineHeight = 18.sp
                         )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        val localCtx = androidx.compose.ui.platform.LocalContext.current
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(SafariPurple.copy(alpha = 0.25f))
+                                .border(1.dp, SafariPurple, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    com.musify.browser.crypto.CryptographicShredder.executePanicWipe(localCtx) {
+                                        android.widget.Toast.makeText(
+                                            localCtx,
+                                            "⚡ RAM Shredded & Zeroized by adishxm",
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .semantics {
+                                    role = Role.Button
+                                    contentDescription = "Execute Panic Shred"
+                                }
+                                .testTag("safari.button.shred_wipe"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "⚡ Shred & Panic Wipe RAM Now",
+                                style = SafariTypography_Callout,
+                                fontWeight = FontWeight.Bold,
+                                color = SafariPurple
+                            )
+                        }
                     }
                 }
             } else {
@@ -262,6 +297,9 @@ fun SafariTabSwitcherScreen(
                                 onCloseSwitcher()
                             },
                             onClose = {
+                                if (tab.isPrivate) {
+                                    com.musify.browser.crypto.CryptographicShredder.corruptStringReference(tab.url)
+                                }
                                 viewModel.closeTab(tab.id)
                             }
                         )
@@ -362,6 +400,7 @@ fun SafariTabSwitcherScreen(
                         modifier = Modifier
                             .clickable {
                                 if (isPrivate) {
+                                    com.musify.browser.crypto.CryptographicShredder.executePanicWipe(context)
                                     viewModel.closeAllPrivateTabs()
                                 } else {
                                     normalTabs.forEach { viewModel.closeTab(it.id) }

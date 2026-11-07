@@ -115,8 +115,8 @@ object AnnoyanceFilterRepository {
         if (blockCookies) {
             val cookieSelector = COOKIE_NOTICE_SELECTORS.joinToString(", ")
             rules.add("$cookieSelector { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }")
-            // Un-freeze page body scroll locks applied by consent walls
-            rules.add("html, body { overflow: auto !important; position: static !important; }")
+            // Un-freeze page body scroll locks applied by consent walls without collapsing SPA viewport containers
+            rules.add("body.modal-open, body.cookie-modal-open, body.has-modal, body[class*='modal' i], body[class*='cookie' i] { overflow: auto !important; position: static !important; }")
             rules.add(".modal-backdrop, .fade.show:not(.dropdown-menu) { display: none !important; }")
         }
 
@@ -152,16 +152,11 @@ object AnnoyanceFilterRepository {
 
                 function unfreezeScroll() {
                     try {
-                        if (document.body) {
+                        var hasConsentModal = document.querySelector('.modal-backdrop, #onetrust-consent-sdk, #CookiebotDialog, #didomi-popup, [id*="cookie" i], [class*="cookie" i]');
+                        if (hasConsentModal && document.body) {
                             var overflow = window.getComputedStyle(document.body).overflow;
                             if (overflow === 'hidden') {
                                 document.body.style.setProperty('overflow', 'auto', 'important');
-                            }
-                        }
-                        if (document.documentElement) {
-                            var docOverflow = window.getComputedStyle(document.documentElement).overflow;
-                            if (docOverflow === 'hidden') {
-                                document.documentElement.style.setProperty('overflow', 'auto', 'important');
                             }
                         }
                     } catch (e) {}
@@ -178,17 +173,21 @@ object AnnoyanceFilterRepository {
                 }
 
                 try {
+                    var debounceTimer = null;
                     var observer = new MutationObserver(function() {
-                        applyStyle();
-                        unfreezeScroll();
+                        if (debounceTimer) return;
+                        debounceTimer = setTimeout(function() {
+                            debounceTimer = null;
+                            unfreezeScroll();
+                        }, 250);
                     });
-                    observer.observe(document.documentElement || document, {
+                    observer.observe(document.body || document.documentElement || document, {
                         childList: true,
                         subtree: true
                     });
                     setTimeout(function() {
                         if (observer) observer.disconnect();
-                    }, 15000);
+                    }, 10000);
                 } catch (e) {}
             })();
         """.trimIndent()
