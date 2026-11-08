@@ -17,9 +17,13 @@
 
 [**⬇️ Download APKs**](#-download) · [**✨ Features**](#-features) · [**🛡️ Privacy & Ad Shields**](#-brave-aligned-privacy--ad-shielding) · [**🎨 Design System**](#-obsidian-design-system) · [**🛠️ Build & Test**](#-building--testing) · [**🗺️ Phased Roadmap**](#-roadmap) · [**🤝 Contribute**](#-contributing)
 
-| 🏠 Home | 🛡️ Shields | 🎛️ Action Panel | 🎵 Spotify Web |
-|:---:|:---:|:---:|:---:|
-| <img src="docs/screens/action-bar-states.png" width="200"> | <img src="docs/screens/all-screens.png" width="200"> | <img src="docs/screens/action-bar-overview.png" width="200"> | <img src="docs/screens/live_spotify.png" width="200"> |
+| 🏠 Safari Start Page | 🎵 Spotify Web Player | 📺 YouTube Music Feed |
+|:---:|:---:|:---:|
+| <img src="docs/screens/screen_startpage.png" width="220"> | <img src="docs/screens/screen_spotify.png" width="220"> | <img src="docs/screens/screen_ytmusic.png" width="220"> |
+
+| 🛠️ UI Customization & Themes | 🔔 Background Media Notification | 🔐 10,000x Cryptographic Shredder |
+|:---:|:---:|:---:|
+| <img src="docs/screens/screen_customization.png" width="220"> | <img src="docs/screens/screen_notification.png" width="220"> | <img src="docs/screens/screen_private_deck.png" width="220"> |
 
 </div>
 
